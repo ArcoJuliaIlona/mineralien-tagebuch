@@ -116,15 +116,9 @@ export async function generateLabelPdf(m: Mineral) {
     }
   }
 
-  // Sammlungs-Header oben
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.setTextColor(120, 80, 50);
-  doc.text("Sammlung Arco Böhme", W / 2, 9, { align: "center" });
-
   // Text rechts
   const textX = m.photo_paths.length > 0 ? photoX + photoSize + 6 : 10;
-  let y = 18;
+  let y = 12;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -172,6 +166,12 @@ export async function generateLabelPdf(m: Mineral) {
     const endY = drawFormula(doc, m.chemical_formula, textX, y + 4.5, W - textX - 8, 10);
     y = endY + 6.5;
   }
+
+  // Sammlungsname unten links
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(120, 80, 50);
+  doc.text("Sammlung Arco Böhme", 8, H - 7);
 
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
