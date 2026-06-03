@@ -9,38 +9,97 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NeuRouteImport } from './routes/neu'
+import { Route as AnmeldenRouteImport } from './routes/anmelden'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FundIdRouteImport } from './routes/fund.$id'
+import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeiten'
 
+const NeuRoute = NeuRouteImport.update({
+  id: '/neu',
+  path: '/neu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnmeldenRoute = AnmeldenRouteImport.update({
+  id: '/anmelden',
+  path: '/anmelden',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FundIdRoute = FundIdRouteImport.update({
+  id: '/fund/$id',
+  path: '/fund/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FundIdBearbeitenRoute = FundIdBearbeitenRouteImport.update({
+  id: '/bearbeiten',
+  path: '/bearbeiten',
+  getParentRoute: () => FundIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/anmelden': typeof AnmeldenRoute
+  '/neu': typeof NeuRoute
+  '/fund/$id': typeof FundIdRouteWithChildren
+  '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/anmelden': typeof AnmeldenRoute
+  '/neu': typeof NeuRoute
+  '/fund/$id': typeof FundIdRouteWithChildren
+  '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/anmelden': typeof AnmeldenRoute
+  '/neu': typeof NeuRoute
+  '/fund/$id': typeof FundIdRouteWithChildren
+  '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/anmelden' | '/neu' | '/fund/$id' | '/fund/$id/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/anmelden' | '/neu' | '/fund/$id' | '/fund/$id/bearbeiten'
+  id:
+    | '__root__'
+    | '/'
+    | '/anmelden'
+    | '/neu'
+    | '/fund/$id'
+    | '/fund/$id/bearbeiten'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnmeldenRoute: typeof AnmeldenRoute
+  NeuRoute: typeof NeuRoute
+  FundIdRoute: typeof FundIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/neu': {
+      id: '/neu'
+      path: '/neu'
+      fullPath: '/neu'
+      preLoaderRoute: typeof NeuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/anmelden': {
+      id: '/anmelden'
+      path: '/anmelden'
+      fullPath: '/anmelden'
+      preLoaderRoute: typeof AnmeldenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +107,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fund/$id': {
+      id: '/fund/$id'
+      path: '/fund/$id'
+      fullPath: '/fund/$id'
+      preLoaderRoute: typeof FundIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fund/$id/bearbeiten': {
+      id: '/fund/$id/bearbeiten'
+      path: '/bearbeiten'
+      fullPath: '/fund/$id/bearbeiten'
+      preLoaderRoute: typeof FundIdBearbeitenRouteImport
+      parentRoute: typeof FundIdRoute
+    }
   }
 }
 
+interface FundIdRouteChildren {
+  FundIdBearbeitenRoute: typeof FundIdBearbeitenRoute
+}
+
+const FundIdRouteChildren: FundIdRouteChildren = {
+  FundIdBearbeitenRoute: FundIdBearbeitenRoute,
+}
+
+const FundIdRouteWithChildren =
+  FundIdRoute._addFileChildren(FundIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnmeldenRoute: AnmeldenRoute,
+  NeuRoute: NeuRoute,
+  FundIdRoute: FundIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
