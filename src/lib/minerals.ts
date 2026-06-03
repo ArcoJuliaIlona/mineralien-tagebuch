@@ -1,5 +1,19 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type Category = "mineral" | "fossil" | "rock";
+
+export const CATEGORY_LABEL: Record<Category, string> = {
+  mineral: "Mineral",
+  fossil: "Fossil",
+  rock: "Gestein",
+};
+
+export const CATEGORY_LABEL_PLURAL: Record<Category, string> = {
+  mineral: "Mineralien",
+  fossil: "Fossilien",
+  rock: "Gesteine",
+};
+
 export type Mineral = {
   id: string;
   user_id: string;
@@ -8,6 +22,9 @@ export type Mineral = {
   location: string | null;
   collection_name: string | null;
   photo_paths: string[];
+  category: Category;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +54,9 @@ export type MineralInput = {
   location: string | null;
   collection_name: string | null;
   photo_paths: string[];
+  category: Category;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

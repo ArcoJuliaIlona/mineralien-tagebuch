@@ -16,33 +16,42 @@ export type Database = {
     Tables: {
       minerals: {
         Row: {
+          category: string
           collection_name: string | null
           companion_minerals: string | null
           created_at: string
           id: string
+          latitude: number | null
           location: string | null
+          longitude: number | null
           mineral_name: string
           photo_paths: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string
           collection_name?: string | null
           companion_minerals?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           mineral_name: string
           photo_paths?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string
           collection_name?: string | null
           companion_minerals?: string | null
           created_at?: string
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           mineral_name?: string
           photo_paths?: string[]
           updated_at?: string

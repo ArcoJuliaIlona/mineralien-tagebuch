@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImagePlus, Loader2, MapPin, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
 import { uploadPhoto, deletePhotos } from "@/lib/photos";
 import { toast } from "sonner";
-import type { MineralInput } from "@/lib/minerals";
+import type { Category, MineralInput } from "@/lib/minerals";
+import { CATEGORY_LABEL } from "@/lib/minerals";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 type Props = {
   userId: string;
@@ -17,12 +25,16 @@ type Props = {
 };
 
 export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
+  const [category, setCategory] = useState<Category>(initial?.category ?? "mineral");
   const [name, setName] = useState(initial?.mineral_name ?? "");
   const [companion, setCompanion] = useState(initial?.companion_minerals ?? "");
   const [location, setLocation] = useState(initial?.location ?? "");
   const [collection, setCollection] = useState(initial?.collection_name ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
+  const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(initial?.longitude ?? null);
+  const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -48,6 +60,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     setRemoved((prev) => [...prev, path]);
   };
 
+  const captureGps = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("GPS wird von diesem Gerät nicht unterstützt.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLatitude(pos.coords.latitude);
+        setLongitude(pos.coords.longitude);
+        setLocating(false);
+        toast.success("Koordinaten übernommen");
+      },
+      (err) => {
+        setLocating(false);
+        toast.error("Standort nicht verfügbar: " + err.message);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  };
+
+  const clearGps = () => {
+    setLatitude(null);
+    setLongitude(null);
+  };
+
   const submit = async () => {
     if (!name.trim()) {
       toast.error("Bitte Mineralname angeben.");
@@ -62,6 +100,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           location: location.trim() || null,
           collection_name: collection.trim() || null,
           photo_paths: photos,
+          category,
+          latitude,
+          longitude,
         },
         removed,
       );
@@ -75,7 +116,19 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
 
   return (
     <div className="space-y-5">
-      <Field label="Mineralname *">
+      <Field label="Kategorie *">
+        <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+          <SelectTrigger className="h-12 text-base">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="mineral">{CATEGORY_LABEL.mineral}</SelectItem>
+            <SelectItem value="fossil">{CATEGORY_LABEL.fossil}</SelectItem>
+            <SelectItem value="rock">{CATEGORY_LABEL.rock}</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="Name *">
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -98,6 +151,42 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           placeholder="Ort, Region, Land"
           className="min-h-[80px] text-base"
         />
+      </Field>
+      <Field label="GPS-Koordinaten">
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={captureGps}
+            disabled={locating}
+          >
+            {locating ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <MapPin className="size-5" />
+            )}
+            {latitude != null && longitude != null
+              ? "Standort aktualisieren"
+              : "Aktuellen Standort übernehmen"}
+          </Button>
+          {latitude != null && longitude != null && (
+            <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm">
+              <span className="font-mono">
+                {latitude.toFixed(5)}, {longitude.toFixed(5)}
+              </span>
+              <button
+                type="button"
+                onClick={clearGps}
+                aria-label="Koordinaten entfernen"
+                className="rounded-full p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </Field>
       <Field label="Sammlungsname">
         <Input

@@ -17,7 +17,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
-import { getMineral, deleteMineral } from "@/lib/minerals";
+import { getMineral, deleteMineral, CATEGORY_LABEL } from "@/lib/minerals";
 import { deletePhotos } from "@/lib/photos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { toast } from "sonner";
@@ -81,7 +81,12 @@ function DetailPage() {
         <ArrowLeft className="size-4" /> Zur Liste
       </Link>
 
-      <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
+      <div className="space-y-1">
+        <p className="text-sm font-medium uppercase tracking-wider text-primary">
+          {CATEGORY_LABEL[m.category]}
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
+      </div>
 
       {m.photo_paths.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
@@ -95,6 +100,21 @@ function DetailPage() {
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
         <DataRow label="Fundort" value={m.location} />
         <DataRow label="Sammlung" value={m.collection_name} />
+        {m.latitude != null && m.longitude != null && (
+          <div>
+            <dt className="text-sm font-medium text-muted-foreground">GPS-Koordinaten</dt>
+            <dd className="text-lg">
+              <a
+                href={`https://www.google.com/maps?q=${m.latitude},${m.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-primary underline-offset-2 hover:underline"
+              >
+                {m.latitude.toFixed(5)}, {m.longitude.toFixed(5)}
+              </a>
+            </dd>
+          </div>
+        )}
       </dl>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
