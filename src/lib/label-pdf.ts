@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import type { Mineral } from "./minerals";
+import { CATEGORY_LABEL } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 
 export async function generateLabelPdf(m: Mineral) {
@@ -27,15 +28,27 @@ export async function generateLabelPdf(m: Mineral) {
     }
   }
 
+  // Sammlungs-Header oben
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(120, 80, 50);
+  doc.text("Sammlung Arco Böhme", W / 2, 9, { align: "center" });
+
   // Text rechts
   const textX = m.photo_paths.length > 0 ? photoX + photoSize + 6 : 10;
-  let y = 14;
+  let y = 18;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(60, 35, 20);
   doc.text(m.mineral_name, textX, y);
-  y += 9;
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(120, 80, 50);
+  doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, textX, y);
+  y += 7;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
