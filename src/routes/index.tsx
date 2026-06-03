@@ -156,12 +156,14 @@ function ListPage() {
   );
 }
 
-function EmptyState({ hasAny }: { hasAny: boolean }) {
+function EmptyState({ hasAny, category }: { hasAny: boolean; category: Category }) {
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card py-16 text-center">
       <Gem className="size-12 text-primary/60" />
       <p className="text-lg font-medium">
-        {hasAny ? "Keine Treffer für deine Suche." : "Noch keine Funde."}
+        {hasAny
+          ? "Keine Treffer für deine Suche."
+          : `Noch keine ${CATEGORY_LABEL_PLURAL[category]}.`}
       </p>
       {!hasAny && (
         <Link to="/neu">
