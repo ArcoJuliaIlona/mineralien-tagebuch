@@ -180,6 +180,31 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           className="h-12 text-base"
         />
       </Field>
+      <Field label="Chemische Formel">
+        <div className="space-y-2">
+          <Input
+            value={formula}
+            onChange={(e) => setFormula(e.target.value)}
+            placeholder="z. B. SiO₂"
+            className="h-12 text-base"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchFormula}
+            disabled={fetchingFormula}
+          >
+            {fetchingFormula ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Formel automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
       <Field label="Fundort">
         <Textarea
           value={location ?? ""}
