@@ -134,11 +134,11 @@ function DetailPage() {
         >
           <FileDown className="size-5" /> Etikett (PDF)
         </Button>
-        <Link to="/fund/$id/bearbeiten" params={{ id: m.id }}>
-          <Button size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
+        <Button asChild size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
+          <Link to="/fund/$id/bearbeiten" params={{ id: m.id }}>
             <Pencil className="size-5" /> Bearbeiten
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
