@@ -55,6 +55,7 @@ function EditPage() {
           category: m.category,
           latitude: m.latitude,
           longitude: m.longitude,
+          value: m.value,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);

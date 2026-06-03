@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           category: string
           collection_name: string | null
+          collection_number: number
           companion_minerals: string | null
           created_at: string
           id: string
@@ -28,10 +29,12 @@ export type Database = {
           photo_paths: string[]
           updated_at: string
           user_id: string
+          value: number | null
         }
         Insert: {
           category?: string
           collection_name?: string | null
+          collection_number?: number
           companion_minerals?: string | null
           created_at?: string
           id?: string
@@ -42,10 +45,12 @@ export type Database = {
           photo_paths?: string[]
           updated_at?: string
           user_id: string
+          value?: number | null
         }
         Update: {
           category?: string
           collection_name?: string | null
+          collection_number?: number
           companion_minerals?: string | null
           created_at?: string
           id?: string
@@ -56,6 +61,7 @@ export type Database = {
           photo_paths?: string[]
           updated_at?: string
           user_id?: string
+          value?: number | null
         }
         Relationships: []
       }

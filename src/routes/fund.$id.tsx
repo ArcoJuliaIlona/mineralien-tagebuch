@@ -83,7 +83,7 @@ function DetailPage() {
 
       <div className="space-y-1">
         <p className="text-sm font-medium uppercase tracking-wider text-primary">
-          {CATEGORY_LABEL[m.category]}
+          {CATEGORY_LABEL[m.category]} · Nr. {m.collection_number}
         </p>
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
@@ -100,6 +100,14 @@ function DetailPage() {
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
         <DataRow label="Fundort" value={m.location} />
         <DataRow label="Sammlung" value={m.collection_name} />
+        <DataRow
+          label="Wert"
+          value={
+            m.value != null
+              ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(m.value)
+              : null
+          }
+        />
         {m.latitude != null && m.longitude != null && (
           <div>
             <dt className="text-sm font-medium text-muted-foreground">GPS-Koordinaten</dt>

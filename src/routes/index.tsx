@@ -48,6 +48,13 @@ function ListPage() {
     [minerals, tab],
   );
 
+  const totalValue = useMemo(
+    () => inTab.reduce((sum, m) => sum + (m.value ?? 0), 0),
+    [inTab],
+  );
+  const formatEUR = (n: number) =>
+    new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(n);
+
   const names = useMemo(
     () => Array.from(new Set(inTab.map((m) => m.mineral_name).filter(Boolean))).sort(),
     [inTab],
@@ -85,6 +92,19 @@ function ListPage() {
           <TabsTrigger value="rock">{CATEGORY_LABEL_PLURAL.rock}</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            {CATEGORY_LABEL_PLURAL[tab]} gesamt
+          </p>
+          <p className="text-lg font-semibold">{inTab.length} Stück</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Gesamtwert</p>
+          <p className="text-lg font-semibold text-primary">{formatEUR(totalValue)}</p>
+        </div>
+      </div>
 
       <div className="space-y-3 rounded-xl border bg-card p-3">
         <div className="relative">
@@ -137,7 +157,19 @@ function ListPage() {
               >
                 <PhotoThumb path={m.photo_paths[0]} className="h-20 w-20 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-semibold">{m.mineral_name}</p>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-lg font-semibold">
+                      <span className="mr-2 font-mono text-sm text-muted-foreground">
+                        #{m.collection_number}
+                      </span>
+                      {m.mineral_name}
+                    </p>
+                    {m.value != null && (
+                      <span className="shrink-0 text-sm font-medium text-primary">
+                        {formatEUR(m.value)}
+                      </span>
+                    )}
+                  </div>
                   {m.location && (
                     <p className="truncate text-sm text-muted-foreground">{m.location}</p>
                   )}
