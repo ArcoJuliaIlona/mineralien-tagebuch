@@ -30,6 +30,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [companion, setCompanion] = useState(initial?.companion_minerals ?? "");
   const [location, setLocation] = useState(initial?.location ?? "");
   const [collection, setCollection] = useState(initial?.collection_name ?? "");
+  const [value, setValue] = useState<string>(
+    initial?.value != null ? String(initial.value) : "",
+  );
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
@@ -91,6 +94,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
       toast.error("Bitte Mineralname angeben.");
       return;
     }
+    const parsedValue = value.trim() === "" ? null : Number(value.replace(",", "."));
+    if (parsedValue != null && (!isFinite(parsedValue) || parsedValue < 0)) {
+      toast.error("Bitte einen gültigen Wert eingeben.");
+      return;
+    }
     setSaving(true);
     try {
       await onSubmit(
@@ -103,6 +111,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           category,
           latitude,
           longitude,
+          value: parsedValue,
         },
         removed,
       );
@@ -193,6 +202,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           value={collection ?? ""}
           onChange={(e) => setCollection(e.target.value)}
           placeholder="z. B. Alpine Klüfte"
+          className="h-12 text-base"
+        />
+      </Field>
+      <Field label="Wert (€)">
+        <Input
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="0.01"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="z. B. 25.00"
           className="h-12 text-base"
         />
       </Field>
