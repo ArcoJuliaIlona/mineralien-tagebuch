@@ -45,6 +45,12 @@ export async function generateLabelPdf(m: Mineral) {
     ["Begleitmineralien:", m.companion_minerals],
     ["Fundort:", m.location],
     ["Sammlung:", m.collection_name],
+    [
+      "GPS:",
+      m.latitude != null && m.longitude != null
+        ? `${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}`
+        : null,
+    ],
   ];
 
   for (const [label, val] of lines) {
