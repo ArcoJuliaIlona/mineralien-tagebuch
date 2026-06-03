@@ -108,7 +108,7 @@ function DetailPage() {
 
       <dl className="space-y-3 rounded-xl border bg-card p-4">
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
-        <DataRow label="Chemische Formel" value={m.chemical_formula} />
+        <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
         <DataRow label="Fundort" value={m.location} />
         <DataRow label="Sammlung" value={m.collection_name} />
         <DataRow
@@ -184,6 +184,17 @@ function DataRow({ label, value }: { label: string; value: string | null }) {
     <div>
       <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
       <dd className="whitespace-pre-wrap text-lg">{value || "—"}</dd>
+    </div>
+  );
+}
+
+function FormulaRow({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-lg">
+        {value ? <FormulaText value={value} /> : "—"}
+      </dd>
     </div>
   );
 }
