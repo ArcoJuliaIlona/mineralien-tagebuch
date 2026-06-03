@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Camera, ImagePlus, Loader2, MapPin, Trash2, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [value, setValue] = useState<string>(
     initial?.value != null ? String(initial.value) : "",
   );
+  const [formula, setFormula] = useState<string>(initial?.chemical_formula ?? "");
+  const [fetchingFormula, setFetchingFormula] = useState(false);
+  const fetchFormulaFn = useServerFn(fetchChemicalFormula);
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
@@ -40,6 +45,27 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const autoFetchFormula = async () => {
+    if (!name.trim()) {
+      toast.error("Bitte zuerst einen Namen eingeben.");
+      return;
+    }
+    setFetchingFormula(true);
+    try {
+      const res = await fetchFormulaFn({ data: { name: name.trim() } });
+      if (res.formula) {
+        setFormula(res.formula);
+        toast.success("Formel ergänzt");
+      } else {
+        toast.info("Keine eindeutige Formel gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Formel konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingFormula(false);
+    }
+  };
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -112,6 +138,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           latitude,
           longitude,
           value: parsedValue,
+          chemical_formula: formula.trim() || null,
         },
         removed,
       );
