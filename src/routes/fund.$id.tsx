@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, FileDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -24,14 +24,24 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/fund/$id")({
   head: () => ({ meta: [{ title: "Funddetails" }] }),
-  component: () => (
+  component: FundRoute,
+});
+
+function FundRoute() {
+  const isEditRoute = useRouterState({
+    select: (state) => state.location.pathname.endsWith("/bearbeiten"),
+  });
+
+  if (isEditRoute) return <Outlet />;
+
+  return (
     <AuthGate>
       <AppShell>
         <DetailPage />
       </AppShell>
     </AuthGate>
-  ),
-});
+  );
+}
 
 function DetailPage() {
   const { id } = Route.useParams();
