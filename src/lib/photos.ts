@@ -32,7 +32,7 @@ export async function getPhotoUrls(paths: string[]): Promise<string[]> {
     .from(BUCKET)
     .createSignedUrls(paths, 60 * 60);
   if (error) throw error;
-  return data.map((d) => d.signedUrl);
+  return data.map((d) => d.signedUrl ?? "");
 }
 
 export async function fetchPhotoDataUrl(path: string): Promise<string> {
