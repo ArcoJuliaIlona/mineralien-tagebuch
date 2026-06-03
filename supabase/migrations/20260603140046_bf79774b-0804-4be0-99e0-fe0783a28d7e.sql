@@ -1,0 +1,1 @@
+ALTER TABLE public.minerals ADD COLUMN IF NOT EXISTS chemical_formula text;

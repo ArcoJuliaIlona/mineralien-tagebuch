@@ -98,6 +98,7 @@ function DetailPage() {
 
       <dl className="space-y-3 rounded-xl border bg-card p-4">
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
+        <DataRow label="Chemische Formel" value={m.chemical_formula} />
         <DataRow label="Fundort" value={m.location} />
         <DataRow label="Sammlung" value={m.collection_name} />
         <DataRow

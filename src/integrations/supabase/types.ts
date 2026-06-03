@@ -17,6 +17,7 @@ export type Database = {
       minerals: {
         Row: {
           category: string
+          chemical_formula: string | null
           collection_name: string | null
           collection_number: number
           companion_minerals: string | null
@@ -33,6 +34,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
           companion_minerals?: string | null
@@ -49,6 +51,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
           companion_minerals?: string | null

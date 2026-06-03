@@ -56,6 +56,7 @@ export async function generateLabelPdf(m: Mineral) {
 
   const lines: Array<[string, string | null]> = [
     ["Begleitmineralien:", m.companion_minerals],
+    ["Formel:", m.chemical_formula],
     ["Fundort:", m.location],
     ["Sammlung:", m.collection_name],
     [
