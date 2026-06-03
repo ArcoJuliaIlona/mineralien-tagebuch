@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
-import { listMinerals } from "@/lib/minerals";
+import { listMinerals, CATEGORY_LABEL_PLURAL, type Category } from "@/lib/minerals";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectTrigger,
@@ -40,19 +41,25 @@ function ListPage() {
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
+  const [tab, setTab] = useState<Category>("mineral");
+
+  const inTab = useMemo(
+    () => minerals.filter((m) => m.category === tab),
+    [minerals, tab],
+  );
 
   const names = useMemo(
-    () => Array.from(new Set(minerals.map((m) => m.mineral_name).filter(Boolean))).sort(),
-    [minerals],
+    () => Array.from(new Set(inTab.map((m) => m.mineral_name).filter(Boolean))).sort(),
+    [inTab],
   );
   const locations = useMemo(
-    () => Array.from(new Set(minerals.map((m) => m.location || "").filter(Boolean))).sort(),
-    [minerals],
+    () => Array.from(new Set(inTab.map((m) => m.location || "").filter(Boolean))).sort(),
+    [inTab],
   );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return minerals.filter((m) => {
+    return inTab.filter((m) => {
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
       if (!q) return true;
@@ -65,11 +72,19 @@ function ListPage() {
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q));
     });
-  }, [minerals, search, filterName, filterLocation]);
+  }, [inTab, search, filterName, filterLocation]);
 
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold tracking-tight">Meine Sammlung</h1>
+
+      <Tabs value={tab} onValueChange={(v) => { setTab(v as Category); setFilterName(ALL); setFilterLocation(ALL); }}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="mineral">{CATEGORY_LABEL_PLURAL.mineral}</TabsTrigger>
+          <TabsTrigger value="fossil">{CATEGORY_LABEL_PLURAL.fossil}</TabsTrigger>
+          <TabsTrigger value="rock">{CATEGORY_LABEL_PLURAL.rock}</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div className="space-y-3 rounded-xl border bg-card p-3">
         <div className="relative">
@@ -84,10 +99,10 @@ function ListPage() {
         <div className="grid grid-cols-2 gap-2">
           <Select value={filterName} onValueChange={setFilterName}>
             <SelectTrigger className="h-12 text-base">
-              <SelectValue placeholder="Mineral" />
+              <SelectValue placeholder="Name" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>Alle Mineralien</SelectItem>
+              <SelectItem value={ALL}>Alle {CATEGORY_LABEL_PLURAL[tab]}</SelectItem>
               {names.map((n) => (
                 <SelectItem key={n} value={n}>{n}</SelectItem>
               ))}
@@ -110,7 +125,7 @@ function ListPage() {
       {isLoading ? (
         <p className="py-12 text-center text-muted-foreground">Lade…</p>
       ) : filtered.length === 0 ? (
-        <EmptyState hasAny={minerals.length > 0} />
+        <EmptyState hasAny={inTab.length > 0} category={tab} />
       ) : (
         <ul className="space-y-3">
           {filtered.map((m) => (
