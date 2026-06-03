@@ -18,6 +18,7 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { getMineral, deleteMineral, CATEGORY_LABEL } from "@/lib/minerals";
+import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos } from "@/lib/photos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { toast } from "sonner";
