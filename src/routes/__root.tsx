@@ -89,6 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Mineraliensammlung" },
       { name: "twitter:description", content: "Private Mineraliensammlung verwalten – mit Fotos, Suche und Etikettendruck." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1e69d501-8eab-4f75-b5aa-bc124b636b1d/id-preview-d2bbb05c--9b3c51b2-d76f-4e6a-825e-acd53a00c378.lovable.app-1780464807412.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1e69d501-8eab-4f75-b5aa-bc124b636b1d/id-preview-d2bbb05c--9b3c51b2-d76f-4e6a-825e-acd53a00c378.lovable.app-1780464807412.png" },
     ],
     links: [
       {
