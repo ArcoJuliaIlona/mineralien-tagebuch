@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      minerals: {
+        Row: {
+          collection_name: string | null
+          companion_minerals: string | null
+          created_at: string
+          id: string
+          location: string | null
+          mineral_name: string
+          photo_paths: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          collection_name?: string | null
+          companion_minerals?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          mineral_name: string
+          photo_paths?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          collection_name?: string | null
+          companion_minerals?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          mineral_name?: string
+          photo_paths?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
