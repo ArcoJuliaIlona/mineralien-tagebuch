@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import type { Mineral } from "./minerals";
 import { CATEGORY_LABEL } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
+import { formulaToUnicode } from "./format-formula";
 
 export async function generateLabelPdf(m: Mineral) {
   // A6 landscape ~ 148 x 105 mm — schöne Etikettengröße
@@ -56,7 +57,7 @@ export async function generateLabelPdf(m: Mineral) {
 
   const lines: Array<[string, string | null]> = [
     ["Begleitmineralien:", m.companion_minerals],
-    ["Formel:", m.chemical_formula],
+    ["Formel:", m.chemical_formula ? formulaToUnicode(m.chemical_formula) : null],
     ["Fundort:", m.location],
     ["Sammlung:", m.collection_name],
     [
