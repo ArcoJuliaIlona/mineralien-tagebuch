@@ -52,6 +52,9 @@ function EditPage() {
           location: m.location,
           collection_name: m.collection_name,
           photo_paths: m.photo_paths,
+          category: m.category,
+          latitude: m.latitude,
+          longitude: m.longitude,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
