@@ -34,7 +34,7 @@ export type Database = {
         Insert: {
           category?: string
           collection_name?: string | null
-          collection_number: number
+          collection_number?: number
           companion_minerals?: string | null
           created_at?: string
           id?: string
