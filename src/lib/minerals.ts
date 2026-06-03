@@ -27,6 +27,7 @@ export type Mineral = {
   longitude: number | null;
   collection_number: number;
   value: number | null;
+  chemical_formula: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -60,6 +61,7 @@ export type MineralInput = {
   latitude: number | null;
   longitude: number | null;
   value: number | null;
+  chemical_formula: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {
