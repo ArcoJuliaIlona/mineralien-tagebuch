@@ -2,7 +2,94 @@ import jsPDF from "jspdf";
 import type { Mineral } from "./minerals";
 import { CATEGORY_LABEL } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
-import { formulaToUnicode } from "./format-formula";
+
+type FToken = { type: "text" | "sub" | "sup"; value: string };
+
+function tokenizeFormula(input: string): FToken[] {
+  const tokens: FToken[] = [];
+  let buf = "";
+  const flush = () => {
+    if (buf) {
+      tokens.push({ type: "text", value: buf });
+      buf = "";
+    }
+  };
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i];
+    const prev = input[i - 1];
+    if (c === "*") {
+      flush();
+      tokens.push({ type: "text", value: " · " });
+      continue;
+    }
+    if (c === "^") {
+      flush();
+      let j = i + 1;
+      let sup = "";
+      while (j < input.length && /[0-9+\-]/.test(input[j])) {
+        sup += input[j];
+        j++;
+      }
+      if (sup) tokens.push({ type: "sup", value: sup });
+      i = j - 1;
+      continue;
+    }
+    if (/[0-9]/.test(c) && prev && /[A-Za-z\)\]]/.test(prev)) {
+      flush();
+      let j = i;
+      let sub = "";
+      while (j < input.length && /[0-9.]/.test(input[j])) {
+        sub += input[j];
+        j++;
+      }
+      tokens.push({ type: "sub", value: sub });
+      i = j - 1;
+      continue;
+    }
+    buf += c;
+  }
+  flush();
+  return tokens;
+}
+
+// Zeichnet eine chemische Formel mit echten tief-/hochgestellten Ziffern.
+// Bricht bei Bedarf an Token-Grenzen um. Gibt das Y nach der letzten Zeile zurück.
+function drawFormula(
+  doc: jsPDF,
+  formula: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  fontSize: number,
+): number {
+  const tokens = tokenizeFormula(formula);
+  const lineHeight = fontSize * 0.5; // grob mm bei pt -> mm
+  const subSize = fontSize * 0.7;
+  const subDy = fontSize * 0.18;
+  const supDy = -fontSize * 0.25;
+
+  let cursorX = x;
+  let cursorY = y;
+
+  doc.setFont("helvetica", "normal");
+
+  for (const t of tokens) {
+    const size = t.type === "text" ? fontSize : subSize;
+    doc.setFontSize(size);
+    const w = doc.getTextWidth(t.value);
+    if (cursorX + w > x + maxWidth && cursorX > x) {
+      cursorY += lineHeight;
+      cursorX = x;
+    }
+    const drawY =
+      t.type === "sub" ? cursorY + subDy : t.type === "sup" ? cursorY + supDy : cursorY;
+    doc.setFontSize(size);
+    doc.text(t.value, cursorX, drawY);
+    cursorX += w;
+  }
+  doc.setFontSize(fontSize);
+  return cursorY;
+}
 
 export async function generateLabelPdf(m: Mineral) {
   // A6 landscape ~ 148 x 105 mm — schöne Etikettengröße
@@ -57,7 +144,6 @@ export async function generateLabelPdf(m: Mineral) {
 
   const lines: Array<[string, string | null]> = [
     ["Begleitmineralien:", m.companion_minerals],
-    ["Formel:", m.chemical_formula ? formulaToUnicode(m.chemical_formula) : null],
     ["Fundort:", m.location],
     ["Sammlung:", m.collection_name],
     [
@@ -76,6 +162,15 @@ export async function generateLabelPdf(m: Mineral) {
     const wrapped = doc.splitTextToSize(val, W - textX - 8);
     doc.text(wrapped, textX, y + 4.5);
     y += 4.5 + wrapped.length * 4.5 + 2;
+  }
+
+  // Formel separat mit echten tiefgestellten Ziffern rendern
+  if (m.chemical_formula) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Formel:", textX, y);
+    const endY = drawFormula(doc, m.chemical_formula, textX, y + 4.5, W - textX - 8, 10);
+    y = endY + 6.5;
   }
 
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
