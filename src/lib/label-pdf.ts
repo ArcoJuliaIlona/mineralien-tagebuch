@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import type { Mineral } from "./minerals";
 import { CATEGORY_LABEL } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
@@ -172,6 +173,30 @@ export async function generateLabelPdf(m: Mineral) {
   doc.setFontSize(9);
   doc.setTextColor(120, 80, 50);
   doc.text("Sammlung Arco Böhme", 8, H - 7);
+
+  // QR-Code unten rechts
+  try {
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://mineralien-tagebuch.lovable.app";
+    const qr = await QRCode.toDataURL(`${origin}/fund/${m.id}`, {
+      errorCorrectionLevel: "M",
+      margin: 0,
+      width: 600,
+      color: { dark: "#000000", light: "#ffffff" },
+    });
+    const qrSize = 18;
+    const qrX = W - qrSize - 8;
+    const qrY = H - qrSize - 10;
+    doc.addImage(qr, "PNG", qrX, qrY, qrSize, qrSize, undefined, "NONE");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 80, 50);
+    doc.text("Scan für Details", qrX + qrSize / 2, H - 7, { align: "center" });
+  } catch {
+    /* QR optional */
+  }
 
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
