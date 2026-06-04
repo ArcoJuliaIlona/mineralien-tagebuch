@@ -118,11 +118,11 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
   // Deckblatt
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(60, 35, 20);
+  doc.setTextColor(12, 36, 64);
   doc.text("Sammlung Arco Böhme", W / 2, 40, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
-  doc.setTextColor(80, 60, 40);
+  doc.setTextColor(18, 52, 80);
   doc.text(
     `Vollständiger Export · ${new Date().toLocaleDateString("de-DE")}`,
     W / 2,
@@ -135,7 +135,7 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
   let y = 75;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.setTextColor(40, 30, 20);
+  doc.setTextColor(12, 36, 64);
   doc.text("Übersicht", margin, y);
   y += 6;
   doc.setFontSize(9);
@@ -144,7 +144,7 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
   doc.text("Kategorie", margin + 70, y);
   doc.text("Fundort", margin + 100, y);
   y += 2;
-  doc.setDrawColor(180, 150, 120);
+  doc.setDrawColor(160, 180, 200);
   doc.line(margin, y, W - margin, y);
   y += 4;
   doc.setFont("helvetica", "normal");
