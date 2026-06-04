@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, FileDown, Pencil, QrCode, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import { getMineral, deleteMineral, CATEGORY_LABEL } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos } from "@/lib/photos";
 import { generateLabelPdf } from "@/lib/label-pdf";
+import { generateSingleQrPdf } from "@/lib/qr-pdf";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/fund/$id")({
@@ -83,6 +84,17 @@ function DetailPage() {
     }
   };
 
+  const onQr = async () => {
+    try {
+      setBusy(true);
+      await generateSingleQrPdf(m);
+    } catch {
+      toast.error("QR-Code konnte nicht erstellt werden");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <Link
@@ -137,7 +149,7 @@ function DetailPage() {
         )}
       </dl>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Button
           size="lg"
           className="h-14 gap-2 text-base"
@@ -145,6 +157,15 @@ function DetailPage() {
           disabled={busy}
         >
           <FileDown className="size-5" /> Etikett (PDF)
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="h-14 gap-2 text-base"
+          onClick={onQr}
+          disabled={busy}
+        >
+          <QrCode className="size-5" /> QR-Code (5 mm)
         </Button>
         <Button asChild size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
           <Link to="/fund/$id/bearbeiten" params={{ id: m.id }}>
