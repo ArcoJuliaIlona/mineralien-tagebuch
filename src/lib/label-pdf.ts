@@ -171,7 +171,7 @@ export async function generateLabelPdf(m: Mineral) {
   // Sammlungsname unten links
   doc.setFont("helvetica", "italic");
   doc.setFontSize(9);
-  doc.setTextColor(120, 80, 50);
+  doc.setTextColor(26, 74, 110);
   doc.text("Sammlung Arco Böhme", 8, H - 7);
 
   // QR-Code unten rechts
@@ -192,7 +192,7 @@ export async function generateLabelPdf(m: Mineral) {
     doc.addImage(qr, "PNG", qrX, qrY, qrSize, qrSize, undefined, "NONE");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.setTextColor(120, 80, 50);
+    doc.setTextColor(26, 74, 110);
     doc.text("Scan für Details", qrX + qrSize / 2, H - 7, { align: "center" });
   } catch {
     /* QR optional */
