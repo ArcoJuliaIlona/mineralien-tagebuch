@@ -246,7 +246,7 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
     doc.setPage(p);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
-    doc.setTextColor(140, 110, 80);
+    doc.setTextColor(130, 150, 170);
     doc.text(`Seite ${p} / ${pageCount}`, W - margin, H - 6, { align: "right" });
     doc.text("Sammlung Arco Böhme", margin, H - 6);
   }
