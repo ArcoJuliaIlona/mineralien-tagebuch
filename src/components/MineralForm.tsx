@@ -96,10 +96,19 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+    const remaining = 4 - photos.length;
+    if (remaining <= 0) {
+      toast.error("Maximal 4 Fotos pro Eintrag.");
+      return;
+    }
+    const selected = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      toast.info(`Nur die ersten ${remaining} Foto(s) übernommen (Limit 4).`);
+    }
     setUploading(true);
     try {
       const paths: string[] = [];
-      for (const f of Array.from(files)) {
+      for (const f of selected) {
         const p = await uploadPhoto(userId, f);
         paths.push(p);
       }
@@ -283,6 +292,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Breitengrad"
+              value={latitude ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setLatitude(v === "" ? null : Number(v.replace(",", ".")));
+              }}
+              className="h-12 text-base"
+            />
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Längengrad"
+              value={longitude ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setLongitude(v === "" ? null : Number(v.replace(",", ".")));
+              }}
+              className="h-12 text-base"
+            />
+          </div>
           {latitude != null && longitude != null && (
             <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm">
               <span className="font-mono">
@@ -342,27 +377,30 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+          <label className={`flex h-14 items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition ${photos.length >= 4 ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent/40"}`}>
             <Camera className="size-5" /> Kamera
             <input
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
+              disabled={photos.length >= 4}
               onChange={(e) => handleFiles(e.target.files)}
             />
           </label>
-          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+          <label className={`flex h-14 items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition ${photos.length >= 4 ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent/40"}`}>
             <ImagePlus className="size-5" /> Galerie
             <input
               type="file"
               accept="image/*"
               multiple
               className="hidden"
+              disabled={photos.length >= 4}
               onChange={(e) => handleFiles(e.target.files)}
             />
           </label>
         </div>
+        <p className="text-xs text-muted-foreground">{photos.length} / 4 Fotos</p>
         {uploading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Foto wird hochgeladen…
