@@ -30,9 +30,8 @@ export type Mineral = {
   chemical_formula: string | null;
   created_at: string;
   updated_at: string;
+  video_paths: string[];
 };
-
-export type MineralWithVideos = Mineral & { video_paths: string[] };
 
 export async function listMinerals(): Promise<Mineral[]> {
   const { data, error } = await supabase
