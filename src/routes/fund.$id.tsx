@@ -20,6 +20,7 @@ import { PhotoThumb } from "@/components/PhotoThumb";
 import { getMineral, deleteMineral, CATEGORY_LABEL } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos } from "@/lib/photos";
+import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { generateSingleQrPdf } from "@/lib/qr-pdf";
 import { toast } from "sonner";
@@ -56,6 +57,12 @@ function DetailPage() {
     queryFn: () => getMineral(id),
   });
 
+  const { data: videoUrls } = useQuery({
+    queryKey: ["mineral-videos", id, m?.video_paths],
+    queryFn: () => getVideoUrls(m?.video_paths ?? []),
+    enabled: !!m && (m?.video_paths?.length ?? 0) > 0,
+  });
+
   if (isLoading) return <p className="py-12 text-center text-muted-foreground">Lade…</p>;
   if (!m) return <p className="py-12 text-center text-muted-foreground">Nicht gefunden.</p>;
 
@@ -64,6 +71,7 @@ function DetailPage() {
     try {
       await deleteMineral(m.id);
       await deletePhotos(m.photo_paths);
+      await deleteVideos(m.video_paths ?? []);
       qc.invalidateQueries({ queryKey: ["minerals"] });
       toast.success("Fund gelöscht");
       navigate({ to: "/" });
@@ -116,6 +124,22 @@ function DetailPage() {
           {m.photo_paths.map((p) => (
             <PhotoThumb key={p} path={p} className="aspect-square w-full" />
           ))}
+        </div>
+      )}
+
+      {m.video_paths && m.video_paths.length > 0 && (
+        <div className="space-y-2">
+          {(videoUrls ?? []).map((url, i) =>
+            url ? (
+              <video
+                key={m.video_paths[i]}
+                src={url}
+                controls
+                playsInline
+                className="w-full overflow-hidden rounded-xl border bg-card"
+              />
+            ) : null,
+          )}
         </div>
       )}
 
