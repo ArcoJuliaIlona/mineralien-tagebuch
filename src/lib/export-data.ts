@@ -171,12 +171,12 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
     let py = margin;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.setTextColor(60, 35, 20);
+    doc.setTextColor(12, 36, 64);
     doc.text(m.mineral_name, margin, py);
     py += 6;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(120, 80, 50);
+    doc.setTextColor(26, 74, 110);
     doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, margin, py);
     py += 7;
 
@@ -192,7 +192,7 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
       }
     }
 
-    doc.setTextColor(40, 30, 20);
+    doc.setTextColor(18, 40, 60);
     doc.setFontSize(10);
     const rows: Array<[string, string | null]> = [
       ["Begleitmineralien", m.companion_minerals],
