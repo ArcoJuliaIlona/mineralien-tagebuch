@@ -32,6 +32,8 @@ export type Mineral = {
   updated_at: string;
 };
 
+export type MineralWithVideos = Mineral & { video_paths: string[] };
+
 export async function listMinerals(): Promise<Mineral[]> {
   const { data, error } = await supabase
     .from("minerals")
@@ -62,6 +64,7 @@ export type MineralInput = {
   longitude: number | null;
   value: number | null;
   chemical_formula: string | null;
+  video_paths: string[];
 };
 
 export async function createMineral(userId: string, input: MineralInput) {
