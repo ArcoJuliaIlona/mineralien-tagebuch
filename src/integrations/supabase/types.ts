@@ -31,6 +31,7 @@ export type Database = {
           updated_at: string
           user_id: string
           value: number | null
+          video_paths: string[]
         }
         Insert: {
           category?: string
@@ -48,6 +49,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           value?: number | null
+          video_paths?: string[]
         }
         Update: {
           category?: string
@@ -65,6 +67,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           value?: number | null
+          video_paths?: string[]
         }
         Relationships: []
       }

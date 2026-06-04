@@ -30,6 +30,7 @@ export type Mineral = {
   chemical_formula: string | null;
   created_at: string;
   updated_at: string;
+  video_paths: string[];
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -62,6 +63,7 @@ export type MineralInput = {
   longitude: number | null;
   value: number | null;
   chemical_formula: string | null;
+  video_paths: string[];
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

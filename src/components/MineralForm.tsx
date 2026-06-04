@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, Video as VideoIcon, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
 import { uploadPhoto, deletePhotos } from "@/lib/photos";
+import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
 import { CATEGORY_LABEL } from "@/lib/minerals";
@@ -40,11 +42,36 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const fetchFormulaFn = useServerFn(fetchChemicalFormula);
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
+  const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
+  const [removedVideos, setRemovedVideos] = useState<string[]>([]);
+  const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
   const [longitude, setLongitude] = useState<number | null>(initial?.longitude ?? null);
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const missing = videos.filter((p) => !videoUrls[p]);
+      if (missing.length === 0) return;
+      const entries = await Promise.all(
+        missing.map(async (p) => [p, await getVideoUrl(p)] as const),
+      );
+      if (!cancelled) {
+        setVideoUrls((prev) => {
+          const next = { ...prev };
+          for (const [p, u] of entries) next[p] = u;
+          return next;
+        });
+      }
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [videos, videoUrls]);
 
   const autoFetchFormula = async () => {
     if (!name.trim()) {
@@ -87,6 +114,28 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const removePhoto = (path: string) => {
     setPhotos((prev) => prev.filter((p) => p !== path));
     setRemoved((prev) => [...prev, path]);
+  };
+
+  const handleVideoFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingVideo(true);
+    try {
+      const paths: string[] = [];
+      for (const f of Array.from(files)) {
+        const p = await uploadVideo(userId, f);
+        paths.push(p);
+      }
+      setVideos((prev) => [...prev, ...paths]);
+    } catch (e: unknown) {
+      toast.error("Video-Upload fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
+  const removeVideo = (path: string) => {
+    setVideos((prev) => prev.filter((p) => p !== path));
+    setRemovedVideos((prev) => [...prev, path]);
   };
 
   const captureGps = () => {
@@ -139,10 +188,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           longitude,
           value: parsedValue,
           chemical_formula: formula.trim() || null,
+          video_paths: videos,
         },
         removed,
       );
       if (removed.length > 0) await deletePhotos(removed);
+      if (removedVideos.length > 0) await deleteVideos(removedVideos);
     } catch (e: unknown) {
       toast.error("Speichern fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
     } finally {
@@ -319,11 +370,65 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         )}
       </div>
 
+      <div className="space-y-3">
+        <Label className="text-base">Videos</Label>
+        {videos.length > 0 && (
+          <div className="space-y-2">
+            {videos.map((p) => (
+              <div key={p} className="relative overflow-hidden rounded-lg border bg-card">
+                {videoUrls[p] ? (
+                  <video src={videoUrls[p]} controls playsInline className="w-full" />
+                ) : (
+                  <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 size-4 animate-spin" /> Lade Video…
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeVideo(p)}
+                  aria-label="Video entfernen"
+                  className="absolute right-2 top-2 rounded-full bg-destructive p-1.5 text-destructive-foreground shadow"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+            <Camera className="size-5" /> Aufnehmen
+            <input
+              type="file"
+              accept="video/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => handleVideoFiles(e.target.files)}
+            />
+          </label>
+          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+            <VideoIcon className="size-5" /> Galerie
+            <input
+              type="file"
+              accept="video/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleVideoFiles(e.target.files)}
+            />
+          </label>
+        </div>
+        {uploadingVideo && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Video wird hochgeladen…
+          </p>
+        )}
+      </div>
+
       <Button
         size="lg"
         className="h-14 w-full text-lg"
         onClick={submit}
-        disabled={saving || uploading}
+        disabled={saving || uploading || uploadingVideo}
       >
         {saving ? "Speichere…" : submitLabel}
       </Button>
