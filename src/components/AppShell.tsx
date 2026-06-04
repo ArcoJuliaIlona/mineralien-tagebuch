@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Gem, LogOut, Plus } from "lucide-react";
+import { Download, Gem, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="text-xl font-bold tracking-tight">Mineralien</span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link to="/export" aria-label="Daten-Export">
+              <Button size="icon" variant="ghost" className="h-12 w-12">
+                <Download className="size-5" />
+              </Button>
+            </Link>
             <Link to="/neu">
               <Button size="lg" className="h-12 gap-2 text-base">
                 <Plus className="size-5" /> Neu

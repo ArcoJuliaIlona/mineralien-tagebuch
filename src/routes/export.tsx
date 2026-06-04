@@ -1,0 +1,106 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Database, FileDown } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AppShell } from "@/components/AppShell";
+import { AuthGate } from "@/components/AuthGate";
+import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/export")({
+  head: () => ({ meta: [{ title: "Daten-Export" }] }),
+  component: () => (
+    <AuthGate>
+      <AppShell>
+        <ExportPage />
+      </AppShell>
+    </AuthGate>
+  ),
+});
+
+function ExportPage() {
+  const [busyJson, setBusyJson] = useState(false);
+  const [busyPdf, setBusyPdf] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  const onJson = async () => {
+    setBusyJson(true);
+    try {
+      const n = await exportJsonBackup();
+      toast.success(`Backup mit ${n} Einträgen gespeichert`);
+    } catch {
+      toast.error("Backup fehlgeschlagen");
+    } finally {
+      setBusyJson(false);
+    }
+  };
+
+  const onPdf = async () => {
+    setBusyPdf(true);
+    setProgress({ done: 0, total: 0 });
+    try {
+      const n = await exportAllPdf((done, total) => setProgress({ done, total }));
+      toast.success(`PDF mit ${n} Einträgen erstellt`);
+    } catch {
+      toast.error("PDF-Export fehlgeschlagen");
+    } finally {
+      setBusyPdf(false);
+      setProgress(null);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" /> Zur Liste
+      </Link>
+
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Daten-Export</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sichere deine Sammlung als Backup-Datei oder als gedrucktes PDF.
+        </p>
+      </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="flex items-start gap-3">
+          <Database className="mt-1 size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Backup (JSON)</h2>
+            <p className="text-sm text-muted-foreground">
+              Vollständige Daten als JSON-Datei zur sicheren Aufbewahrung. Fotos sind als
+              Referenzen enthalten.
+            </p>
+          </div>
+        </div>
+        <Button onClick={onJson} disabled={busyJson} size="lg" className="h-14 w-full gap-2 text-base">
+          <FileDown className="size-5" />
+          {busyJson ? "Erstelle Backup…" : "Backup herunterladen"}
+        </Button>
+      </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="flex items-start gap-3">
+          <FileDown className="mt-1 size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Gesamt-PDF</h2>
+            <p className="text-sm text-muted-foreground">
+              Alle Einträge mit Foto und Details in einem PDF-Dokument, inklusive Übersicht.
+            </p>
+          </div>
+        </div>
+        <Button onClick={onPdf} disabled={busyPdf} size="lg" className="h-14 w-full gap-2 text-base">
+          <FileDown className="size-5" />
+          {busyPdf
+            ? progress && progress.total
+              ? `Erstelle PDF… (${progress.done}/${progress.total})`
+              : "Erstelle PDF…"
+            : "PDF herunterladen"}
+        </Button>
+      </div>
+    </div>
+  );
+}
