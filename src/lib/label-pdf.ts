@@ -123,19 +123,19 @@ export async function generateLabelPdf(m: Mineral) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(60, 35, 20);
+  doc.setTextColor(12, 36, 64);
   doc.text(m.mineral_name, textX, y);
   y += 6;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(120, 80, 50);
+  doc.setTextColor(26, 74, 110);
   doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, textX, y);
   y += 7;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(40, 30, 20);
+  doc.setTextColor(18, 40, 60);
 
   const lines: Array<[string, string | null]> = [
     ["Begleitmineralien:", m.companion_minerals],
