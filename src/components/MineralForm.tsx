@@ -292,6 +292,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Breitengrad"
+              value={latitude ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setLatitude(v === "" ? null : Number(v.replace(",", ".")));
+              }}
+              className="h-12 text-base"
+            />
+            <Input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Längengrad"
+              value={longitude ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setLongitude(v === "" ? null : Number(v.replace(",", ".")));
+              }}
+              className="h-12 text-base"
+            />
+          </div>
           {latitude != null && longitude != null && (
             <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm">
               <span className="font-mono">
