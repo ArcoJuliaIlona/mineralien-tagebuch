@@ -4,8 +4,8 @@
   "description": "Private Mineraliensammlung verwalten – mit Fotos, Suche und Etikettendruck.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf8f5",
-  "theme_color": "#7a4a2a",
+  "background_color": "#e8f0f8",
+  "theme_color": "#1a4a6e",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -99,7 +99,7 @@ export async function generateLabelPdf(m: Mineral) {
   const H = doc.internal.pageSize.getHeight();
 
   // Rahmen
-  doc.setDrawColor(120, 80, 50);
+  doc.setDrawColor(26, 74, 110);
   doc.setLineWidth(0.6);
   doc.rect(4, 4, W - 8, H - 8);
 
@@ -112,7 +112,7 @@ export async function generateLabelPdf(m: Mineral) {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
       doc.addImage(dataUrl, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
     } catch {
-      doc.setFillColor(240, 235, 225);
+      doc.setFillColor(232, 240, 248);
       doc.rect(photoX, photoY, photoSize, photoSize, "F");
     }
   }
@@ -123,19 +123,19 @@ export async function generateLabelPdf(m: Mineral) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(60, 35, 20);
+  doc.setTextColor(12, 36, 64);
   doc.text(m.mineral_name, textX, y);
   y += 6;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(120, 80, 50);
+  doc.setTextColor(26, 74, 110);
   doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, textX, y);
   y += 7;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.setTextColor(40, 30, 20);
+  doc.setTextColor(18, 40, 60);
 
   const lines: Array<[string, string | null]> = [
     ["Begleitmineralien:", m.companion_minerals],
@@ -171,7 +171,7 @@ export async function generateLabelPdf(m: Mineral) {
   // Sammlungsname unten links
   doc.setFont("helvetica", "italic");
   doc.setFontSize(9);
-  doc.setTextColor(120, 80, 50);
+  doc.setTextColor(26, 74, 110);
   doc.text("Sammlung Arco Böhme", 8, H - 7);
 
   // QR-Code unten rechts
@@ -192,7 +192,7 @@ export async function generateLabelPdf(m: Mineral) {
     doc.addImage(qr, "PNG", qrX, qrY, qrSize, qrSize, undefined, "NONE");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.setTextColor(120, 80, 50);
+    doc.setTextColor(26, 74, 110);
     doc.text("Scan für Details", qrX + qrSize / 2, H - 7, { align: "center" });
   } catch {
     /* QR optional */
