@@ -370,11 +370,65 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         )}
       </div>
 
+      <div className="space-y-3">
+        <Label className="text-base">Videos</Label>
+        {videos.length > 0 && (
+          <div className="space-y-2">
+            {videos.map((p) => (
+              <div key={p} className="relative overflow-hidden rounded-lg border bg-card">
+                {videoUrls[p] ? (
+                  <video src={videoUrls[p]} controls playsInline className="w-full" />
+                ) : (
+                  <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 size-4 animate-spin" /> Lade Video…
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeVideo(p)}
+                  aria-label="Video entfernen"
+                  className="absolute right-2 top-2 rounded-full bg-destructive p-1.5 text-destructive-foreground shadow"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+            <Camera className="size-5" /> Aufnehmen
+            <input
+              type="file"
+              accept="video/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => handleVideoFiles(e.target.files)}
+            />
+          </label>
+          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+            <VideoIcon className="size-5" /> Galerie
+            <input
+              type="file"
+              accept="video/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleVideoFiles(e.target.files)}
+            />
+          </label>
+        </div>
+        {uploadingVideo && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Video wird hochgeladen…
+          </p>
+        )}
+      </div>
+
       <Button
         size="lg"
         className="h-14 w-full text-lg"
         onClick={submit}
-        disabled={saving || uploading}
+        disabled={saving || uploading || uploadingVideo}
       >
         {saving ? "Speichere…" : submitLabel}
       </Button>
