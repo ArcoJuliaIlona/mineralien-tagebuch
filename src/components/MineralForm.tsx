@@ -377,27 +377,30 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+          <label className={`flex h-14 items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition ${photos.length >= 4 ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent/40"}`}>
             <Camera className="size-5" /> Kamera
             <input
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
+              disabled={photos.length >= 4}
               onChange={(e) => handleFiles(e.target.files)}
             />
           </label>
-          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+          <label className={`flex h-14 items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition ${photos.length >= 4 ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent/40"}`}>
             <ImagePlus className="size-5" /> Galerie
             <input
               type="file"
               accept="image/*"
               multiple
               className="hidden"
+              disabled={photos.length >= 4}
               onChange={(e) => handleFiles(e.target.files)}
             />
           </label>
         </div>
+        <p className="text-xs text-muted-foreground">{photos.length} / 4 Fotos</p>
         {uploading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Foto wird hochgeladen…
