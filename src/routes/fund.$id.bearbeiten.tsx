@@ -57,6 +57,7 @@ function EditPage() {
           longitude: m.longitude,
           value: m.value,
           chemical_formula: m.chemical_formula,
+          video_paths: m.video_paths,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
