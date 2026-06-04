@@ -99,7 +99,7 @@ export async function generateLabelPdf(m: Mineral) {
   const H = doc.internal.pageSize.getHeight();
 
   // Rahmen
-  doc.setDrawColor(120, 80, 50);
+  doc.setDrawColor(26, 74, 110);
   doc.setLineWidth(0.6);
   doc.rect(4, 4, W - 8, H - 8);
 
@@ -112,7 +112,7 @@ export async function generateLabelPdf(m: Mineral) {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
       doc.addImage(dataUrl, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
     } catch {
-      doc.setFillColor(240, 235, 225);
+      doc.setFillColor(232, 240, 248);
       doc.rect(photoX, photoY, photoSize, photoSize, "F");
     }
   }
