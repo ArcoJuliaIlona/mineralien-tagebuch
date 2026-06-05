@@ -57,6 +57,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
   const [longitude, setLongitude] = useState<number | null>(initial?.longitude ?? null);
+  const [coordsInput, setCoordsInput] = useState(() => {
+    if (initial?.latitude != null && initial?.longitude != null) {
+      return `${initial.latitude.toFixed(5)}, ${initial.longitude.toFixed(5)}`;
+    }
+    return "";
+  });
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
