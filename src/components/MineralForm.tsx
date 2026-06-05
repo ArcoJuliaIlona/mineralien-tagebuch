@@ -171,8 +171,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLatitude(pos.coords.latitude);
-        setLongitude(pos.coords.longitude);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setLatitude(lat);
+        setLongitude(lng);
+        setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         setLocating(false);
         toast.success("Koordinaten übernommen");
       },
@@ -187,6 +190,34 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const clearGps = () => {
     setLatitude(null);
     setLongitude(null);
+    setCoordsInput("");
+  };
+
+  const applyCoordsInput = () => {
+    const raw = coordsInput.trim();
+    if (!raw) {
+      setLatitude(null);
+      setLongitude(null);
+      return;
+    }
+    // Support formats: "49.2345, 8.1234", "49.2345 8.1234", "49.2345° N, 8.1234° E"
+    const cleaned = raw
+      .replace(/[°\s]+/g, " ")
+      .replace(/[NSWE]/gi, "")
+      .trim();
+    const parts = cleaned.split(/[,\s]+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const lat = Number(parts[0].replace(",", "."));
+      const lng = Number(parts[1].replace(",", "."));
+      if (isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        setLatitude(lat);
+        setLongitude(lng);
+        setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        toast.success("Koordinaten übernommen");
+        return;
+      }
+    }
+    toast.error("Koordinaten nicht erkannt. Format: 49.2345, 8.1234");
   };
 
   const submit = async () => {
