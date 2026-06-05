@@ -130,7 +130,11 @@ export async function generateLabelPdf(m: Mineral) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(26, 74, 110);
-  doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, textX, y);
+  doc.text(
+    `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}`,
+    textX,
+    y,
+  );
   y += 7;
 
   doc.setFont("helvetica", "normal");
