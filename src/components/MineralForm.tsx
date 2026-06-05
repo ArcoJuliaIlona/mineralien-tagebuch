@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, Video as VideoIcon, X } from "lucide-react";
+import {
+  Camera,
+  ImagePlus,
+  Loader2,
+  MapPin,
+  Sparkles,
+  Trash2,
+  Video as VideoIcon,
+  X,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { FormulaText } from "@/lib/format-formula";
@@ -48,6 +57,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
   const [latitude, setLatitude] = useState<number | null>(initial?.latitude ?? null);
   const [longitude, setLongitude] = useState<number | null>(initial?.longitude ?? null);
+  const [coordsInput, setCoordsInput] = useState(() => {
+    if (initial?.latitude != null && initial?.longitude != null) {
+      return `${initial.latitude.toFixed(5)}, ${initial.longitude.toFixed(5)}`;
+    }
+    return "";
+  });
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -156,8 +171,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLatitude(pos.coords.latitude);
-        setLongitude(pos.coords.longitude);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setLatitude(lat);
+        setLongitude(lng);
+        setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         setLocating(false);
         toast.success("Koordinaten übernommen");
       },
@@ -172,6 +190,34 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const clearGps = () => {
     setLatitude(null);
     setLongitude(null);
+    setCoordsInput("");
+  };
+
+  const applyCoordsInput = () => {
+    const raw = coordsInput.trim();
+    if (!raw) {
+      setLatitude(null);
+      setLongitude(null);
+      return;
+    }
+    // Support formats: "49.2345, 8.1234", "49.2345 8.1234", "49.2345° N, 8.1234° E"
+    const cleaned = raw
+      .replace(/[°\s]+/g, " ")
+      .replace(/[NSWE]/gi, "")
+      .trim();
+    const parts = cleaned.split(/[,\s]+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const lat = Number(parts[0].replace(",", "."));
+      const lng = Number(parts[1].replace(",", "."));
+      if (isFinite(lat) && isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        setLatitude(lat);
+        setLongitude(lng);
+        setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        toast.success("Koordinaten übernommen");
+        return;
+      }
+    }
+    toast.error("Koordinaten nicht erkannt. Format: 49.2345, 8.1234");
   };
 
   const submit = async () => {
@@ -305,6 +351,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
+          <div className="flex gap-2">
+            <Input
+              value={coordsInput}
+              onChange={(e) => setCoordsInput(e.target.value)}
+              onBlur={applyCoordsInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyCoordsInput();
+                }
+              }}
+              placeholder="z. B. 49.2345, 8.1234"
+              className="h-12 flex-1 text-base"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 px-4 text-base"
+              onClick={applyCoordsInput}
+            >
+              Übernehmen
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Format: Breite, Länge (z. B. 49.2345, 8.1234). Einfach aus Google Maps kopieren und einfügen.
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="number"
@@ -314,9 +386,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               value={latitude ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
-                setLatitude(v === "" ? null : Number(v.replace(",", ".")));
+                const num = v === "" ? null : Number(v.replace(",", "."));
+                setLatitude(num);
+                if (num != null && longitude != null) {
+                  setCoordsInput(`${num.toFixed(5)}, ${longitude.toFixed(5)}`);
+                } else {
+                  setCoordsInput("");
+                }
               }}
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
             <Input
               type="number"
@@ -326,9 +404,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               value={longitude ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
-                setLongitude(v === "" ? null : Number(v.replace(",", ".")));
+                const num = v === "" ? null : Number(v.replace(",", "."));
+                setLongitude(num);
+                if (latitude != null && num != null) {
+                  setCoordsInput(`${latitude.toFixed(5)}, ${num.toFixed(5)}`);
+                } else {
+                  setCoordsInput("");
+                }
               }}
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
           </div>
           {latitude != null && longitude != null && (
