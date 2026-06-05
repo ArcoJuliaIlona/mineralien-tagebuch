@@ -351,6 +351,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
+          <div className="flex gap-2">
+            <Input
+              value={coordsInput}
+              onChange={(e) => setCoordsInput(e.target.value)}
+              onBlur={applyCoordsInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyCoordsInput();
+                }
+              }}
+              placeholder="z. B. 49.2345, 8.1234"
+              className="h-12 flex-1 text-base"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 px-4 text-base"
+              onClick={applyCoordsInput}
+            >
+              Übernehmen
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Format: Breite, Länge (z. B. 49.2345, 8.1234). Einfach aus Google Maps kopieren und einfügen.
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="number"
@@ -360,9 +386,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               value={latitude ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
-                setLatitude(v === "" ? null : Number(v.replace(",", ".")));
+                const num = v === "" ? null : Number(v.replace(",", "."));
+                setLatitude(num);
+                if (num != null && longitude != null) {
+                  setCoordsInput(`${num.toFixed(5)}, ${longitude.toFixed(5)}`);
+                } else {
+                  setCoordsInput("");
+                }
               }}
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
             <Input
               type="number"
@@ -372,9 +404,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               value={longitude ?? ""}
               onChange={(e) => {
                 const v = e.target.value;
-                setLongitude(v === "" ? null : Number(v.replace(",", ".")));
+                const num = v === "" ? null : Number(v.replace(",", "."));
+                setLongitude(num);
+                if (latitude != null && num != null) {
+                  setCoordsInput(`${latitude.toFixed(5)}, ${num.toFixed(5)}`);
+                } else {
+                  setCoordsInput("");
+                }
               }}
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
           </div>
           {latitude != null && longitude != null && (
