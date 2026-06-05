@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, Video as VideoIcon, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
+import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
