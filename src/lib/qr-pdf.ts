@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import type { Mineral } from "./minerals";
-import { listMinerals } from "./minerals";
+import { listMinerals, formatCollectionNumber } from "./minerals";
 
 function fundUrl(id: string) {
   const origin =

@@ -1,5 +1,5 @@
 import type { Mineral } from "./minerals";
-import { CATEGORY_LABEL } from "./minerals";
+import { CATEGORY_LABEL, formatCollectionNumber } from "./minerals";
 import { listMinerals } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 import jsPDF from "jspdf";

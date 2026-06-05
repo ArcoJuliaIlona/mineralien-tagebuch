@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import type { Mineral } from "./minerals";
-import { CATEGORY_LABEL } from "./minerals";
+import { CATEGORY_LABEL, formatCollectionNumber } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 
 type FToken = { type: "text" | "sub" | "sup"; value: string };
