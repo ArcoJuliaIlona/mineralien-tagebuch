@@ -17,6 +17,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
+import { LocationMap } from "@/components/LocationMap";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos } from "@/lib/photos";
@@ -159,16 +160,12 @@ function DetailPage() {
         {m.latitude != null && m.longitude != null && (
           <div>
             <dt className="text-sm font-medium text-muted-foreground">GPS-Koordinaten</dt>
-            <dd className="text-lg">
-              <a
-                href={`https://www.google.com/maps?q=${m.latitude},${m.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-primary underline-offset-2 hover:underline"
-              >
-                {m.latitude.toFixed(5)}, {m.longitude.toFixed(5)}
-              </a>
+            <dd className="text-lg font-mono">
+              {m.latitude.toFixed(5)}, {m.longitude.toFixed(5)}
             </dd>
+            <div className="mt-3">
+              <LocationMap latitude={m.latitude} longitude={m.longitude} />
+            </div>
           </div>
         )}
       </dl>
