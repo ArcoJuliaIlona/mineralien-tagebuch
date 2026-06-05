@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Camera, ImagePlus, Loader2, MapPin, Sparkles, Trash2, Video as VideoIcon, X } from "lucide-react";
+import {
+  Camera,
+  ImagePlus,
+  Loader2,
+  MapPin,
+  Sparkles,
+  Trash2,
+  Video as VideoIcon,
+  X,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { FormulaText } from "@/lib/format-formula";
