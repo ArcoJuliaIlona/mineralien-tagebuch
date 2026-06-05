@@ -157,7 +157,7 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
       doc.addPage();
       y = margin;
     }
-    doc.text(String(m.collection_number), margin, y);
+    doc.text(formatCollectionNumber(m.collection_number, m.category), margin, y);
     doc.text(doc.splitTextToSize(m.mineral_name, 52)[0] ?? "", margin + 14, y);
     doc.text(CATEGORY_LABEL[m.category], margin + 70, y);
     doc.text(doc.splitTextToSize(m.location ?? "—", 80)[0] ?? "", margin + 100, y);
@@ -177,7 +177,11 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 74, 110);
-    doc.text(`${CATEGORY_LABEL[m.category]} · Nr. ${m.collection_number}`, margin, py);
+    doc.text(
+      `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}`,
+      margin,
+      py,
+    );
     py += 7;
 
     // Foto
