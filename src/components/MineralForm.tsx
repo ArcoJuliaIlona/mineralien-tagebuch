@@ -377,44 +377,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           <p className="text-xs text-muted-foreground">
             Format: Breite, Länge (z. B. 49.2345, 8.1234). Einfach aus Google Maps kopieren und einfügen.
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              placeholder="Breitengrad"
-              value={latitude ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                const num = v === "" ? null : Number(v.replace(",", "."));
-                setLatitude(num);
-                if (num != null && longitude != null) {
-                  setCoordsInput(`${num.toFixed(5)}, ${longitude.toFixed(5)}`);
-                } else {
-                  setCoordsInput("");
-                }
-              }}
-              className="h-10 text-sm"
-            />
-            <Input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              placeholder="Längengrad"
-              value={longitude ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                const num = v === "" ? null : Number(v.replace(",", "."));
-                setLongitude(num);
-                if (latitude != null && num != null) {
-                  setCoordsInput(`${latitude.toFixed(5)}, ${num.toFixed(5)}`);
-                } else {
-                  setCoordsInput("");
-                }
-              }}
-              className="h-10 text-sm"
-            />
-          </div>
           {latitude != null && longitude != null && (
             <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm">
               <span className="font-mono">
