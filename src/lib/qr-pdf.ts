@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import type { Mineral } from "./minerals";
-import { listMinerals } from "./minerals";
+import { listMinerals, formatCollectionNumber } from "./minerals";
 
 function fundUrl(id: string) {
   const origin =
@@ -33,9 +33,9 @@ export async function generateSingleQrPdf(m: Mineral) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
   doc.setTextColor(12, 36, 64);
-  doc.text(`Nr. ${m.collection_number}`, W / 2, y + size + 3, { align: "center" });
+  doc.text(`Nr. ${formatCollectionNumber(m.collection_number, m.category)}`, W / 2, y + size + 3, { align: "center" });
   doc.text(m.mineral_name.slice(0, 22), W / 2, y + size + 6, { align: "center" });
-  doc.save(`QR-${m.collection_number}-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
+  doc.save(`QR-${formatCollectionNumber(m.collection_number, m.category)}-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
 
 // Bogen mit allen QR-Codes (5×5 mm) auf A4, je mit Sammlungsnummer.
@@ -82,7 +82,7 @@ export async function generateAllQrSheetPdf() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5);
     doc.setTextColor(18, 40, 60);
-    doc.text(`Nr. ${m.collection_number}`, x + cellW / 2, y + qrSize + 1.8, { align: "center" });
+    doc.text(`Nr. ${formatCollectionNumber(m.collection_number, m.category)}`, x + cellW / 2, y + qrSize + 1.8, { align: "center" });
     doc.text(m.mineral_name.slice(0, 14), x + cellW / 2, y + qrSize + 3.4, { align: "center" });
   }
 

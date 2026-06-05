@@ -14,6 +14,19 @@ export const CATEGORY_LABEL_PLURAL: Record<Category, string> = {
   rock: "Gesteine",
 };
 
+export const CATEGORY_SUFFIX: Record<Category, string> = {
+  mineral: "M",
+  fossil: "F",
+  rock: "G",
+};
+
+export function formatCollectionNumber(
+  n: number | null | undefined,
+  category: Category,
+): string {
+  return `${n ?? 0}${CATEGORY_SUFFIX[category]}`;
+}
+
 export type Mineral = {
   id: string;
   user_id: string;

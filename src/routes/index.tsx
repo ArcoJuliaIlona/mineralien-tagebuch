@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
-import { listMinerals, CATEGORY_LABEL_PLURAL, type Category } from "@/lib/minerals";
+import { listMinerals, CATEGORY_LABEL_PLURAL, formatCollectionNumber, type Category } from "@/lib/minerals";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -160,7 +160,7 @@ function ListPage() {
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate text-lg font-semibold">
                       <span className="mr-2 font-mono text-sm text-muted-foreground">
-                        #{m.collection_number}
+                        #{formatCollectionNumber(m.collection_number, m.category)}
                       </span>
                       {m.mineral_name}
                     </p>

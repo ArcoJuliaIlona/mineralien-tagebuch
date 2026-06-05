@@ -17,7 +17,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
-import { getMineral, deleteMineral, CATEGORY_LABEL } from "@/lib/minerals";
+import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
@@ -114,7 +114,7 @@ function DetailPage() {
 
       <div className="space-y-1">
         <p className="text-sm font-medium uppercase tracking-wider text-primary">
-          {CATEGORY_LABEL[m.category]} · Nr. {m.collection_number}
+          {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
         </p>
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
