@@ -249,6 +249,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
             placeholder="z. B. SiO₂"
             className="h-12 text-base"
           />
+          {formula.trim() && (
+            <div className="rounded-md border bg-muted/40 px-3 py-2 text-base">
+              <span className="mr-2 text-xs uppercase tracking-wide text-muted-foreground">
+                Vorschau:
+              </span>
+              <FormulaText value={formula} />
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Tipp: Zahlen werden automatisch tiefgestellt (H2O → H₂O). Für Ladungen{" "}
+            <code>^</code> nutzen (Ca^2+), für Hydrate <code>*</code> (CuSO4*5H2O).
+          </p>
           <Button
             type="button"
             variant="secondary"
