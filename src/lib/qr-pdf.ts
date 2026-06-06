@@ -10,7 +10,7 @@ function fundUrl(id: string) {
 }
 
 async function qrDataUrl(text: string): Promise<string> {
-  // hohe Auflösung, damit das 5×5 mm Druckbild scharf bleibt
+  // hohe Auflösung, damit das 12×12 mm Druckbild scharf bleibt
   return await QRCode.toDataURL(text, {
     errorCorrectionLevel: "M",
     margin: 0,
