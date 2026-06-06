@@ -12,9 +12,9 @@ function fundUrl(id: string) {
 async function qrDataUrl(text: string): Promise<string> {
   // hohe Auflösung, damit das 5×5 mm Druckbild scharf bleibt
   return await QRCode.toDataURL(text, {
-    errorCorrectionLevel: "L",
+    errorCorrectionLevel: "M",
     margin: 0,
-    width: 600,
+    width: 1200,
     color: { dark: "#000000", light: "#ffffff" },
   });
 }
@@ -26,9 +26,9 @@ export async function generateSingleQrPdf(m: Mineral) {
   // A8 = 52 × 74 mm — klein und passt in jeden Drucker
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [30, 30] });
   const W = doc.internal.pageSize.getWidth();
-  const size = 5; // mm
+  const size = 18; // mm — vorher 5 mm war für Scanner zu fein
   const x = (W - size) / 2;
-  const y = 5;
+  const y = 4;
   doc.addImage(data, "PNG", x, y, size, size, undefined, "NONE");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
@@ -45,9 +45,9 @@ export async function generateAllQrSheetPdf() {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  const qrSize = 5; // mm — wie gewünscht
+  const qrSize = 15; // mm — gut scanbar
   const labelH = 3; // mm Beschriftung darunter
-  const cellW = 18; // Spaltenabstand
+  const cellW = qrSize + 4; // Spaltenabstand
   const cellH = qrSize + labelH + 4;
   const marginX = 10;
   const marginY = 12;
