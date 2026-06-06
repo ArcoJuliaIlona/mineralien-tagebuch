@@ -38,7 +38,7 @@ export async function generateSingleQrPdf(m: Mineral) {
   doc.save(`QR-${formatCollectionNumber(m.collection_number, m.category)}-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
 
-// Bogen mit allen QR-Codes (5×5 mm) auf A4, je mit Sammlungsnummer.
+// Bogen mit allen QR-Codes (12×12 mm) auf A4, je mit Sammlungsnummer.
 export async function generateAllQrSheetPdf() {
   const minerals = await listMinerals();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
