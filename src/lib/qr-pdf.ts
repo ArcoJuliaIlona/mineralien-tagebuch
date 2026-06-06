@@ -45,7 +45,7 @@ export async function generateAllQrSheetPdf() {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  const qrSize = 15; // mm — gut scanbar
+  const qrSize = 12; // mm — Testgröße 12×12
   const labelH = 3; // mm Beschriftung darunter
   const cellW = qrSize + 4; // Spaltenabstand
   const cellH = qrSize + labelH + 4;
