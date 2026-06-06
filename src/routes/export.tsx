@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Database, FileDown, QrCode } from "lucide-react";
+import { ArrowLeft, Database, FileDown, Hash, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
+import { generateNumberSheetPdf } from "@/lib/number-pdf";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/export")({
@@ -23,6 +24,7 @@ function ExportPage() {
   const [busyJson, setBusyJson] = useState(false);
   const [busyPdf, setBusyPdf] = useState(false);
   const [busyQr, setBusyQr] = useState(false);
+  const [busyNum, setBusyNum] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const onJson = async () => {
@@ -46,6 +48,18 @@ function ExportPage() {
       toast.error("QR-Bogen fehlgeschlagen");
     } finally {
       setBusyQr(false);
+    }
+  };
+
+  const onNumberSheet = async () => {
+    setBusyNum(true);
+    try {
+      const n = await generateNumberSheetPdf();
+      toast.success(`Nummern-Bogen für ${n} Funde erstellt`);
+    } catch {
+      toast.error("Nummern-Bogen fehlgeschlagen");
+    } finally {
+      setBusyNum(false);
     }
   };
 
@@ -129,6 +143,24 @@ function ExportPage() {
         <Button onClick={onQrSheet} disabled={busyQr} size="lg" className="h-14 w-full gap-2 text-base">
           <QrCode className="size-5" />
           {busyQr ? "Erstelle Bogen…" : "QR-Bogen herunterladen"}
+        </Button>
+      </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="flex items-start gap-3">
+          <Hash className="mt-1 size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Nummern-Bogen</h2>
+            <p className="text-sm text-muted-foreground">
+              Sehr kompakter A4-Bogen (~8 × 5 mm) mit nur der Sammlungsnummer — jede Nummer 3× zum
+              Ausschneiden. Klassische Museumsmethode: kleiner Lackpunkt auf den Stein, Etikett
+              draufkleben, mit Klarlack versiegeln.
+            </p>
+          </div>
+        </div>
+        <Button onClick={onNumberSheet} disabled={busyNum} size="lg" className="h-14 w-full gap-2 text-base">
+          <Hash className="size-5" />
+          {busyNum ? "Erstelle Bogen…" : "Nummern-Bogen herunterladen"}
         </Button>
       </div>
     </div>
