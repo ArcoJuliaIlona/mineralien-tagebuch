@@ -19,7 +19,7 @@ async function qrDataUrl(text: string): Promise<string> {
   });
 }
 
-// Einzelnes 5×5 mm QR-Etikett (mittig auf A8) zum Aufkleben am Stein
+// Einzelnes 12×12 mm QR-Etikett (mittig auf A8) zum Aufkleben am Stein
 export async function generateSingleQrPdf(m: Mineral) {
   const url = fundUrl(m.id);
   const data = await qrDataUrl(url);
