@@ -10,7 +10,7 @@ function fundUrl(id: string) {
 }
 
 async function qrDataUrl(text: string): Promise<string> {
-  // hohe Auflösung, damit das 5×5 mm Druckbild scharf bleibt
+  // hohe Auflösung, damit das 12×12 mm Druckbild scharf bleibt
   return await QRCode.toDataURL(text, {
     errorCorrectionLevel: "M",
     margin: 0,
@@ -19,14 +19,14 @@ async function qrDataUrl(text: string): Promise<string> {
   });
 }
 
-// Einzelnes 5×5 mm QR-Etikett (mittig auf A8) zum Aufkleben am Stein
+// Einzelnes 12×12 mm QR-Etikett (mittig auf A8) zum Aufkleben am Stein
 export async function generateSingleQrPdf(m: Mineral) {
   const url = fundUrl(m.id);
   const data = await qrDataUrl(url);
   // A8 = 52 × 74 mm — klein und passt in jeden Drucker
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [30, 30] });
   const W = doc.internal.pageSize.getWidth();
-  const size = 18; // mm — vorher 5 mm war für Scanner zu fein
+  const size = 12; // mm — Testgröße 12×12
   const x = (W - size) / 2;
   const y = 4;
   doc.addImage(data, "PNG", x, y, size, size, undefined, "NONE");
@@ -38,14 +38,14 @@ export async function generateSingleQrPdf(m: Mineral) {
   doc.save(`QR-${formatCollectionNumber(m.collection_number, m.category)}-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
 
-// Bogen mit allen QR-Codes (5×5 mm) auf A4, je mit Sammlungsnummer.
+// Bogen mit allen QR-Codes (12×12 mm) auf A4, je mit Sammlungsnummer.
 export async function generateAllQrSheetPdf() {
   const minerals = await listMinerals();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  const qrSize = 15; // mm — gut scanbar
+  const qrSize = 12; // mm — Testgröße 12×12
   const labelH = 3; // mm Beschriftung darunter
   const cellW = qrSize + 4; // Spaltenabstand
   const cellH = qrSize + labelH + 4;
@@ -68,7 +68,7 @@ export async function generateAllQrSheetPdf() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(12, 36, 64);
-      doc.text("Sammlung Arco Böhme · QR-Codes (5×5 mm)", marginX, 8);
+      doc.text("Sammlung Arco Böhme · QR-Codes (12×12 mm)", marginX, 8);
     }
 
     const col = onPage % cols;
