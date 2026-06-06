@@ -26,7 +26,7 @@ export async function generateSingleQrPdf(m: Mineral) {
   // A8 = 52 × 74 mm — klein und passt in jeden Drucker
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [30, 30] });
   const W = doc.internal.pageSize.getWidth();
-  const size = 18; // mm — vorher 5 mm war für Scanner zu fein
+  const size = 12; // mm — Testgröße 12×12
   const x = (W - size) / 2;
   const y = 4;
   doc.addImage(data, "PNG", x, y, size, size, undefined, "NONE");
