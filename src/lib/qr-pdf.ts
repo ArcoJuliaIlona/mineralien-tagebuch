@@ -68,7 +68,7 @@ export async function generateAllQrSheetPdf() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(12, 36, 64);
-      doc.text("Sammlung Arco Böhme · QR-Codes (5×5 mm)", marginX, 8);
+      doc.text("Sammlung Arco Böhme · QR-Codes (12×12 mm)", marginX, 8);
     }
 
     const col = onPage % cols;
