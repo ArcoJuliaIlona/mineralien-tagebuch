@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PhotoThumb } from "./PhotoThumb";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
@@ -553,22 +552,33 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         {saving ? "Speichere…" : submitLabel}
       </Button>
 
-      <Dialog open={!!zoomPhoto} onOpenChange={(open) => { if (!open) setZoomPhoto(null); }}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-1 border-none bg-black/90">
-          <DialogTitle className="sr-only">Foto vergrößert</DialogTitle>
+      {zoomPhoto && (
+        <div
+          role="dialog"
+          aria-label="Foto vergrößert"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2"
+          onClick={() => setZoomPhoto(null)}
+        >
+          <button
+            type="button"
+            aria-label="Schließen"
+            onClick={(e) => { e.stopPropagation(); setZoomPhoto(null); }}
+            className="absolute right-3 top-3 rounded-full bg-background/90 p-2 text-foreground shadow"
+          >
+            <X className="size-5" />
+          </button>
           {zoomUrl ? (
             <img
               src={zoomUrl}
               alt="Vergrößertes Foto"
-              className="max-h-[90vh] max-w-full object-contain rounded-lg"
+              className="max-h-[95vh] max-w-[95vw] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <div className="flex h-[50vh] w-full items-center justify-center text-muted-foreground">
-              <Loader2 className="size-8 animate-spin" />
-            </div>
+            <Loader2 className="size-10 animate-spin text-white" />
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
