@@ -31,6 +31,8 @@ export const Route = createFileRoute("/")({
 });
 
 const ALL = "__ALLE__";
+const ALL_TAB = "__ALL__";
+type TabValue = Category | typeof ALL_TAB;
 
 function ListPage() {
   const { data: minerals = [], isLoading } = useQuery({
@@ -41,10 +43,10 @@ function ListPage() {
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
-  const [tab, setTab] = useState<Category>("mineral");
+  const [tab, setTab] = useState<TabValue>("mineral");
 
   const inTab = useMemo(
-    () => minerals.filter((m) => m.category === tab),
+    () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
     [minerals, tab],
   );
 
@@ -81,22 +83,25 @@ function ListPage() {
     });
   }, [inTab, search, filterName, filterLocation]);
 
+  const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
+
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold tracking-tight">Meine Sammlung</h1>
 
-      <Tabs value={tab} onValueChange={(v) => { setTab(v as Category); setFilterName(ALL); setFilterLocation(ALL); }}>
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={tab} onValueChange={(v) => { setTab(v as TabValue); setFilterName(ALL); setFilterLocation(ALL); }}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="mineral">{CATEGORY_LABEL_PLURAL.mineral}</TabsTrigger>
           <TabsTrigger value="fossil">{CATEGORY_LABEL_PLURAL.fossil}</TabsTrigger>
           <TabsTrigger value="rock">{CATEGORY_LABEL_PLURAL.rock}</TabsTrigger>
+          <TabsTrigger value={ALL_TAB}>Alle</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            {CATEGORY_LABEL_PLURAL[tab]} gesamt
+            {categoryLabel} gesamt
           </p>
           <p className="text-lg font-semibold">{inTab.length} Stück</p>
         </div>
@@ -122,7 +127,7 @@ function ListPage() {
               <SelectValue placeholder="Name" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>Alle {CATEGORY_LABEL_PLURAL[tab]}</SelectItem>
+              <SelectItem value={ALL}>Alle {categoryLabel}</SelectItem>
               {names.map((n) => (
                 <SelectItem key={n} value={n}>{n}</SelectItem>
               ))}
@@ -188,14 +193,15 @@ function ListPage() {
   );
 }
 
-function EmptyState({ hasAny, category }: { hasAny: boolean; category: Category }) {
+function EmptyState({ hasAny, category }: { hasAny: boolean; category: TabValue }) {
+  const label = category === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[category];
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card py-16 text-center">
       <Gem className="size-12 text-primary/60" />
       <p className="text-lg font-medium">
         {hasAny
           ? "Keine Treffer für deine Suche."
-          : `Noch keine ${CATEGORY_LABEL_PLURAL[category]}.`}
+          : `Noch keine ${label}.`}
       </p>
       {!hasAny && (
         <Link to="/neu">
