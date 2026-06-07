@@ -4,6 +4,7 @@ import {
   ImagePlus,
   Loader2,
   MapPin,
+  Image as ImageIcon,
   Sparkles,
   Trash2,
   Video as VideoIcon,
@@ -67,6 +68,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     return "";
   });
   const [locating, setLocating] = useState(false);
+  const [extractingGps, setExtractingGps] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
