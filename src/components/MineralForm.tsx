@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Camera,
   ImagePlus,
@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PhotoThumb } from "./PhotoThumb";
-import { uploadPhoto, deletePhotos } from "@/lib/photos";
+import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
 import { useEffect } from "react";
 import { toast } from "sonner";
