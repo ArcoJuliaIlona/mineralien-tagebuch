@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PhotoThumb } from "./PhotoThumb";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
 import { CATEGORY_LABEL } from "@/lib/minerals";
