@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Camera,
   ImagePlus,
@@ -16,10 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PhotoThumb } from "./PhotoThumb";
-import { uploadPhoto, deletePhotos } from "@/lib/photos";
+import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
 import { CATEGORY_LABEL } from "@/lib/minerals";
@@ -67,6 +67,24 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
+  const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!zoomPhoto) {
+      setZoomUrl(null);
+      return;
+    }
+    let active = true;
+    getPhotoUrl(zoomPhoto)
+      .then((url) => {
+        if (active) setZoomUrl(url);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [zoomPhoto]);
 
   useEffect(() => {
     let cancelled = false;
@@ -421,7 +439,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           <div className="grid grid-cols-3 gap-2">
             {photos.map((p) => (
               <div key={p} className="relative">
-                <PhotoThumb path={p} className="aspect-square w-full" />
+                <div
+                  className="cursor-pointer"
+                  onClick={() => setZoomPhoto(p)}
+                >
+                  <PhotoThumb path={p} className="aspect-square w-full" />
+                </div>
                 <button
                   type="button"
                   onClick={() => removePhoto(p)}
@@ -529,6 +552,23 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
       >
         {saving ? "Speichere…" : submitLabel}
       </Button>
+
+      <Dialog open={!!zoomPhoto} onOpenChange={(open) => { if (!open) setZoomPhoto(null); }}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-1 border-none bg-black/90">
+          <DialogTitle className="sr-only">Foto vergrößert</DialogTitle>
+          {zoomUrl ? (
+            <img
+              src={zoomUrl}
+              alt="Vergrößertes Foto"
+              className="max-h-[90vh] max-w-full object-contain rounded-lg"
+            />
+          ) : (
+            <div className="flex h-[50vh] w-full items-center justify-center text-muted-foreground">
+              <Loader2 className="size-8 animate-spin" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
