@@ -237,6 +237,28 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     setCoordsInput("");
   };
 
+  const extractGpsFromPhoto = async (file: File) => {
+    setExtractingGps(true);
+    try {
+      const exifr = (await import("exifr")).default;
+      const gps = await exifr.gps(file);
+      if (!gps || gps.latitude == null || gps.longitude == null) {
+        toast.error("Keine GPS-Daten im Foto gefunden.");
+        return;
+      }
+      const lat = gps.latitude;
+      const lng = gps.longitude;
+      setLatitude(lat);
+      setLongitude(lng);
+      setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      toast.success("Koordinaten aus Foto übernommen");
+    } catch (e: unknown) {
+      toast.error("Foto konnte nicht gelesen werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setExtractingGps(false);
+    }
+  };
+
   const applyCoordsInput = () => {
     const raw = coordsInput.trim();
     if (!raw) {
