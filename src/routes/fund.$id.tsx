@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileDown, Pencil, QrCode, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, FileDown, Loader2, Pencil, QrCode, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -20,7 +20,7 @@ import { PhotoThumb } from "@/components/PhotoThumb";
 import { LocationMap } from "@/components/LocationMap";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
-import { deletePhotos } from "@/lib/photos";
+import { deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { generateSingleQrPdf } from "@/lib/qr-pdf";
@@ -52,6 +52,20 @@ function DetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
+  const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!zoomPhoto) {
+      setZoomUrl(null);
+      return;
+    }
+    let active = true;
+    getPhotoUrl(zoomPhoto)
+      .then((url) => { if (active) setZoomUrl(url); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [zoomPhoto]);
 
   const { data: m, isLoading } = useQuery({
     queryKey: ["minerals", id],
@@ -123,7 +137,14 @@ function DetailPage() {
       {m.photo_paths.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
           {m.photo_paths.map((p) => (
-            <PhotoThumb key={p} path={p} className="aspect-square w-full" />
+            <button
+              key={p}
+              type="button"
+              onClick={() => setZoomPhoto(p)}
+              className="block cursor-zoom-in overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <PhotoThumb path={p} className="aspect-square w-full" />
+            </button>
           ))}
         </div>
       )}
