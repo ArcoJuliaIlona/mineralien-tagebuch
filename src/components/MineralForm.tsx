@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
+import { fetchHardness } from "@/lib/hardness.functions";
 import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [formula, setFormula] = useState<string>(initial?.chemical_formula ?? "");
   const [fetchingFormula, setFetchingFormula] = useState(false);
   const fetchFormulaFn = useServerFn(fetchChemicalFormula);
+  const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
+  const [fetchingHardness, setFetchingHardness] = useState(false);
+  const fetchHardnessFn = useServerFn(fetchHardness);
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
@@ -124,6 +128,27 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
       toast.error("Formel konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
     } finally {
       setFetchingFormula(false);
+    }
+  };
+
+  const autoFetchHardness = async () => {
+    if (!name.trim()) {
+      toast.error("Bitte zuerst einen Namen eingeben.");
+      return;
+    }
+    setFetchingHardness(true);
+    try {
+      const res = await fetchHardnessFn({ data: { name: name.trim() } });
+      if (res.hardness) {
+        setHardness(res.hardness);
+        toast.success("Härte ergänzt");
+      } else {
+        toast.info("Keine eindeutige Härte gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Härte konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingHardness(false);
     }
   };
 
@@ -262,6 +287,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           value: parsedValue,
           chemical_formula: formula.trim() || null,
           video_paths: videos,
+          hardness: hardness.trim() || null,
         },
         removed,
       );
