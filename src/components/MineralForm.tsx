@@ -443,6 +443,27 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
+          <label
+            className={`flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md border bg-secondary px-4 text-base font-medium text-secondary-foreground transition hover:bg-secondary/80 ${extractingGps ? "pointer-events-none opacity-60" : ""}`}
+          >
+            {extractingGps ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <ImageIcon className="size-5" />
+            )}
+            GPS aus Foto auslesen
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={extractingGps}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) void extractGpsFromPhoto(f);
+              }}
+            />
+          </label>
           <div className="flex gap-2">
             <Input
               value={coordsInput}
