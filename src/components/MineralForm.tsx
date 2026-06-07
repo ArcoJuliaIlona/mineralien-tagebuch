@@ -367,6 +367,31 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           </Button>
         </div>
       </Field>
+      <Field label="Härte (Mohs)">
+        <div className="space-y-2">
+          <Input
+            value={hardness}
+            onChange={(e) => setHardness(e.target.value)}
+            placeholder="z. B. 7 oder 6,5–7"
+            className="h-12 text-base"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchHardness}
+            disabled={fetchingHardness}
+          >
+            {fetchingHardness ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Härte automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
       <Field label="Fundort">
         <Textarea
           value={location ?? ""}
