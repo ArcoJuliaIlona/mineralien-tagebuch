@@ -239,6 +239,34 @@ function DetailPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {zoomPhoto && (
+        <div
+          role="dialog"
+          aria-label="Foto vergrößert"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2"
+          onClick={() => setZoomPhoto(null)}
+        >
+          <button
+            type="button"
+            aria-label="Schließen"
+            onClick={(e) => { e.stopPropagation(); setZoomPhoto(null); }}
+            className="absolute right-3 top-3 rounded-full bg-background/90 p-2 text-foreground shadow"
+          >
+            <X className="size-5" />
+          </button>
+          {zoomUrl ? (
+            <img
+              src={zoomUrl}
+              alt="Vergrößertes Foto"
+              className="max-h-[95vh] max-w-[95vw] rounded-lg object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <Loader2 className="size-10 animate-spin text-white" />
+          )}
+        </div>
+      )}
     </div>
   );
 }
