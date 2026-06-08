@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import type { Mineral } from "./minerals";
 import { formatCollectionNumber } from "./minerals";
+import { fetchPhotoDataUrl } from "./photos";
 
 type FToken = { type: "text" | "sub" | "sup"; value: string };
 
@@ -161,22 +162,55 @@ export async function generateLabelPdf(m: Mineral) {
   drawDecorativeBorder(doc, W, H);
 
   const ink: [number, number, number] = [30, 25, 20];
+
+  // Foto oben rechts (falls vorhanden)
+  let photoRightEdge = 0;
+  const photoSize = 36;
+  const photoX = W - 14 - photoSize;
+  const photoY = 14;
+  if (m.photo_paths.length > 0) {
+    try {
+      const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
+      // Heller Hintergrund + dünner blauer Rahmen
+      doc.setFillColor(255, 255, 255);
+      doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6, "F");
+      doc.addImage(dataUrl, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
+      doc.setDrawColor(42, 78, 112);
+      doc.setLineWidth(0.4);
+      doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6);
+      photoRightEdge = photoX - 3;
+    } catch {
+      /* Foto optional */
+    }
+  }
+
   const contentLeft = 16;
-  const contentRight = W - 16;
+  const hasPhoto = photoRightEdge > 0;
+  const contentRight = hasPhoto ? photoRightEdge : W - 16;
   const contentWidth = contentRight - contentLeft;
+  const headerCenterX = hasPhoto ? (contentLeft + contentRight) / 2 : W / 2;
 
   // Sammlungsnummer (z. B. M38) – oben mittig
   let y = 22;
   doc.setTextColor(...ink);
   doc.setFont("times", "bold");
   doc.setFontSize(20);
-  doc.text(formatCollectionNumber(m.collection_number, m.category), W / 2, y, { align: "center" });
+  doc.text(formatCollectionNumber(m.collection_number, m.category), headerCenterX, y, {
+    align: "center",
+  });
 
   // Mineralname – darunter, größer
   y += 9;
   doc.setFont("times", "bold");
   doc.setFontSize(22);
-  doc.text(m.mineral_name, W / 2, y, { align: "center", maxWidth: contentWidth });
+  doc.text(m.mineral_name, headerCenterX, y, { align: "center", maxWidth: contentWidth });
+
+  // Wenn Foto vorhanden: ab unter dem Foto über volle Breite weiterschreiben
+  const fullLeft = 16;
+  const fullRight = W - 16;
+  const fullWidth = fullRight - fullLeft;
+  const belowPhotoY = photoY + photoSize + 6;
+  if (hasPhoto && y < belowPhotoY) y = belowPhotoY;
 
   // Detail-Block
   y += 12;
@@ -184,16 +218,16 @@ export async function generateLabelPdf(m: Mineral) {
   doc.setFontSize(13);
 
   if (m.chemical_formula) {
-    doc.text("Formel: ", contentLeft, y);
+    doc.text("Formel: ", fullLeft, y);
     const labelW = doc.getTextWidth("Formel: ");
-    drawFormula(doc, m.chemical_formula, contentLeft + labelW, y, contentWidth - labelW, 13);
+    drawFormula(doc, m.chemical_formula, fullLeft + labelW, y, fullWidth - labelW, 13);
     y += 7;
   }
 
   if (m.hardness) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);
-    doc.text(`Härte: ${m.hardness}`, contentLeft, y);
+    doc.text(`Härte: ${m.hardness}`, fullLeft, y);
     y += 7;
   }
 
@@ -202,16 +236,16 @@ export async function generateLabelPdf(m: Mineral) {
     doc.setFontSize(13);
     const wrapped = doc.splitTextToSize(
       `Begleitmineralien: ${m.companion_minerals}`,
-      contentWidth,
+      fullWidth,
     );
-    doc.text(wrapped, contentLeft, y);
+    doc.text(wrapped, fullLeft, y);
     y += wrapped.length * 6 + 1;
   }
 
   if (m.location) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(m.location, contentWidth);
+    const wrapped = doc.splitTextToSize(m.location, fullWidth);
     doc.text(wrapped, W / 2, y, { align: "center" });
     y += wrapped.length * 6;
   }
