@@ -4,7 +4,6 @@ import {
   ImagePlus,
   Loader2,
   MapPin,
-  Image as ImageIcon,
   Sparkles,
   Trash2,
   Video as VideoIcon,
@@ -68,7 +67,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     return "";
   });
   const [locating, setLocating] = useState(false);
-  const [extractingGps, setExtractingGps] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -237,27 +235,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     setCoordsInput("");
   };
 
-  const extractGpsFromPhoto = async (file: File) => {
-    setExtractingGps(true);
-    try {
-      const exifr = (await import("exifr")).default;
-      const gps = await exifr.gps(file);
-      if (!gps || gps.latitude == null || gps.longitude == null) {
-        toast.error("Keine GPS-Daten im Foto gefunden.");
-        return;
-      }
-      const lat = gps.latitude;
-      const lng = gps.longitude;
-      setLatitude(lat);
-      setLongitude(lng);
-      setCoordsInput(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-      toast.success("Koordinaten aus Foto übernommen");
-    } catch (e: unknown) {
-      toast.error("Foto konnte nicht gelesen werden: " + (e instanceof Error ? e.message : ""));
-    } finally {
-      setExtractingGps(false);
-    }
-  };
 
   const applyCoordsInput = () => {
     const raw = coordsInput.trim();
@@ -443,27 +420,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
               ? "Standort aktualisieren"
               : "Aktuellen Standort übernehmen"}
           </Button>
-          <label
-            className={`flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md border bg-secondary px-4 text-base font-medium text-secondary-foreground transition hover:bg-secondary/80 ${extractingGps ? "pointer-events-none opacity-60" : ""}`}
-          >
-            {extractingGps ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <ImageIcon className="size-5" />
-            )}
-            GPS aus Foto auslesen
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              disabled={extractingGps}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                e.target.value = "";
-                if (f) void extractGpsFromPhoto(f);
-              }}
-            />
-          </label>
           <div className="flex gap-2">
             <Input
               value={coordsInput}
