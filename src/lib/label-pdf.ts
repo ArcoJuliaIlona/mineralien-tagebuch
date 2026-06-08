@@ -26,7 +26,7 @@ function tokenizeFormula(input: string): FToken[] {
       flush();
       let j = i + 1;
       let sup = "";
-      while (j < input.length && /[0-9+\-]/.test(input[j])) {
+      while (j < input.length && /[0-9+-]/.test(input[j])) {
         sup += input[j];
         j++;
       }
@@ -34,7 +34,7 @@ function tokenizeFormula(input: string): FToken[] {
       i = j - 1;
       continue;
     }
-    if (/[0-9]/.test(c) && prev && /[A-Za-z\)\]]/.test(prev)) {
+    if (/[0-9]/.test(c) && prev && /[A-Za-z)\]]/.test(prev)) {
       flush();
       let j = i;
       let sub = "";
@@ -81,8 +81,7 @@ function drawFormula(
       cursorY += lineHeight;
       cursorX = x;
     }
-    const drawY =
-      t.type === "sub" ? cursorY + subDy : t.type === "sup" ? cursorY + supDy : cursorY;
+    const drawY = t.type === "sub" ? cursorY + subDy : t.type === "sup" ? cursorY + supDy : cursorY;
     doc.setFontSize(size);
     doc.text(t.value, cursorX, drawY);
     cursorX += w;
@@ -261,10 +260,7 @@ export async function generateLabelPdf(m: Mineral) {
   if (m.companion_minerals) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(
-      `Begleitmineralien: ${m.companion_minerals}`,
-      fullWidth,
-    );
+    const wrapped = doc.splitTextToSize(`Begleitmineralien: ${m.companion_minerals}`, fullWidth);
     doc.text(wrapped, fullLeft, y);
     y += wrapped.length * 6 + 1;
   }
