@@ -1,8 +1,6 @@
 import jsPDF from "jspdf";
-import QRCode from "qrcode";
 import type { Mineral } from "./minerals";
-import { CATEGORY_LABEL, formatCollectionNumber } from "./minerals";
-import { fetchPhotoDataUrl } from "./photos";
+import { formatCollectionNumber } from "./minerals";
 
 type FToken = { type: "text" | "sub" | "sup"; value: string };
 
@@ -72,7 +70,7 @@ function drawFormula(
   let cursorX = x;
   let cursorY = y;
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
 
   for (const t of tokens) {
     const size = t.type === "text" ? fontSize : subSize;
@@ -92,115 +90,137 @@ function drawFormula(
   return cursorY;
 }
 
+// Zeichnet einen dekorativen Rahmen im Stil des Fotos (blaue Fächer/Dreiecke).
+function drawDecorativeBorder(doc: jsPDF, W: number, H: number) {
+  const margin = 4;
+  const inset = 7;
+  const blue = { r: 42, g: 78, b: 112 };
+  const blueLight = { r: 110, g: 145, b: 175 };
+
+  // Cremefarbener Hintergrund
+  doc.setFillColor(245, 232, 210);
+  doc.rect(0, 0, W, H, "F");
+
+  // Äußerer dünner Rahmen
+  doc.setDrawColor(blue.r, blue.g, blue.b);
+  doc.setLineWidth(0.5);
+  doc.rect(margin, margin, W - 2 * margin, H - 2 * margin);
+
+  // Innerer Rahmen
+  doc.setLineWidth(0.3);
+  doc.rect(inset, inset, W - 2 * inset, H - 2 * inset);
+
+  // Dekorative Dreiecke/Fächer entlang der Kanten
+  const triSize = 2.2;
+  const step = 3.2;
+  const x0 = inset + 0.5;
+  const x1 = W - inset - 0.5;
+  const y0 = inset + 0.5;
+  const y1 = H - inset - 0.5;
+
+  doc.setFillColor(blue.r, blue.g, blue.b);
+
+  // Oben & Unten
+  for (let x = x0 + step / 2; x < x1 - 1; x += step) {
+    // oben (Spitze nach unten)
+    doc.triangle(x - triSize / 2, y0, x + triSize / 2, y0, x, y0 + triSize, "F");
+    // unten (Spitze nach oben)
+    doc.triangle(x - triSize / 2, y1, x + triSize / 2, y1, x, y1 - triSize, "F");
+  }
+  // Links & Rechts
+  for (let y = y0 + step / 2; y < y1 - 1; y += step) {
+    doc.triangle(x0, y - triSize / 2, x0, y + triSize / 2, x0 + triSize, y, "F");
+    doc.triangle(x1, y - triSize / 2, x1, y + triSize / 2, x1 - triSize, y, "F");
+  }
+
+  // Eckornamente (kleine Fächer)
+  const corners: Array<[number, number]> = [
+    [inset + 4, inset + 4],
+    [W - inset - 4, inset + 4],
+    [inset + 4, H - inset - 4],
+    [W - inset - 4, H - inset - 4],
+  ];
+  doc.setFillColor(blueLight.r, blueLight.g, blueLight.b);
+  for (const [cx, cy] of corners) {
+    doc.circle(cx, cy, 1.4, "F");
+    doc.setDrawColor(blue.r, blue.g, blue.b);
+    doc.setLineWidth(0.3);
+    doc.circle(cx, cy, 1.4, "S");
+  }
+
+  // Innenfeld (helleres Cremerechteck wie auf dem Foto)
+  doc.setFillColor(250, 240, 222);
+  doc.rect(inset + 3, inset + 3, W - 2 * (inset + 3), H - 2 * (inset + 3), "F");
+}
+
 export async function generateLabelPdf(m: Mineral) {
-  // A6 landscape ~ 148 x 105 mm — schöne Etikettengröße
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
-  // Rahmen
-  doc.setDrawColor(26, 74, 110);
-  doc.setLineWidth(0.6);
-  doc.rect(4, 4, W - 8, H - 8);
+  drawDecorativeBorder(doc, W, H);
 
-  // Foto links
-  const photoSize = 55;
-  const photoX = 8;
-  const photoY = 8;
-  if (m.photo_paths.length > 0) {
-    try {
-      const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
-      doc.addImage(dataUrl, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
-    } catch {
-      doc.setFillColor(232, 240, 248);
-      doc.rect(photoX, photoY, photoSize, photoSize, "F");
-    }
-  }
+  const ink: [number, number, number] = [30, 25, 20];
+  const contentLeft = 16;
+  const contentRight = W - 16;
+  const contentWidth = contentRight - contentLeft;
 
-  // Text rechts
-  const textX = m.photo_paths.length > 0 ? photoX + photoSize + 6 : 10;
-  let y = 12;
+  // Sammlungsnummer (z. B. M38) – oben mittig
+  let y = 22;
+  doc.setTextColor(...ink);
+  doc.setFont("times", "bold");
+  doc.setFontSize(20);
+  doc.text(formatCollectionNumber(m.collection_number, m.category), W / 2, y, { align: "center" });
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(12, 36, 64);
-  doc.text(m.mineral_name, textX, y);
-  y += 6;
+  // Mineralname – darunter, größer
+  y += 9;
+  doc.setFont("times", "bold");
+  doc.setFontSize(22);
+  doc.text(m.mineral_name, W / 2, y, { align: "center", maxWidth: contentWidth });
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(26, 74, 110);
-  doc.text(
-    `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}`,
-    textX,
-    y,
-  );
-  y += 7;
+  // Detail-Block
+  y += 12;
+  doc.setFont("times", "normal");
+  doc.setFontSize(13);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(18, 40, 60);
-
-  const lines: Array<[string, string | null]> = [
-    ["Begleitmineralien:", m.companion_minerals],
-    ["Fundort:", m.location],
-    ["Sammlung:", m.collection_name],
-    [
-      "GPS:",
-      m.latitude != null && m.longitude != null
-        ? `${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}`
-        : null,
-    ],
-  ];
-
-  for (const [label, val] of lines) {
-    if (!val) continue;
-    doc.setFont("helvetica", "bold");
-    doc.text(label, textX, y);
-    doc.setFont("helvetica", "normal");
-    const wrapped = doc.splitTextToSize(val, W - textX - 8);
-    doc.text(wrapped, textX, y + 4.5);
-    y += 4.5 + wrapped.length * 4.5 + 2;
-  }
-
-  // Formel separat mit echten tiefgestellten Ziffern rendern
   if (m.chemical_formula) {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("Formel:", textX, y);
-    const endY = drawFormula(doc, m.chemical_formula, textX, y + 4.5, W - textX - 8, 10);
-    y = endY + 6.5;
+    doc.text("Formel: ", contentLeft, y);
+    const labelW = doc.getTextWidth("Formel: ");
+    drawFormula(doc, m.chemical_formula, contentLeft + labelW, y, contentWidth - labelW, 13);
+    y += 7;
   }
 
-  // Sammlungsname unten links
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.setTextColor(26, 74, 110);
-  doc.text("Sammlung Arco Böhme", 8, H - 7);
-
-  // QR-Code unten rechts
-  try {
-    const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "https://mineralien-tagebuch.lovable.app";
-    const qr = await QRCode.toDataURL(`${origin}/fund/${m.id}`, {
-      errorCorrectionLevel: "M",
-      margin: 0,
-      width: 600,
-      color: { dark: "#000000", light: "#ffffff" },
-    });
-    const qrSize = 18;
-    const qrX = W - qrSize - 8;
-    const qrY = H - qrSize - 10;
-    doc.addImage(qr, "PNG", qrX, qrY, qrSize, qrSize, undefined, "NONE");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(26, 74, 110);
-    doc.text("Scan für Details", qrX + qrSize / 2, H - 7, { align: "center" });
-  } catch {
-    /* QR optional */
+  if (m.hardness) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    doc.text(`Härte: ${m.hardness}`, contentLeft, y);
+    y += 7;
   }
+
+  if (m.companion_minerals) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    const wrapped = doc.splitTextToSize(
+      `Begleitmineralien: ${m.companion_minerals}`,
+      contentWidth,
+    );
+    doc.text(wrapped, contentLeft, y);
+    y += wrapped.length * 6 + 1;
+  }
+
+  if (m.location) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    const wrapped = doc.splitTextToSize(m.location, contentWidth);
+    doc.text(wrapped, W / 2, y, { align: "center" });
+    y += wrapped.length * 6;
+  }
+
+  // Coll: Arco Boehme – unten mittig
+  doc.setFont("times", "italic");
+  doc.setFontSize(10);
+  doc.setTextColor(...ink);
+  doc.text("Coll: Arco Boehme", W / 2, H - 11, { align: "center" });
 
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
