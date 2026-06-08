@@ -164,29 +164,35 @@ export async function generateLabelPdf(m: Mineral) {
   const ink: [number, number, number] = [30, 25, 20];
 
   // Foto oben rechts (falls vorhanden)
-  let photoRightEdge = 0;
+  // Foto oben links (falls vorhanden)
+  let photoLeftEdge = 0;
   const photoSize = 36;
-  const photoX = W - 14 - photoSize;
+  const photoX = 14;
   const photoY = 14;
   if (m.photo_paths.length > 0) {
     try {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
+      const fmt = dataUrl.startsWith("data:image/png")
+        ? "PNG"
+        : dataUrl.startsWith("data:image/webp")
+          ? "WEBP"
+          : "JPEG";
       // Heller Hintergrund + dünner blauer Rahmen
       doc.setFillColor(255, 255, 255);
       doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6, "F");
-      doc.addImage(dataUrl, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
+      doc.addImage(dataUrl, fmt, photoX, photoY, photoSize, photoSize, undefined, "FAST");
       doc.setDrawColor(42, 78, 112);
       doc.setLineWidth(0.4);
       doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6);
-      photoRightEdge = photoX - 3;
+      photoLeftEdge = photoX + photoSize + 3;
     } catch {
       /* Foto optional */
     }
   }
 
-  const contentLeft = 16;
-  const hasPhoto = photoRightEdge > 0;
-  const contentRight = hasPhoto ? photoRightEdge : W - 16;
+  const hasPhoto = photoLeftEdge > 0;
+  const contentLeft = hasPhoto ? photoLeftEdge : 16;
+  const contentRight = W - 16;
   const contentWidth = contentRight - contentLeft;
   const headerCenterX = hasPhoto ? (contentLeft + contentRight) / 2 : W / 2;
 
