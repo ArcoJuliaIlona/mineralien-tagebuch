@@ -67,6 +67,7 @@ function ListPage() {
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [tab, setTab] = useState<TabValue>("mineral");
+  const [showValue, setShowValue] = useState(false);
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -130,7 +131,24 @@ function ListPage() {
         </div>
         <div className="text-right">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Gesamtwert</p>
-          <p className="text-lg font-semibold text-primary">{formatEUR(totalValue)}</p>
+          {showValue ? (
+            <button
+              type="button"
+              onClick={() => setShowValue(false)}
+              className="text-lg font-semibold text-primary"
+            >
+              {formatEUR(totalValue)}
+            </button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowValue(true)}
+              className="h-8"
+            >
+              Anzeigen
+            </Button>
+          )}
         </div>
       </div>
 
