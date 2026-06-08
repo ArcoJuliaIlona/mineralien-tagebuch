@@ -8,6 +8,7 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { listMinerals, CATEGORY_LABEL_PLURAL, formatCollectionNumber, type Category } from "@/lib/minerals";
+import { getPhotoUrls } from "@/lib/photos";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -38,6 +39,28 @@ function ListPage() {
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
+  });
+
+  const thumbPaths = useMemo(
+    () =>
+      Array.from(
+        new Set(minerals.map((m) => m.photo_paths[0]).filter(Boolean) as string[]),
+      ),
+    [minerals],
+  );
+
+  const { data: thumbUrlMap } = useQuery({
+    queryKey: ["thumb-urls", thumbPaths],
+    queryFn: async () => {
+      const urls = await getPhotoUrls(thumbPaths);
+      const map: Record<string, string> = {};
+      thumbPaths.forEach((p, i) => {
+        map[p] = urls[i] ?? "";
+      });
+      return map;
+    },
+    enabled: thumbPaths.length > 0,
+    staleTime: 50 * 60 * 1000,
   });
 
   const [search, setSearch] = useState("");
@@ -160,7 +183,11 @@ function ListPage() {
                 params={{ id: m.id }}
                 className="flex items-center gap-4 rounded-xl border bg-card p-3 transition hover:bg-accent/40 active:scale-[0.99]"
               >
-                <PhotoThumb path={m.photo_paths[0]} className="h-20 w-20 shrink-0" />
+                <PhotoThumb
+                  path={m.photo_paths[0]}
+                  url={m.photo_paths[0] ? thumbUrlMap?.[m.photo_paths[0]] ?? null : null}
+                  className="h-20 w-20 shrink-0"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate text-lg font-semibold">

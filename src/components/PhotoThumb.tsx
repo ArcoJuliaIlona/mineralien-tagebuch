@@ -2,19 +2,28 @@ import { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { getPhotoUrl } from "@/lib/photos";
 
-export function PhotoThumb({ path, className }: { path?: string; className?: string }) {
-  const [url, setUrl] = useState<string | null>(null);
+export function PhotoThumb({
+  path,
+  url: urlProp,
+  className,
+}: {
+  path?: string;
+  url?: string | null;
+  className?: string;
+}) {
+  const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
+  const url = urlProp ?? fetchedUrl;
 
   useEffect(() => {
     let active = true;
-    if (!path) return;
+    if (!path || urlProp !== undefined) return;
     getPhotoUrl(path)
-      .then((u) => active && setUrl(u))
+      .then((u) => active && setFetchedUrl(u))
       .catch(() => {});
     return () => {
       active = false;
     };
-  }, [path]);
+  }, [path, urlProp]);
 
   if (!path) {
     return (
@@ -31,7 +40,13 @@ export function PhotoThumb({ path, className }: { path?: string; className?: str
   return (
     <div className={"overflow-hidden rounded-lg bg-muted " + (className ?? "")}>
       {url ? (
-        <img src={url} alt="Mineral" className="h-full w-full object-cover" />
+        <img
+          src={url}
+          alt="Mineral"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
       ) : (
         <div className="h-full w-full animate-pulse bg-muted" />
       )}
