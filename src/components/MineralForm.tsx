@@ -4,7 +4,6 @@ import {
   ImagePlus,
   Loader2,
   MapPin,
-  Image as ImageIcon,
   Sparkles,
   Trash2,
   Video as VideoIcon,
