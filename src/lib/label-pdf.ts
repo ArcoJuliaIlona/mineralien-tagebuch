@@ -154,6 +154,31 @@ function drawDecorativeBorder(doc: jsPDF, W: number, H: number) {
   doc.rect(inset + 3, inset + 3, W - 2 * (inset + 3), H - 2 * (inset + 3), "F");
 }
 
+function convertPhotoToPdfJpeg(dataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const size = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+      const sx = ((img.naturalWidth || img.width) - size) / 2;
+      const sy = ((img.naturalHeight || img.height) - size) / 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = 900;
+      canvas.height = 900;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Foto konnte nicht vorbereitet werden."));
+        return;
+      }
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, sx, sy, size, size, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.9));
+    };
+    img.onerror = () => reject(new Error("Foto konnte nicht geladen werden."));
+    img.src = dataUrl;
+  });
+}
+
 export async function generateLabelPdf(m: Mineral) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
   const W = doc.internal.pageSize.getWidth();
@@ -172,15 +197,11 @@ export async function generateLabelPdf(m: Mineral) {
   if (m.photo_paths.length > 0) {
     try {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
-      const fmt = dataUrl.startsWith("data:image/png")
-        ? "PNG"
-        : dataUrl.startsWith("data:image/webp")
-          ? "WEBP"
-          : "JPEG";
+      const pdfPhoto = await convertPhotoToPdfJpeg(dataUrl);
       // Heller Hintergrund + dünner blauer Rahmen
       doc.setFillColor(255, 255, 255);
       doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6, "F");
-      doc.addImage(dataUrl, fmt, photoX, photoY, photoSize, photoSize, undefined, "FAST");
+      doc.addImage(pdfPhoto, "JPEG", photoX, photoY, photoSize, photoSize);
       doc.setDrawColor(42, 78, 112);
       doc.setLineWidth(0.4);
       doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6);
