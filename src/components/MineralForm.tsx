@@ -67,7 +67,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
     return "";
   });
   const [locating, setLocating] = useState(false);
-  const [extractingGps, setExtractingGps] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
