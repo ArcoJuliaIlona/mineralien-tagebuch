@@ -41,6 +41,28 @@ function ListPage() {
     queryFn: listMinerals,
   });
 
+  const thumbPaths = useMemo(
+    () =>
+      Array.from(
+        new Set(minerals.map((m) => m.photo_paths[0]).filter(Boolean) as string[]),
+      ),
+    [minerals],
+  );
+
+  const { data: thumbUrlMap } = useQuery({
+    queryKey: ["thumb-urls", thumbPaths],
+    queryFn: async () => {
+      const urls = await getPhotoUrls(thumbPaths);
+      const map: Record<string, string> = {};
+      thumbPaths.forEach((p, i) => {
+        map[p] = urls[i] ?? "";
+      });
+      return map;
+    },
+    enabled: thumbPaths.length > 0,
+    staleTime: 50 * 60 * 1000,
+  });
+
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
