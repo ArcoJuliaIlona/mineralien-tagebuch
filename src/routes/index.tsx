@@ -183,7 +183,11 @@ function ListPage() {
                 params={{ id: m.id }}
                 className="flex items-center gap-4 rounded-xl border bg-card p-3 transition hover:bg-accent/40 active:scale-[0.99]"
               >
-                <PhotoThumb path={m.photo_paths[0]} className="h-20 w-20 shrink-0" />
+                <PhotoThumb
+                  path={m.photo_paths[0]}
+                  url={m.photo_paths[0] ? thumbUrlMap?.[m.photo_paths[0]] ?? null : null}
+                  className="h-20 w-20 shrink-0"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate text-lg font-semibold">
