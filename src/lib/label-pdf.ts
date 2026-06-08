@@ -52,6 +52,7 @@ function tokenizeFormula(input: string): FToken[] {
   return tokens;
 }
 
+
 // Zeichnet eine chemische Formel mit echten tief-/hochgestellten Ziffern.
 // Bricht bei Bedarf an Token-Grenzen um. Gibt das Y nach der letzten Zeile zurück.
 function drawFormula(
