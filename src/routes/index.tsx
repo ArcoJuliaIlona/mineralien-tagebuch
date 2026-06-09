@@ -22,20 +22,25 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [{ title: "Meine Mineraliensammlung" }],
   }),
-  component: () => (
-    <AuthGate>
-      <AppShell>
-        <ListPage />
-      </AppShell>
-    </AuthGate>
-  ),
+  component: () => {
+    const [tab, setTab] = useState<TabValue>("mineral");
+    const newButtonLabel = tab === "fossil" ? "Neues Fossil" : tab === "rock" ? "Neues Gestein" : "Neues Mineral";
+    const newCategory: Category = tab === "fossil" ? "fossil" : tab === "rock" ? "rock" : "mineral";
+    return (
+      <AuthGate>
+        <AppShell newLabel={newButtonLabel} newSearch={{ category: newCategory }}>
+          <ListPage tab={tab} setTab={setTab} newCategory={newCategory} />
+        </AppShell>
+      </AuthGate>
+    );
+  },
 });
 
 const ALL = "__ALLE__";
 const ALL_TAB = "__ALL__";
 type TabValue = Category | typeof ALL_TAB;
 
-function ListPage() {
+function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
@@ -66,7 +71,6 @@ function ListPage() {
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
-  const [tab, setTab] = useState<TabValue>("mineral");
   const [showValue, setShowValue] = useState(false);
 
   const inTab = useMemo(
@@ -191,7 +195,7 @@ function ListPage() {
       {isLoading ? (
         <p className="py-12 text-center text-muted-foreground">Lade…</p>
       ) : filtered.length === 0 ? (
-        <EmptyState hasAny={inTab.length > 0} category={tab} />
+        <EmptyState hasAny={inTab.length > 0} category={tab} newCategory={newCategory} />
       ) : (
         <ul className="space-y-3">
           {filtered.map((m) => (
@@ -238,7 +242,7 @@ function ListPage() {
   );
 }
 
-function EmptyState({ hasAny, category }: { hasAny: boolean; category: TabValue }) {
+function EmptyState({ hasAny, category, newCategory }: { hasAny: boolean; category: TabValue; newCategory: Category }) {
   const label = category === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[category];
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card py-16 text-center">
@@ -249,7 +253,7 @@ function EmptyState({ hasAny, category }: { hasAny: boolean; category: TabValue 
           : `Noch keine ${label}.`}
       </p>
       {!hasAny && (
-        <Link to="/neu">
+        <Link to="/neu" search={{ category: newCategory }}>
           <Button size="lg" className="h-12 gap-2 text-base">
             <Plus className="size-5" /> Ersten Fund anlegen
           </Button>

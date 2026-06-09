@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import type { ReactNode } from "react";
+import type { Category } from "@/lib/minerals";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, newLabel = "Neu", newSearch }: { children: ReactNode; newLabel?: string; newSearch?: { category?: Category } }) {
   const { session } = useAuth();
   const navigate = useNavigate();
 
@@ -28,9 +29,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Download className="size-5" />
               </Button>
             </Link>
-            <Link to="/neu">
+            <Link to="/neu" search={newSearch}>
               <Button size="lg" className="h-12 gap-2 text-base">
-                <Plus className="size-5" /> Neu
+                <Plus className="size-5" /> {newLabel}
               </Button>
             </Link>
             {session && (

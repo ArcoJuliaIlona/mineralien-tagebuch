@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ScanLine } from "lucide-react";
+import { z } from "zod";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { MineralForm } from "@/components/MineralForm";
@@ -12,7 +13,12 @@ import { createMineral, type MineralInput } from "@/lib/minerals";
 import { scanLabel } from "@/lib/scan-label.functions";
 import { toast } from "sonner";
 
+const searchSchema = z.object({
+  category: z.enum(["mineral", "fossil", "rock"]).optional(),
+});
+
 export const Route = createFileRoute("/neu")({
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Neuer Fund" }] }),
   component: () => (
     <AuthGate>
@@ -30,7 +36,10 @@ function NewPage() {
   const scanFn = useServerFn(scanLabel);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
-  const [initial, setInitial] = useState<Partial<MineralInput> | undefined>(undefined);
+  const { category } = Route.useSearch();
+  const [initial, setInitial] = useState<Partial<MineralInput> | undefined>(
+    category ? { category } : undefined
+  );
   const [formKey, setFormKey] = useState(0);
 
   if (!session) return null;
@@ -71,7 +80,8 @@ function NewPage() {
       const raw = await fileToDataUrl(file);
       const small = await downscale(raw);
       const { result } = await scanFn({ data: { imageDataUrl: small } });
-      setInitial({
+      setInitial((prev) => ({
+        ...prev,
         mineral_name: result.mineral_name ?? "",
         chemical_formula: result.chemical_formula,
         companion_minerals: result.companion_minerals,
@@ -79,7 +89,7 @@ function NewPage() {
         hardness: result.hardness,
         collection_name: result.collection_name,
         value: result.value,
-      });
+      }));
       setFormKey((k) => k + 1);
       toast.success("Etikett erkannt – bitte prüfen.");
     } catch (e: unknown) {
