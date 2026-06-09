@@ -376,6 +376,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         </div>
       </Field>
       )}
+      {category !== "fossil" && (
       <Field label="Härte (Mohs)">
         <div className="space-y-2">
           <Input
@@ -401,6 +402,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           </Button>
         </div>
       </Field>
+      )}
       <Field label="Fundort">
         <Textarea
           value={location ?? ""}
