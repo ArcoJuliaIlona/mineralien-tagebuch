@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ScanLine } from "lucide-react";
+import { z } from "zod";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { MineralForm } from "@/components/MineralForm";
