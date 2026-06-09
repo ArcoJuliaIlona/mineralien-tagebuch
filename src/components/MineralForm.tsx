@@ -413,6 +413,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           className="min-h-[80px] text-base"
         />
       </Field>
+      <Field label="Zeitalter">
+        <Input
+          value={era}
+          onChange={(e) => setEra(e.target.value)}
+          placeholder={
+            category === "fossil"
+              ? "z. B. Oberjura, Tithonium (ca. 150 Mio. Jahre)"
+              : "z. B. Devon, Perm"
+          }
+          className="h-12 text-base"
+        />
+      </Field>
       <Field label="GPS-Koordinaten">
         <div className="space-y-2">
           <Button
