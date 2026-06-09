@@ -253,7 +253,7 @@ function EmptyState({ hasAny, category, newCategory }: { hasAny: boolean; catego
           : `Noch keine ${label}.`}
       </p>
       {!hasAny && (
-        <Link to="/neu">
+        <Link to="/neu" search={{ category: newCategory }}>
           <Button size="lg" className="h-12 gap-2 text-base">
             <Plus className="size-5" /> Ersten Fund anlegen
           </Button>
