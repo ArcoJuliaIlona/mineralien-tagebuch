@@ -169,6 +169,7 @@ function DetailPage() {
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
         <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
         <DataRow label="Härte (Mohs)" value={m.hardness} />
+        <DataRow label="Größe" value={m.size} />
         <DataRow label="Fundort" value={m.location} />
         <DataRow label="Sammlung" value={m.collection_name} />
         <DataRow
