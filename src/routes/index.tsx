@@ -40,7 +40,7 @@ const ALL = "__ALLE__";
 const ALL_TAB = "__ALL__";
 type TabValue = Category | typeof ALL_TAB;
 
-function ListPage() {
+function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
