@@ -54,6 +54,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
   const [size, setSize] = useState<string>(initial?.size ?? "");
+  const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
@@ -291,6 +292,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           video_paths: videos,
           hardness: hardness.trim() || null,
           size: size.trim() || null,
+          era: era.trim() || null,
         },
         removed,
       );
