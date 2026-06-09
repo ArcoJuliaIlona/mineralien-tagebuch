@@ -323,14 +323,19 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           className="h-12 text-base"
         />
       </Field>
-      <Field label="Begleitmineralien">
+      <Field label={category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}>
         <Input
           value={companion ?? ""}
           onChange={(e) => setCompanion(e.target.value)}
-          placeholder="z. B. Pyrit, Calcit"
+          placeholder={
+            category === "fossil"
+              ? "z. B. Ammonit, Belemnit – Besonderheiten"
+              : "z. B. Pyrit, Calcit"
+          }
           className="h-12 text-base"
         />
       </Field>
+      {category !== "fossil" && (
       <Field label="Chemische Formel">
         <div className="space-y-2">
           <Input
@@ -368,6 +373,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           </Button>
         </div>
       </Field>
+      )}
       <Field label="Härte (Mohs)">
         <div className="space-y-2">
           <Input
