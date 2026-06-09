@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ReactNode } from "react";
 import type { Category } from "@/lib/minerals";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, newLabel = "Neu", newSearch }: { children: ReactNode; newLabel?: string; newSearch?: { category?: Category } }) {
   const { session } = useAuth();
   const navigate = useNavigate();
 
