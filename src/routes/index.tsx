@@ -71,7 +71,6 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
-  const [tab, setTab] = useState<TabValue>("mineral");
   const [showValue, setShowValue] = useState(false);
 
   const inTab = useMemo(
