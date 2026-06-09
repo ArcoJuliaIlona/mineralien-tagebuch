@@ -54,6 +54,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
   const [size, setSize] = useState<string>(initial?.size ?? "");
+  const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
@@ -291,6 +292,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           video_paths: videos,
           hardness: hardness.trim() || null,
           size: size.trim() || null,
+          era: era.trim() || null,
         },
         removed,
       );
@@ -409,6 +411,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           onChange={(e) => setLocation(e.target.value)}
           placeholder="Ort, Region, Land"
           className="min-h-[80px] text-base"
+        />
+      </Field>
+      <Field label="Zeitalter">
+        <Input
+          value={era}
+          onChange={(e) => setEra(e.target.value)}
+          placeholder={
+            category === "fossil"
+              ? "z. B. Oberjura, Tithonium (ca. 150 Mio. Jahre)"
+              : "z. B. Devon, Perm"
+          }
+          className="h-12 text-base"
         />
       </Field>
       <Field label="GPS-Koordinaten">
