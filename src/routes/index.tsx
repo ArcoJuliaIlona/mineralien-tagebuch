@@ -22,13 +22,18 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [{ title: "Meine Mineraliensammlung" }],
   }),
-  component: () => (
-    <AuthGate>
-      <AppShell>
-        <ListPage />
-      </AppShell>
-    </AuthGate>
-  ),
+  component: () => {
+    const [tab, setTab] = useState<TabValue>("mineral");
+    const newButtonLabel = tab === "fossil" ? "Neues Fossil" : tab === "rock" ? "Neues Gestein" : "Neues Mineral";
+    const newCategory: Category = tab === "fossil" ? "fossil" : tab === "rock" ? "rock" : "mineral";
+    return (
+      <AuthGate>
+        <AppShell newLabel={newButtonLabel} newSearch={{ category: newCategory }}>
+          <ListPage tab={tab} setTab={setTab} newCategory={newCategory} />
+        </AppShell>
+      </AuthGate>
+    );
+  },
 });
 
 const ALL = "__ALLE__";
