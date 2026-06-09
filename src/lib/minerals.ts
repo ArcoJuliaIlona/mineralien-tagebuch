@@ -45,6 +45,7 @@ export type Mineral = {
   updated_at: string;
   video_paths: string[];
   hardness: string | null;
+  size: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -79,6 +80,7 @@ export type MineralInput = {
   chemical_formula: string | null;
   video_paths: string[];
   hardness: string | null;
+  size: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

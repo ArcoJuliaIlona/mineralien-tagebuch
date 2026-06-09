@@ -8,6 +8,7 @@ export type ScannedLabel = {
   hardness: string | null;
   collection_name: string | null;
   value: number | null;
+  size: string | null;
 };
 
 export const scanLabel = createServerFn({ method: "POST" })
@@ -29,7 +30,7 @@ export const scanLabel = createServerFn({ method: "POST" })
       "Du bist ein Experte für Mineralien-, Fossilien- und Gesteinsetiketten (gedruckt oder handgeschrieben, deutsch/englisch). " +
       "Analysiere das Etikett auf dem Bild und extrahiere die Felder. " +
       "Antworte AUSSCHLIESSLICH mit gültigem JSON ohne Markdown, ohne Erklärung. " +
-      "Schema: {\"mineral_name\": string|null, \"chemical_formula\": string|null, \"companion_minerals\": string|null, \"location\": string|null, \"hardness\": string|null, \"collection_name\": string|null, \"value\": number|null}. " +
+      "Schema: {\"mineral_name\": string|null, \"chemical_formula\": string|null, \"companion_minerals\": string|null, \"location\": string|null, \"hardness\": string|null, \"collection_name\": string|null, \"value\": number|null, \"size\": string|null}. " +
       "Regeln: " +
       "mineral_name = Hauptmineral/Fossil/Gestein (z. B. \"Bergkristall\"). " +
       "chemical_formula = chemische Summenformel in Klartext, Zahlen normal (z. B. SiO2, CaCO3, CuSO4*5H2O). " +
@@ -38,6 +39,7 @@ export const scanLabel = createServerFn({ method: "POST" })
       "hardness = Mohshärte als Zahl oder Bereich (z. B. \"7\" oder \"6,5-7\"). " +
       "collection_name = Name der Sammlung, falls angegeben. " +
       "value = numerischer Wert in Euro ohne Währungssymbol. " +
+      "size = Größe/Abmessungen als Freitext mit Einheit (z. B. \"5 × 3 × 2 cm\" oder \"7 cm\"). " +
       "Wenn ein Feld nicht erkennbar ist, setze null. Keine Felder erfinden.";
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -106,6 +108,7 @@ export const scanLabel = createServerFn({ method: "POST" })
         hardness: str(parsed.hardness),
         collection_name: str(parsed.collection_name),
         value: num(parsed.value),
+        size: str(parsed.size),
       },
     };
   });

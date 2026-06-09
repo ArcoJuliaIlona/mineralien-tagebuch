@@ -53,6 +53,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
+  const [size, setSize] = useState<string>(initial?.size ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
@@ -289,6 +290,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           chemical_formula: formula.trim() || null,
           video_paths: videos,
           hardness: hardness.trim() || null,
+          size: size.trim() || null,
         },
         removed,
       );
@@ -486,6 +488,14 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="z. B. 25.00"
+          className="h-12 text-base"
+        />
+      </Field>
+      <Field label="Größe">
+        <Input
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          placeholder="z. B. 5 × 3 × 2 cm"
           className="h-12 text-base"
         />
       </Field>
