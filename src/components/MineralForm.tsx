@@ -339,7 +339,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           className="h-12 text-base"
         />
       </Field>
-      {category !== "fossil" && (
+      {category === "mineral" && (
       <Field label="Chemische Formel">
         <div className="space-y-2">
           <Input
