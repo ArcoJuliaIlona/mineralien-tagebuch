@@ -195,7 +195,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       {isLoading ? (
         <p className="py-12 text-center text-muted-foreground">Lade…</p>
       ) : filtered.length === 0 ? (
-        <EmptyState hasAny={inTab.length > 0} category={tab} />
+        <EmptyState hasAny={inTab.length > 0} category={tab} newCategory={newCategory} />
       ) : (
         <ul className="space-y-3">
           {filtered.map((m) => (
