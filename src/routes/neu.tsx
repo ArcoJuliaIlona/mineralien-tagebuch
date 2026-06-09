@@ -80,7 +80,8 @@ function NewPage() {
       const raw = await fileToDataUrl(file);
       const small = await downscale(raw);
       const { result } = await scanFn({ data: { imageDataUrl: small } });
-      setInitial({
+      setInitial((prev) => ({
+        ...prev,
         mineral_name: result.mineral_name ?? "",
         chemical_formula: result.chemical_formula,
         companion_minerals: result.companion_minerals,
@@ -88,7 +89,7 @@ function NewPage() {
         hardness: result.hardness,
         collection_name: result.collection_name,
         value: result.value,
-      });
+      }));
       setFormKey((k) => k + 1);
       toast.success("Etikett erkannt – bitte prüfen.");
     } catch (e: unknown) {
