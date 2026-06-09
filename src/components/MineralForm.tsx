@@ -491,6 +491,14 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           className="h-12 text-base"
         />
       </Field>
+      <Field label="Größe">
+        <Input
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          placeholder="z. B. 5 × 3 × 2 cm"
+          className="h-12 text-base"
+        />
+      </Field>
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
