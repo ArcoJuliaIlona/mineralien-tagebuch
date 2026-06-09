@@ -242,7 +242,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   );
 }
 
-function EmptyState({ hasAny, category }: { hasAny: boolean; category: TabValue }) {
+function EmptyState({ hasAny, category, newCategory }: { hasAny: boolean; category: TabValue; newCategory: Category }) {
   const label = category === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[category];
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card py-16 text-center">
