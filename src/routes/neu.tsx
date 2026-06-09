@@ -13,7 +13,12 @@ import { createMineral, type MineralInput } from "@/lib/minerals";
 import { scanLabel } from "@/lib/scan-label.functions";
 import { toast } from "sonner";
 
+const searchSchema = z.object({
+  category: z.enum(["mineral", "fossil", "rock"]).optional(),
+});
+
 export const Route = createFileRoute("/neu")({
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Neuer Fund" }] }),
   component: () => (
     <AuthGate>
