@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import type { ReactNode } from "react";
+import type { Category } from "@/lib/minerals";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session } = useAuth();
