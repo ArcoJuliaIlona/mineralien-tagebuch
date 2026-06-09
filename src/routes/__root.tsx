@@ -81,6 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Mineraliensammlung" },
       { name: "description", content: "Private Mineraliensammlung verwalten – mit Fotos, Suche und Etikettendruck." },
+      { name: "robots", content: "noindex, nofollow" },
       { name: "theme-color", content: "#0c2340" },
       { property: "og:title", content: "Mineraliensammlung" },
       { property: "og:description", content: "Private Mineraliensammlung verwalten – mit Fotos, Suche und Etikettendruck." },
