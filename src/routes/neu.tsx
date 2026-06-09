@@ -36,7 +36,10 @@ function NewPage() {
   const scanFn = useServerFn(scanLabel);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
-  const [initial, setInitial] = useState<Partial<MineralInput> | undefined>(undefined);
+  const { category } = Route.useSearch();
+  const [initial, setInitial] = useState<Partial<MineralInput> | undefined>(
+    category ? { category } : undefined
+  );
   const [formKey, setFormKey] = useState(0);
 
   if (!session) return null;
