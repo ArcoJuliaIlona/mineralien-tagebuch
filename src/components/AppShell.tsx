@@ -29,9 +29,9 @@ export function AppShell({ children, newLabel = "Neu", newSearch }: { children: 
                 <Download className="size-5" />
               </Button>
             </Link>
-            <Link to="/neu">
+            <Link to="/neu" search={newSearch}>
               <Button size="lg" className="h-12 gap-2 text-base">
-                <Plus className="size-5" /> Neu
+                <Plus className="size-5" /> {newLabel}
               </Button>
             </Link>
             {session && (
