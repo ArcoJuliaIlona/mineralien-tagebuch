@@ -171,7 +171,7 @@ function DetailPage() {
         <DataRow label="Härte (Mohs)" value={m.hardness} />
         <DataRow label="Größe" value={m.size} />
         <DataRow label="Fundort" value={m.location} />
-        <DataRow label="Zeitalter" value={m.era} />
+        {m.category === "fossil" && <DataRow label="Zeitalter" value={m.era} />}
         <DataRow label="Sammlung" value={m.collection_name} />
         <DataRow
           label="Wert"
