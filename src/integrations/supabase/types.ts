@@ -22,6 +22,7 @@ export type Database = {
           collection_number: number
           companion_minerals: string | null
           created_at: string
+          era: string | null
           hardness: string | null
           id: string
           latitude: number | null
@@ -42,6 +43,7 @@ export type Database = {
           collection_number?: number
           companion_minerals?: string | null
           created_at?: string
+          era?: string | null
           hardness?: string | null
           id?: string
           latitude?: number | null
@@ -62,6 +64,7 @@ export type Database = {
           collection_number?: number
           companion_minerals?: string | null
           created_at?: string
+          era?: string | null
           hardness?: string | null
           id?: string
           latitude?: number | null
