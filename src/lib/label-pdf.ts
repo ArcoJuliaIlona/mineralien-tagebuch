@@ -272,6 +272,14 @@ export async function generateLabelPdf(m: Mineral) {
     y += wrapped.length * 6 + 1;
   }
 
+  if (m.notable) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    const wrapped = doc.splitTextToSize(`Besonders: ${m.notable}`, fullWidth);
+    doc.text(wrapped, fullLeft, y);
+    y += wrapped.length * 6 + 1;
+  }
+
   if (m.location) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);
