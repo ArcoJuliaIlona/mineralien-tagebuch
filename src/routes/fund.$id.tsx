@@ -167,8 +167,13 @@ function DetailPage() {
 
       <dl className="space-y-3 rounded-xl border bg-card p-4">
         <DataRow label="Begleitmineralien" value={m.companion_minerals} />
-        <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
-        <DataRow label="Härte (Mohs)" value={m.hardness} />
+        {m.category === "mineral" && (
+          <>
+            <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
+            <DataRow label="Härte (Mohs)" value={m.hardness} />
+          </>
+        )}
+        {m.category === "rock" && <DataRow label="Ursprung" value={m.origin} />}
         <DataRow label="Größe" value={m.size} />
         <DataRow label="Fundort" value={m.location} />
         {m.category === "fossil" && <DataRow label="Zeitalter" value={m.era} />}

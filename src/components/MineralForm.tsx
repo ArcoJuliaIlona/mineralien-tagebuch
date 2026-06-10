@@ -53,6 +53,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
+  const [origin, setOrigin] = useState<string>(initial?.origin ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
@@ -293,6 +294,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           hardness: hardness.trim() || null,
           size: size.trim() || null,
           era: era.trim() || null,
+          origin: origin.trim() || null,
         },
         removed,
       );
@@ -378,7 +380,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         </div>
       </Field>
       )}
-      {category !== "fossil" && (
+      {category === "mineral" && (
       <Field label="Härte (Mohs)">
         <div className="space-y-2">
           <Input
@@ -403,6 +405,16 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
             Härte automatisch ermitteln
           </Button>
         </div>
+      </Field>
+      )}
+      {category === "rock" && (
+      <Field label="Ursprung">
+        <Input
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
+          placeholder="z. B. Vulkanisch, Sedimentär, Metamorph"
+          className="h-12 text-base"
+        />
       </Field>
       )}
       <Field label="Fundort">

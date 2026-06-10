@@ -243,17 +243,24 @@ export async function generateLabelPdf(m: Mineral) {
   doc.setFont("times", "normal");
   doc.setFontSize(13);
 
-  if (m.chemical_formula) {
+  if (m.category === "mineral" && m.chemical_formula) {
     doc.text("Formel: ", fullLeft, y);
     const labelW = doc.getTextWidth("Formel: ");
     drawFormula(doc, m.chemical_formula, fullLeft + labelW, y, fullWidth - labelW, 13);
     y += 7;
   }
 
-  if (m.hardness) {
+  if (m.category === "mineral" && m.hardness) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);
     doc.text(`Härte: ${m.hardness}`, fullLeft, y);
+    y += 7;
+  }
+
+  if (m.category === "rock" && m.origin) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    doc.text(`Ursprung: ${m.origin}`, fullLeft, y);
     y += 7;
   }
 
