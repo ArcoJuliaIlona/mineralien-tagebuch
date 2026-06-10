@@ -91,6 +91,7 @@ function NewPage() {
         value: result.value,
         size: result.size,
         era: result.era,
+        origin: result.origin,
       }));
       setFormKey((k) => k + 1);
       toast.success("Etikett erkannt – bitte prüfen.");
