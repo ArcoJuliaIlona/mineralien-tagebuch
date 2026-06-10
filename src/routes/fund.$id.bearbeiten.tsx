@@ -60,6 +60,7 @@ function EditPage() {
           video_paths: m.video_paths,
           hardness: m.hardness,
           origin: m.origin,
+          notable: m.notable,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
