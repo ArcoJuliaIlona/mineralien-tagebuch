@@ -29,6 +29,7 @@ export type Database = {
           location: string | null
           longitude: number | null
           mineral_name: string
+          origin: string | null
           photo_paths: string[]
           size: string | null
           updated_at: string
@@ -50,6 +51,7 @@ export type Database = {
           location?: string | null
           longitude?: number | null
           mineral_name: string
+          origin?: string | null
           photo_paths?: string[]
           size?: string | null
           updated_at?: string
@@ -71,6 +73,7 @@ export type Database = {
           location?: string | null
           longitude?: number | null
           mineral_name?: string
+          origin?: string | null
           photo_paths?: string[]
           size?: string | null
           updated_at?: string
