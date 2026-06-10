@@ -48,6 +48,7 @@ export type Mineral = {
   size: string | null;
   era: string | null;
   origin: string | null;
+  notable: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -85,6 +86,7 @@ export type MineralInput = {
   size: string | null;
   era: string | null;
   origin: string | null;
+  notable: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

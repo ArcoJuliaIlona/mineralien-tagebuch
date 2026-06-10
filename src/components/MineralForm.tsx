@@ -54,6 +54,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
   const [origin, setOrigin] = useState<string>(initial?.origin ?? "");
+  const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
@@ -295,6 +296,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           size: size.trim() || null,
           era: era.trim() || null,
           origin: origin.trim() || null,
+          notable: notable.trim() || null,
         },
         removed,
       );
@@ -523,6 +525,14 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           onChange={(e) => setSize(e.target.value)}
           placeholder="z. B. 5 × 3 × 2 cm"
           className="h-12 text-base"
+        />
+      </Field>
+      <Field label="Besonders">
+        <Textarea
+          value={notable}
+          onChange={(e) => setNotable(e.target.value)}
+          placeholder="Besonderheiten, Anmerkungen, auffällige Merkmale…"
+          className="min-h-[80px] text-base"
         />
       </Field>
 
