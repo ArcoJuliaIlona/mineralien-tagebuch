@@ -210,7 +210,7 @@ function DetailPage() {
           onClick={onQr}
           disabled={busy}
         >
-          <QrCode className="size-5" /> QR-Code (5 mm)
+          <QrCode className="size-5" /> QR-Code (8 mm)
         </Button>
         <Button asChild size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
           <Link to="/fund/$id/bearbeiten" params={{ id: m.id }}>
