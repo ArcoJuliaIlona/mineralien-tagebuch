@@ -285,6 +285,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           mineral_name: name.trim(),
           companion_minerals: companion.trim() || null,
           location: location.trim() || null,
+          country: country.trim() || null,
           collection_name: collection.trim() || null,
           photo_paths: photos,
           category,
