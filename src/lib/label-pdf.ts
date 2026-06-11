@@ -280,6 +280,14 @@ export async function generateLabelPdf(m: Mineral) {
     y += wrapped.length * 6 + 1;
   }
 
+  if (m.country) {
+    doc.setFont("times", "normal");
+    doc.setFontSize(13);
+    const wrapped = doc.splitTextToSize(m.country, fullWidth);
+    doc.text(wrapped, W / 2, y, { align: "center" });
+    y += wrapped.length * 6;
+  }
+
   if (m.location) {
     doc.setFont("times", "normal");
     doc.setFontSize(13);

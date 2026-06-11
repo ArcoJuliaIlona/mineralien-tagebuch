@@ -421,11 +421,19 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         />
       </Field>
       )}
+      <Field label="Land">
+        <Input
+          value={country ?? ""}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="z. B. Deutschland"
+          className="h-12 text-base"
+        />
+      </Field>
       <Field label="Fundort">
         <Textarea
           value={location ?? ""}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="Ort, Region, Land"
+          placeholder="Ort, Region"
           className="min-h-[80px] text-base"
         />
       </Field>

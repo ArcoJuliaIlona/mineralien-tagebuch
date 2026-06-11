@@ -50,6 +50,7 @@ function EditPage() {
           mineral_name: m.mineral_name,
           companion_minerals: m.companion_minerals,
           location: m.location,
+          country: m.country,
           collection_name: m.collection_name,
           photo_paths: m.photo_paths,
           category: m.category,

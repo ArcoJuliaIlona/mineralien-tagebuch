@@ -86,6 +86,7 @@ function NewPage() {
         chemical_formula: result.chemical_formula,
         companion_minerals: result.companion_minerals,
         location: result.location,
+        country: result.country,
         hardness: result.hardness,
         collection_name: result.collection_name,
         value: result.value,
