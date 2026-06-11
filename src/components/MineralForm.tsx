@@ -43,6 +43,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [name, setName] = useState(initial?.mineral_name ?? "");
   const [companion, setCompanion] = useState(initial?.companion_minerals ?? "");
   const [location, setLocation] = useState(initial?.location ?? "");
+  const [country, setCountry] = useState(initial?.country ?? "");
   const [collection, setCollection] = useState(initial?.collection_name ?? "");
   const [value, setValue] = useState<string>(
     initial?.value != null ? String(initial.value) : "",
