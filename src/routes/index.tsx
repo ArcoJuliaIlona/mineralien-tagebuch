@@ -95,10 +95,6 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     () => Array.from(new Set(inTab.map((m) => m.location || "").filter(Boolean))).sort(),
     [inTab],
   );
-  const countries = useMemo(
-    () => Array.from(new Set(inTab.map((m) => m.country || "").filter(Boolean))).sort(),
-    [inTab],
-  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
