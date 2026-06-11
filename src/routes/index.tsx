@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Gem, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Plus, Gem, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
