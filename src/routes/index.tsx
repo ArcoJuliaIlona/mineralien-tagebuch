@@ -198,6 +198,29 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
             className="h-12 pl-10 text-base"
           />
         </div>
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+            <SelectTrigger className="h-12 text-base">
+              <SelectValue placeholder="Sortierung" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Neueste zuerst</SelectItem>
+              <SelectItem value="country">Land</SelectItem>
+              <SelectItem value="location">Ort</SelectItem>
+              <SelectItem value="name">Alphabetisch</SelectItem>
+              <SelectItem value="value">Preis</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-12 w-12 shrink-0"
+            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            aria-label={sortDir === "asc" ? "Absteigend sortieren" : "Aufsteigend sortieren"}
+          >
+            {sortDir === "asc" ? <ArrowUp className="size-5" /> : <ArrowDown className="size-5" />}
+          </Button>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <Select value={filterName} onValueChange={setFilterName}>
             <SelectTrigger className="h-12 text-base">
