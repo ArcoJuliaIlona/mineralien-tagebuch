@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Gem } from "lucide-react";
+import { Search, Plus, Gem, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
@@ -72,6 +72,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [showValue, setShowValue] = useState(false);
+  const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -96,7 +98,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return inTab.filter((m) => {
+    const list = inTab.filter((m) => {
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
       if (!q) return true;
@@ -104,12 +106,38 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
         m.mineral_name,
         m.companion_minerals,
         m.location,
+        m.country,
         m.collection_name,
       ]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q));
     });
-  }, [inTab, search, filterName, filterLocation]);
+
+    const sorted = [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (sortBy) {
+        case "country":
+          cmp = (a.country || "").localeCompare(b.country || "");
+          break;
+        case "location":
+          cmp = (a.location || "").localeCompare(b.location || "");
+          break;
+        case "name":
+          cmp = a.mineral_name.localeCompare(b.mineral_name);
+          break;
+        case "value":
+          cmp = (a.value ?? 0) - (b.value ?? 0);
+          break;
+        case "created_at":
+        default:
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return sorted;
+  }, [inTab, search, filterName, filterLocation, sortBy, sortDir]);
 
   const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
 
@@ -165,6 +193,29 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
             onChange={(e) => setSearch(e.target.value)}
             className="h-12 pl-10 text-base"
           />
+        </div>
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+            <SelectTrigger className="h-12 text-base">
+              <SelectValue placeholder="Sortierung" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Neueste zuerst</SelectItem>
+              <SelectItem value="country">Land</SelectItem>
+              <SelectItem value="location">Ort</SelectItem>
+              <SelectItem value="name">Alphabetisch</SelectItem>
+              <SelectItem value="value">Preis</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-12 w-12 shrink-0"
+            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            aria-label={sortDir === "asc" ? "Absteigend sortieren" : "Aufsteigend sortieren"}
+          >
+            {sortDir === "asc" ? <ArrowUp className="size-5" /> : <ArrowDown className="size-5" />}
+          </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Select value={filterName} onValueChange={setFilterName}>

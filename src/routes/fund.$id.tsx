@@ -176,6 +176,7 @@ function DetailPage() {
         {m.category === "rock" && <DataRow label="Ursprung" value={m.origin} />}
         <DataRow label="Größe" value={m.size} />
         <DataRow label="Besonders" value={m.notable} />
+        <DataRow label="Land" value={m.country} />
         <DataRow label="Fundort" value={m.location} />
         {m.category === "fossil" && <DataRow label="Zeitalter" value={m.era} />}
         <DataRow label="Sammlung" value={m.collection_name} />

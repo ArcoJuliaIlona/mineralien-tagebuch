@@ -43,6 +43,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [name, setName] = useState(initial?.mineral_name ?? "");
   const [companion, setCompanion] = useState(initial?.companion_minerals ?? "");
   const [location, setLocation] = useState(initial?.location ?? "");
+  const [country, setCountry] = useState(initial?.country ?? "");
   const [collection, setCollection] = useState(initial?.collection_name ?? "");
   const [value, setValue] = useState<string>(
     initial?.value != null ? String(initial.value) : "",
@@ -284,6 +285,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
           mineral_name: name.trim(),
           companion_minerals: companion.trim() || null,
           location: location.trim() || null,
+          country: country.trim() || null,
           collection_name: collection.trim() || null,
           photo_paths: photos,
           category,
@@ -419,11 +421,19 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         />
       </Field>
       )}
+      <Field label="Land">
+        <Input
+          value={country ?? ""}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="z. B. Deutschland"
+          className="h-12 text-base"
+        />
+      </Field>
       <Field label="Fundort">
         <Textarea
           value={location ?? ""}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="Ort, Region, Land"
+          placeholder="Ort, Region"
           className="min-h-[80px] text-base"
         />
       </Field>
