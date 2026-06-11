@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Gem } from "lucide-react";
+import { Search, Plus, Gem, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
@@ -72,6 +72,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [showValue, setShowValue] = useState(false);
+  const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -93,10 +95,14 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     () => Array.from(new Set(inTab.map((m) => m.location || "").filter(Boolean))).sort(),
     [inTab],
   );
+  const countries = useMemo(
+    () => Array.from(new Set(inTab.map((m) => m.country || "").filter(Boolean))).sort(),
+    [inTab],
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return inTab.filter((m) => {
+    const list = inTab.filter((m) => {
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
       if (!q) return true;
@@ -104,12 +110,38 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
         m.mineral_name,
         m.companion_minerals,
         m.location,
+        m.country,
         m.collection_name,
       ]
         .filter(Boolean)
         .some((v) => v!.toLowerCase().includes(q));
     });
-  }, [inTab, search, filterName, filterLocation]);
+
+    const sorted = [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (sortBy) {
+        case "country":
+          cmp = (a.country || "").localeCompare(b.country || "");
+          break;
+        case "location":
+          cmp = (a.location || "").localeCompare(b.location || "");
+          break;
+        case "name":
+          cmp = a.mineral_name.localeCompare(b.mineral_name);
+          break;
+        case "value":
+          cmp = (a.value ?? 0) - (b.value ?? 0);
+          break;
+        case "created_at":
+        default:
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return sorted;
+  }, [inTab, search, filterName, filterLocation, sortBy, sortDir]);
 
   const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
 
