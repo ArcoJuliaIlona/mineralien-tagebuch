@@ -17,11 +17,16 @@ export function AppShell({ children, newLabel = "Neu", newSearch }: { children: 
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <Gem className="size-7 text-primary" />
-            <span className="text-xl font-bold tracking-tight">Mineralien</span>
+          <Link to="/" className="flex items-center gap-3">
+            <Gem className="size-6 text-primary" />
+            <span className="flex flex-col leading-none">
+              <span className="font-serif text-2xl tracking-tight">Mineralien</span>
+              <span className="mt-0.5 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+                Cabinet &amp; Tagebuch
+              </span>
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/export" aria-label="Daten-Export">
