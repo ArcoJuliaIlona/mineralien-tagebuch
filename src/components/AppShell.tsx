@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Download, Gem, LogOut, Plus } from "lucide-react";
+import { Download, Gem, LogOut, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +32,11 @@ export function AppShell({ children, newLabel = "Neu", newSearch }: { children: 
             <Link to="/export" aria-label="Daten-Export">
               <Button size="icon" variant="ghost" className="h-12 w-12">
                 <Download className="size-5" />
+              </Button>
+            </Link>
+            <Link to="/fotos-schwaerzen" aria-label="Fotohintergründe schwärzen">
+              <Button size="icon" variant="ghost" className="h-12 w-12">
+                <Sparkles className="size-5" />
               </Button>
             </Link>
             <Link to="/neu" search={newSearch}>
