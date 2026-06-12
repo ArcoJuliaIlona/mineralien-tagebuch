@@ -563,6 +563,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
+        <div className="flex items-start justify-between gap-3 rounded-lg border bg-card/60 px-3 py-2">
+          <div className="space-y-0.5">
+            <p className="text-sm font-medium">Hintergrund automatisch schwärzen</p>
+            <p className="text-xs text-muted-foreground">
+              Beim Hochladen wird der Hintergrund per KI durch reines Schwarz ersetzt (Museumsvitrinen-Look).
+            </p>
+          </div>
+          <Switch checked={blackenBg} onCheckedChange={setBlackenBg} aria-label="Hintergrund automatisch schwärzen" />
+        </div>
         {photos.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
             {photos.map((p) => (
@@ -614,6 +623,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         {uploading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Foto wird hochgeladen…
+          </p>
+        )}
+        {blackening && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Hintergrund wird per KI geschwärzt…
           </p>
         )}
       </div>
