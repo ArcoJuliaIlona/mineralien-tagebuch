@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Sparkles, ArrowLeft, CheckCircle2, AlertCircle, Square } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
