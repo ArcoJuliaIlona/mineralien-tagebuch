@@ -18,6 +18,7 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { LocationMap } from "@/components/LocationMap";
+import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos, getPhotoUrl } from "@/lib/photos";
@@ -266,12 +267,7 @@ function DetailPage() {
             <X className="size-5" />
           </button>
           {zoomUrl ? (
-            <img
-              src={zoomUrl}
-              alt="Vergrößertes Foto"
-              className="max-h-[95vh] max-w-[95vw] rounded-lg object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <ZoomablePhoto src={zoomUrl} alt="Vergrößertes Foto" />
           ) : (
             <Loader2 className="size-10 animate-spin text-white" />
           )}
