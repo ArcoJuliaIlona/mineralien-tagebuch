@@ -32,7 +32,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useServerFn } from "@tanstack/react-start";
 
 type Props = {
   userId: string;
