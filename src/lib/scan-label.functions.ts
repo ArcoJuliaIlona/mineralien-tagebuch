@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type ScannedLabel = {
   mineral_name: string | null;
@@ -16,6 +17,7 @@ export type ScannedLabel = {
 };
 
 export const scanLabel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     const i = input as { imageDataUrl?: unknown };
     if (!i || typeof i.imageDataUrl !== "string" || !i.imageDataUrl.startsWith("data:image/")) {
