@@ -159,15 +159,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const remaining = 4 - photos.length;
-    if (remaining <= 0) {
-      toast.error("Maximal 4 Fotos pro Eintrag.");
-      return;
-    }
-    const selected = Array.from(files).slice(0, remaining);
-    if (files.length > remaining) {
-      toast.info(`Nur die ersten ${remaining} Foto(s) übernommen (Limit 4).`);
-    }
+    const selected = Array.from(files);
     setUploading(true);
     try {
       const paths: string[] = [];
