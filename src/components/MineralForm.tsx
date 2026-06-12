@@ -690,7 +690,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         size="lg"
         className="h-14 w-full text-lg"
         onClick={submit}
-        disabled={saving || uploading || uploadingVideo}
+        disabled={saving || uploading || uploadingVideo || blackening}
       >
         {saving ? "Speichere…" : submitLabel}
       </Button>
