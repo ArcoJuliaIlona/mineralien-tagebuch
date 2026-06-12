@@ -43,13 +43,21 @@ function BatchBlackenPage() {
   const [running, setRunning] = useState(false);
   const [version, setVersion] = useState(0);
   const blackenFn = useServerFn(blackenPhoto);
+  const cancelledRef = useRef(false);
 
   const done = Object.values(status).filter((s) => s === "done").length;
   const failed = Object.values(status).filter((s) => s === "error").length;
   const total = allPaths.length;
 
+  const stop = () => {
+    cancelledRef.current = true;
+    setRunning(false);
+    toast.info("Verarbeitung abgebrochen");
+  };
+
   const runAll = async () => {
     if (running || allPaths.length === 0) return;
+    cancelledRef.current = false;
     setRunning(true);
     const pending = allPaths.filter((p) => status[p] !== "done");
     const init: Record<string, Status> = { ...status };
@@ -58,18 +66,22 @@ function BatchBlackenPage() {
     setErrors({});
 
     for (const path of pending) {
+      if (cancelledRef.current) break;
       setStatus((s) => ({ ...s, [path]: "running" }));
       try {
         await blackenFn({ data: { path } });
+        if (cancelledRef.current) break;
         setStatus((s) => ({ ...s, [path]: "done" }));
         setVersion((v) => v + 1);
       } catch (e: unknown) {
+        if (cancelledRef.current) break;
         const msg = e instanceof Error ? e.message : String(e);
         setStatus((s) => ({ ...s, [path]: "error" }));
         setErrors((er) => ({ ...er, [path]: msg }));
       }
     }
     setRunning(false);
+    cancelledRef.current = false;
     toast.success("Stapelverarbeitung beendet");
   };
 
