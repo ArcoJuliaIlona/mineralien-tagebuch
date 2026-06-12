@@ -135,7 +135,7 @@ function DetailPage() {
       </div>
 
       {m.photo_paths.length > 0 && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-black p-2">
           {m.photo_paths.map((p) => (
             <button
               key={p}

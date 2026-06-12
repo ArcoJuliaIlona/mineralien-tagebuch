@@ -29,7 +29,7 @@ export function PhotoThumb({
     return (
       <div
         className={
-          "flex items-center justify-center rounded-lg bg-muted text-muted-foreground " +
+          "flex items-center justify-center rounded-lg bg-black text-white/30 " +
           (className ?? "")
         }
       >
@@ -38,7 +38,7 @@ export function PhotoThumb({
     );
   }
   return (
-    <div className={"overflow-hidden rounded-lg bg-muted " + (className ?? "")}>
+    <div className={"overflow-hidden rounded-lg bg-black " + (className ?? "")}>
       {url ? (
         <img
           src={url}
