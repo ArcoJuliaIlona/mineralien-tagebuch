@@ -111,23 +111,36 @@ function BatchBlackenPage() {
             {done} fertig{failed > 0 ? ` · ${failed} Fehler` : ""}
           </span>
         </div>
-        <Button
-          size="lg"
-          className="h-12 w-full gap-2 text-base"
-          onClick={runAll}
-          disabled={running || total === 0}
-        >
-          {running ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <Sparkles className="size-5" />
+        <div className="flex gap-2">
+          <Button
+            size="lg"
+            className="h-12 flex-1 gap-2 text-base"
+            onClick={runAll}
+            disabled={running || total === 0}
+          >
+            {running ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            {running
+              ? `Verarbeite… (${done}/${total})`
+              : done === total && total > 0
+              ? "Alle erneut bearbeiten"
+              : `Alle schwärzen (${total})`}
+          </Button>
+          {running && (
+            <Button
+              size="lg"
+              variant="destructive"
+              className="h-12 gap-2 text-base"
+              onClick={stop}
+            >
+              <Square className="size-5 fill-current" />
+              Stoppen
+            </Button>
           )}
-          {running
-            ? `Verarbeite… (${done}/${total})`
-            : done === total && total > 0
-            ? "Alle erneut bearbeiten"
-            : `Alle schwärzen (${total})`}
-        </Button>
+        </div>
       </div>
 
       {allPaths.length > 0 && (
