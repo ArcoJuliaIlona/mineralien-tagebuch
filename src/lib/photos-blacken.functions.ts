@@ -7,7 +7,12 @@ const EDIT_PROMPT =
   "Replace the entire background with solid pure black (#000000). Keep the main subject (mineral, fossil, crystal, or rock specimen) perfectly sharp, in focus, with all its natural color, texture and details unchanged. Clean cutout edges, no shadows, no gradient, no reflections, no text, no watermark. Museum studio display on pitch black backdrop. Square framing if possible.";
 
 type GatewayResponse = {
-  data?: Array<{ b64_json?: string }>;
+  choices?: Array<{
+    message?: {
+      images?: Array<{ image_url?: { url?: string } }>;
+      content?: unknown;
+    };
+  }>;
   error?: { message?: string; code?: string };
 };
 
@@ -56,15 +61,15 @@ export const blackenPhoto = createServerFn({ method: "POST" })
     const inputMime = blob.type || "image/jpeg";
     const dataUrl = `data:${inputMime};base64,${uint8ToBase64(inputBytes)}`;
 
-    // 2. Call gateway (Gemini image edit, OpenRouter chat-completions shape)
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
+    // 2. Call gateway (Gemini image edit via chat-completions with modalities)
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3.1-flash-image-preview",
+        model: "google/gemini-2.5-flash-image-preview",
         messages: [
           {
             role: "user",
@@ -86,11 +91,16 @@ export const blackenPhoto = createServerFn({ method: "POST" })
     }
 
     const payload = (await res.json()) as GatewayResponse;
-    const b64 = payload.data?.[0]?.b64_json;
-    if (!b64) {
-      throw new Error(payload.error?.message ?? "Keine Bilddaten zurückerhalten.");
+    const imageUrl = payload.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imageUrl) {
+      throw new Error(
+        payload.error?.message ?? "Keine Bilddaten zurückerhalten.",
+      );
     }
 
+    // imageUrl is a data URL: data:image/png;base64,xxxx
+    const comma = imageUrl.indexOf(",");
+    const b64 = comma >= 0 ? imageUrl.slice(comma + 1) : imageUrl;
     const outBytes = base64ToUint8(b64);
 
     // 3. Re-upload, overwriting the same path (PNG output from Gemini)
