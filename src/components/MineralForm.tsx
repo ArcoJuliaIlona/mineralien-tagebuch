@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
+import { ZoomablePhoto } from "./ZoomablePhoto";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
 import { blackenPhoto } from "@/lib/photos-blacken.functions";
