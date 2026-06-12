@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
+import { ZoomablePhoto } from "./ZoomablePhoto";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
 import { blackenPhoto } from "@/lib/photos-blacken.functions";
@@ -711,12 +712,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
             <X className="size-5" />
           </button>
           {zoomUrl ? (
-            <img
-              src={zoomUrl}
-              alt="Vergrößertes Foto"
-              className="max-h-[95vh] max-w-[95vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <ZoomablePhoto src={zoomUrl} alt="Vergrößertes Foto" />
           ) : (
             <Loader2 className="size-10 animate-spin text-white" />
           )}
