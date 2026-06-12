@@ -143,7 +143,13 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold tracking-tight">Meine Sammlung</h1>
+      <div className="space-y-1 pt-2">
+        <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+          Privatsammlung
+        </p>
+        <h1 className="font-serif text-4xl tracking-tight">Meine Sammlung</h1>
+        <div className="h-px w-12 bg-primary/70" />
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => { setTab(v as TabValue); setFilterName(ALL); setFilterLocation(ALL); }}>
         <TabsList className="grid w-full grid-cols-4">
@@ -254,7 +260,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
-                className="flex items-center gap-4 rounded-xl border bg-card p-3 transition hover:bg-accent/40 active:scale-[0.99]"
+                className="flex items-center gap-4 rounded-lg border border-border/70 bg-card p-3 transition hover:border-primary/40 hover:bg-card/80 active:scale-[0.99]"
               >
                 <PhotoThumb
                   path={m.photo_paths[0]}
@@ -263,8 +269,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-lg font-semibold">
-                      <span className="mr-2 font-mono text-sm text-muted-foreground">
+                    <p className="truncate font-serif text-xl tracking-tight">
+                      <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
                         #{formatCollectionNumber(m.collection_number, m.category)}
                       </span>
                       {m.mineral_name}
