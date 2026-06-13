@@ -9,8 +9,8 @@ import {
   Video as VideoIcon,
   X,
 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { fetchHardness } from "@/lib/hardness.functions";
 import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import { PhotoThumb } from "./PhotoThumb";
 import { ZoomablePhoto } from "./ZoomablePhoto";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
-import { blackenPhoto } from "@/lib/photos-blacken.functions";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
 import { CATEGORY_LABEL } from "@/lib/minerals";
@@ -32,7 +31,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 
 type Props = {
   userId: string;
@@ -57,7 +55,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
-  const blackenPhotoFn = useServerFn(blackenPhoto);
   const [origin, setOrigin] = useState<string>(initial?.origin ?? "");
   const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
@@ -77,8 +74,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   });
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [blackenBg, setBlackenBg] = useState(true);
-  const [blackening, setBlackening] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
@@ -174,24 +169,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         paths.push(p);
       }
       setPhotos((prev) => [...prev, ...paths]);
-      if (blackenBg && paths.length > 0) {
-        setBlackening(true);
-        try {
-          for (const p of paths) {
-            try {
-              await blackenPhotoFn({ data: { path: p } });
-            } catch (e: unknown) {
-              toast.error(
-                "Hintergrund konnte für ein Foto nicht geschwärzt werden: " +
-                  (e instanceof Error ? e.message : ""),
-              );
-            }
-          }
-          toast.success("Hintergrund geschwärzt");
-        } finally {
-          setBlackening(false);
-        }
-      }
     } catch (e: unknown) {
       toast.error("Hochladen fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
     } finally {
@@ -564,15 +541,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
-        <div className="flex items-start justify-between gap-3 rounded-lg border bg-card/60 px-3 py-2">
-          <div className="space-y-0.5">
-            <p className="text-sm font-medium">Hintergrund automatisch schwärzen</p>
-            <p className="text-xs text-muted-foreground">
-              Beim Hochladen wird der Hintergrund per KI durch reines Schwarz ersetzt (Museumsvitrinen-Look).
-            </p>
-          </div>
-          <Switch checked={blackenBg} onCheckedChange={setBlackenBg} aria-label="Hintergrund automatisch schwärzen" />
-        </div>
         {photos.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
             {photos.map((p) => (
@@ -624,11 +592,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         {uploading && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" /> Foto wird hochgeladen…
-          </p>
-        )}
-        {blackening && (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Hintergrund wird per KI geschwärzt…
           </p>
         )}
       </div>
@@ -691,7 +654,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         size="lg"
         className="h-14 w-full text-lg"
         onClick={submit}
-        disabled={saving || uploading || uploadingVideo || blackening}
+        disabled={saving || uploading || uploadingVideo}
       >
         {saving ? "Speichere…" : submitLabel}
       </Button>
