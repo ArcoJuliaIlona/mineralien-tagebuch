@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NeuRouteImport } from './routes/neu'
-import { Route as FotosSchwaerzenRouteImport } from './routes/fotos-schwaerzen'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as AnmeldenRouteImport } from './routes/anmelden'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,11 +19,6 @@ import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeit
 const NeuRoute = NeuRouteImport.update({
   id: '/neu',
   path: '/neu',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FotosSchwaerzenRoute = FotosSchwaerzenRouteImport.update({
-  id: '/fotos-schwaerzen',
-  path: '/fotos-schwaerzen',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExportRoute = ExportRouteImport.update({
@@ -57,7 +51,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
-  '/fotos-schwaerzen': typeof FotosSchwaerzenRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -66,7 +59,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
-  '/fotos-schwaerzen': typeof FotosSchwaerzenRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -76,7 +68,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
-  '/fotos-schwaerzen': typeof FotosSchwaerzenRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -87,7 +78,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
-    | '/fotos-schwaerzen'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -96,7 +86,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
-    | '/fotos-schwaerzen'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -105,7 +94,6 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
-    | '/fotos-schwaerzen'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -115,7 +103,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnmeldenRoute: typeof AnmeldenRoute
   ExportRoute: typeof ExportRoute
-  FotosSchwaerzenRoute: typeof FotosSchwaerzenRoute
   NeuRoute: typeof NeuRoute
   FundIdRoute: typeof FundIdRouteWithChildren
 }
@@ -127,13 +114,6 @@ declare module '@tanstack/react-router' {
       path: '/neu'
       fullPath: '/neu'
       preLoaderRoute: typeof NeuRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fotos-schwaerzen': {
-      id: '/fotos-schwaerzen'
-      path: '/fotos-schwaerzen'
-      fullPath: '/fotos-schwaerzen'
-      preLoaderRoute: typeof FotosSchwaerzenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/export': {
@@ -189,20 +169,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnmeldenRoute: AnmeldenRoute,
   ExportRoute: ExportRoute,
-  FotosSchwaerzenRoute: FotosSchwaerzenRoute,
   NeuRoute: NeuRoute,
   FundIdRoute: FundIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
