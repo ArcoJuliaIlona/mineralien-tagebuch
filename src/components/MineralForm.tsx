@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { fetchHardness } from "@/lib/hardness.functions";
 import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
