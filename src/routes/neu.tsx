@@ -143,6 +143,7 @@ function NewPage() {
         userId={session.user.id}
         initial={initial}
         submitLabel="Fund speichern"
+        onCategoryChange={(c) => setInitial((prev) => ({ ...prev, category: c }))}
         onSubmit={async (input) => {
           const m = await createMineral(session.user.id, input);
           qc.invalidateQueries({ queryKey: ["minerals"] });
