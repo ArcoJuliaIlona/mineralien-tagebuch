@@ -580,7 +580,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
             <ImagePlus className="size-5" /> Galerie
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,image/heic,image/heif"
               multiple
               className="hidden"
               disabled={photos.length >= 4}
