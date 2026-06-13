@@ -9,7 +9,6 @@ import {
   Video as VideoIcon,
   X,
 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { fetchHardness } from "@/lib/hardness.functions";
 import { FormulaText } from "@/lib/format-formula";
@@ -21,7 +20,6 @@ import { PhotoThumb } from "./PhotoThumb";
 import { ZoomablePhoto } from "./ZoomablePhoto";
 import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
-import { blackenPhoto } from "@/lib/photos-blacken.functions";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
 import { CATEGORY_LABEL } from "@/lib/minerals";
@@ -32,7 +30,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 
 type Props = {
   userId: string;
@@ -57,7 +54,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
-  const blackenPhotoFn = useServerFn(blackenPhoto);
   const [origin, setOrigin] = useState<string>(initial?.origin ?? "");
   const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
@@ -77,8 +73,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   });
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [blackenBg, setBlackenBg] = useState(true);
-  const [blackening, setBlackening] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
@@ -174,24 +168,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
         paths.push(p);
       }
       setPhotos((prev) => [...prev, ...paths]);
-      if (blackenBg && paths.length > 0) {
-        setBlackening(true);
-        try {
-          for (const p of paths) {
-            try {
-              await blackenPhotoFn({ data: { path: p } });
-            } catch (e: unknown) {
-              toast.error(
-                "Hintergrund konnte für ein Foto nicht geschwärzt werden: " +
-                  (e instanceof Error ? e.message : ""),
-              );
-            }
-          }
-          toast.success("Hintergrund geschwärzt");
-        } finally {
-          setBlackening(false);
-        }
-      }
     } catch (e: unknown) {
       toast.error("Hochladen fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
     } finally {
