@@ -37,9 +37,10 @@ type Props = {
   initial?: Partial<MineralInput>;
   submitLabel: string;
   onSubmit: (input: MineralInput, removedPhotoPaths: string[]) => Promise<void>;
+  onCategoryChange?: (c: Category) => void;
 };
 
-export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
+export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategoryChange }: Props) {
   const [category, setCategory] = useState<Category>(initial?.category ?? "mineral");
   const [name, setName] = useState(initial?.mineral_name ?? "");
   const [companion, setCompanion] = useState(initial?.companion_minerals ?? "");
@@ -307,7 +308,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit }: Props) {
   return (
     <div className="space-y-5">
       <Field label="Kategorie *">
-        <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+        <Select value={category} onValueChange={(v) => { setCategory(v as Category); onCategoryChange?.(v as Category); }}>
           <SelectTrigger className="h-12 text-base">
             <SelectValue />
           </SelectTrigger>
