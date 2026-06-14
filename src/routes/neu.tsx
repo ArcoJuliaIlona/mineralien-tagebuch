@@ -65,10 +65,8 @@ function NewPage() {
       value: source.value,
       chemical_formula: source.chemical_formula,
       hardness: source.hardness,
-      size: source.size,
       era: source.era,
       origin: source.origin,
-      notable: source.notable,
     });
     setFormKey((k) => k + 1);
   }, [source]);
