@@ -289,6 +289,7 @@ export async function exportAllPdf(
   }
 
   const stamp = new Date().toISOString().slice(0, 10);
-  doc.save(`Sammlung-Gesamt-${stamp}.pdf`);
+  const suffix = category ? `-${CATEGORY_LABEL[category]}` : "-Gesamt";
+  doc.save(`Sammlung${suffix}-${stamp}.pdf`);
   return minerals.length;
 }

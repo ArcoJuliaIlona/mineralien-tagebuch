@@ -7,6 +7,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
 import { generateNumberSheetPdf } from "@/lib/number-pdf";
+import { CATEGORY_LABEL_PLURAL, type Category } from "@/lib/minerals";
 import { toast } from "sonner";
 import {
   Select,
@@ -36,6 +37,8 @@ const SORT_LABELS: Record<PdfSort, string> = {
   name: "Name (Alphabetisch)",
 };
 
+const ALL_CATEGORIES = "__ALLE__";
+
 function ExportPage() {
   const [busyJson, setBusyJson] = useState(false);
   const [busyPdf, setBusyPdf] = useState(false);
@@ -43,6 +46,7 @@ function ExportPage() {
   const [busyNum, setBusyNum] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [pdfSort, setPdfSort] = useState<PdfSort>("category");
+  const [pdfCategory, setPdfCategory] = useState<string>(ALL_CATEGORIES);
 
   const onJson = async () => {
     setBusyJson(true);
@@ -84,7 +88,13 @@ function ExportPage() {
     setBusyPdf(true);
     setProgress({ done: 0, total: 0 });
     try {
-      const n = await exportAllPdf(pdfSort, (done, total) => setProgress({ done, total }));
+      const cat: Category | undefined =
+        pdfCategory === ALL_CATEGORIES ? undefined : (pdfCategory as Category);
+      const n = await exportAllPdf(
+        pdfSort,
+        cat,
+        (done, total) => setProgress({ done, total }),
+      );
       toast.success(`PDF mit ${n} Einträgen erstellt`);
     } catch {
       toast.error("PDF-Export fehlgeschlagen");
@@ -138,6 +148,17 @@ function ExportPage() {
           </div>
         </div>
         <div className="space-y-2">
+          <Select value={pdfCategory} onValueChange={(v) => setPdfCategory(v)}>
+            <SelectTrigger className="h-12 text-base">
+              <SelectValue placeholder="Kategorie wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_CATEGORIES}>Alle Kategorien</SelectItem>
+              <SelectItem value="mineral">{CATEGORY_LABEL_PLURAL.mineral}</SelectItem>
+              <SelectItem value="fossil">{CATEGORY_LABEL_PLURAL.fossil}</SelectItem>
+              <SelectItem value="rock">{CATEGORY_LABEL_PLURAL.rock}</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={pdfSort} onValueChange={(v) => setPdfSort(v as PdfSort)}>
             <SelectTrigger className="h-12 text-base">
               <SelectValue placeholder="Sortierung wählen" />
