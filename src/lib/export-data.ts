@@ -274,7 +274,7 @@ export async function exportAllPdf(
     ];
 
     // Höhe abschätzen (Kopf = Nummer + Name in zwei Zeilen + Leerzeile)
-    let textHeight = 5 + 8 + 4; // Nummerzeile + Namenzeile + extra Zeilenumbruch
+    let textHeight = 5 + 8 + 6; // Nummerzeile + Namenzeile + extra Zeilenumbruch
     doc.setFontSize(10);
     for (const [, val] of rows) {
       if (!val) continue;
@@ -308,7 +308,7 @@ export async function exportAllPdf(
     doc.text(m.mineral_name, textX, py + 6);
     py += 8;
     // Extra Zeilenumbruch unter dem Namen
-    py += 4;
+    py += 6;
 
     if (jpeg) {
       try {
