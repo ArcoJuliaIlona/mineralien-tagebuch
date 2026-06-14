@@ -175,10 +175,9 @@ export async function exportAllPdf(
   y += 6;
   doc.setFontSize(9);
   doc.text("Nr.", margin, y);
+  doc.text("Name", margin + 14, y);
   doc.text("Kategorie", margin + 70, y);
   doc.text("Fundort", margin + 100, y);
-  y += 5;
-  doc.text("Name", margin, y);
   y += 2;
   doc.setDrawColor(160, 180, 200);
   doc.line(margin, y, W - margin, y);
@@ -220,11 +219,10 @@ export async function exportAllPdf(
       y = margin;
     }
     doc.text(formatCollectionNumber(m.collection_number, m.category), margin, y);
+    doc.text(doc.splitTextToSize(m.mineral_name, 52)[0] ?? "", margin + 14, y);
     doc.text(CATEGORY_LABEL[m.category], margin + 70, y);
     doc.text(doc.splitTextToSize(m.location ?? "—", 80)[0] ?? "", margin + 100, y);
     y += 5;
-    doc.text(doc.splitTextToSize(m.mineral_name, 52)[0] ?? "", margin, y);
-    y += 6;
   }
 
   // Detailseiten
@@ -282,11 +280,6 @@ export async function exportAllPdf(
 
     const entryTop = py;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(12, 36, 64);
-    doc.text(m.mineral_name, textX, py + 5);
-    py += 6;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 74, 110);
@@ -295,6 +288,11 @@ export async function exportAllPdf(
       textX,
       py + 5,
     );
+    py += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(12, 36, 64);
+    doc.text(m.mineral_name, textX, py + 5);
     py += 7;
 
     if (jpeg) {
