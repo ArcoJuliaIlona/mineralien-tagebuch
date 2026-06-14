@@ -308,7 +308,7 @@ export async function exportAllPdf(
     doc.text(m.mineral_name, textX, py + 6);
     py += 8;
     // Extra Zeilenumbruch unter dem Namen
-    py += 4;
+    py += 6;
 
     if (jpeg) {
       try {
