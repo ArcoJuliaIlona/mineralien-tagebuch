@@ -280,11 +280,6 @@ export async function exportAllPdf(
 
     const entryTop = py;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(12, 36, 64);
-    doc.text(m.mineral_name, textX, py + 5);
-    py += 6;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(26, 74, 110);
@@ -293,6 +288,11 @@ export async function exportAllPdf(
       textX,
       py + 5,
     );
+    py += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(12, 36, 64);
+    doc.text(m.mineral_name, textX, py + 5);
     py += 7;
 
     if (jpeg) {
