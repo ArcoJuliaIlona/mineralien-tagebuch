@@ -8,6 +8,13 @@ import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
 import { generateNumberSheetPdf } from "@/lib/number-pdf";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/export")({
   head: () => ({ meta: [{ title: "Daten-Export" }] }),
@@ -20,12 +27,22 @@ export const Route = createFileRoute("/export")({
   ),
 });
 
+type PdfSort = "category" | "collection" | "location" | "name";
+
+const SORT_LABELS: Record<PdfSort, string> = {
+  category: "Kategorie (Mineral / Fossil / Gestein)",
+  collection: "Sammlung",
+  location: "Fundort",
+  name: "Name (Alphabetisch)",
+};
+
 function ExportPage() {
   const [busyJson, setBusyJson] = useState(false);
   const [busyPdf, setBusyPdf] = useState(false);
   const [busyQr, setBusyQr] = useState(false);
   const [busyNum, setBusyNum] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [pdfSort, setPdfSort] = useState<PdfSort>("category");
 
   const onJson = async () => {
     setBusyJson(true);
@@ -67,7 +84,7 @@ function ExportPage() {
     setBusyPdf(true);
     setProgress({ done: 0, total: 0 });
     try {
-      const n = await exportAllPdf((done, total) => setProgress({ done, total }));
+      const n = await exportAllPdf(pdfSort, (done, total) => setProgress({ done, total }));
       toast.success(`PDF mit ${n} Einträgen erstellt`);
     } catch {
       toast.error("PDF-Export fehlgeschlagen");
@@ -120,14 +137,28 @@ function ExportPage() {
             </p>
           </div>
         </div>
-        <Button onClick={onPdf} disabled={busyPdf} size="lg" className="h-14 w-full gap-2 text-base">
-          <FileDown className="size-5" />
-          {busyPdf
-            ? progress && progress.total
-              ? `Erstelle PDF… (${progress.done}/${progress.total})`
-              : "Erstelle PDF…"
-            : "PDF herunterladen"}
-        </Button>
+        <div className="space-y-2">
+          <Select value={pdfSort} onValueChange={(v) => setPdfSort(v as PdfSort)}>
+            <SelectTrigger className="h-12 text-base">
+              <SelectValue placeholder="Sortierung wählen" />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(SORT_LABELS) as PdfSort[]).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {SORT_LABELS[key]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={onPdf} disabled={busyPdf} size="lg" className="h-14 w-full gap-2 text-base">
+            <FileDown className="size-5" />
+            {busyPdf
+              ? progress && progress.total
+                ? `Erstelle PDF… (${progress.done}/${progress.total})`
+                : "Erstelle PDF…"
+              : "PDF herunterladen"}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-3 rounded-xl border bg-card p-4">

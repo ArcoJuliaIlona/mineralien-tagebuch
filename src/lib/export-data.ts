@@ -108,7 +108,10 @@ function drawFormula(
   return cursorY;
 }
 
-export async function exportAllPdf(onProgress?: (done: number, total: number) => void) {
+export async function exportAllPdf(
+  sortBy: "category" | "collection" | "location" | "name" = "category",
+  onProgress?: (done: number, total: number) => void,
+) {
   const minerals = await listMinerals();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
@@ -149,9 +152,35 @@ export async function exportAllPdf(onProgress?: (done: number, total: number) =>
   y += 4;
   doc.setFont("helvetica", "normal");
 
-  const sorted = [...minerals].sort(
-    (a, b) => a.category.localeCompare(b.category) || a.collection_number - b.collection_number,
-  );
+  const collator = new Intl.Collator("de-DE", { sensitivity: "base" });
+  const sorted = [...minerals].sort((a, b) => {
+    switch (sortBy) {
+      case "collection":
+        return (
+          collator.compare(a.collection_name || "", b.collection_name || "") ||
+          a.category.localeCompare(b.category) ||
+          a.collection_number - b.collection_number
+        );
+      case "location":
+        return (
+          collator.compare(a.location || "", b.location || "") ||
+          a.category.localeCompare(b.category) ||
+          a.collection_number - b.collection_number
+        );
+      case "name":
+        return (
+          collator.compare(a.mineral_name || "", b.mineral_name || "") ||
+          a.category.localeCompare(b.category) ||
+          a.collection_number - b.collection_number
+        );
+      case "category":
+      default:
+        return (
+          a.category.localeCompare(b.category) ||
+          a.collection_number - b.collection_number
+        );
+    }
+  });
   for (const m of sorted) {
     if (y > H - margin) {
       doc.addPage();
