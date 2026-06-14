@@ -274,7 +274,7 @@ export async function exportAllPdf(
     ];
 
     // Höhe abschätzen (Kopf = Nummer + Name in zwei Zeilen + Leerzeile)
-    let textHeight = 5 + 8 + 4; // Nummerzeile + Namenzeile + extra Zeilenumbruch
+    let textHeight = 5 + 8 + 6; // Nummerzeile + Namenzeile + extra Zeilenumbruch
     doc.setFontSize(10);
     for (const [, val] of rows) {
       if (!val) continue;
