@@ -4,6 +4,34 @@ import { listMinerals } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 import jsPDF from "jspdf";
 
+function photoToJpegDataUrl(dataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      const max = 1200;
+      const scale = Math.min(1, max / Math.max(w, h));
+      const cw = Math.max(1, Math.round(w * scale));
+      const ch = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = cw;
+      canvas.height = ch;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas nicht verfügbar"));
+        return;
+      }
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.drawImage(img, 0, 0, cw, ch);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => reject(new Error("Foto konnte nicht geladen werden."));
+    img.src = dataUrl;
+  });
+}
+
 export async function exportJsonBackup() {
   const minerals = await listMinerals();
   const payload = {
@@ -221,8 +249,9 @@ export async function exportAllPdf(
     if (m.photo_paths.length > 0) {
       try {
         const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
+        const jpeg = await photoToJpegDataUrl(dataUrl);
         const size = 60;
-        doc.addImage(dataUrl, "JPEG", margin, py, size, size, undefined, "FAST");
+        doc.addImage(jpeg, "JPEG", margin, py, size, size, undefined, "FAST");
         py += size + 5;
       } catch {
         /* skip */
