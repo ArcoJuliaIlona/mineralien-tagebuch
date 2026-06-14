@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileDown, Loader2, Pencil, QrCode, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Loader2, Pencil, QrCode, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -223,6 +223,11 @@ function DetailPage() {
         <Button asChild size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
           <Link to="/fund/$id/bearbeiten" params={{ id: m.id }}>
             <Pencil className="size-5" /> Bearbeiten
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="secondary" className="h-14 w-full gap-2 text-base">
+          <Link to="/neu" search={{ from: m.id }}>
+            <Copy className="size-5" /> Duplizieren (nur neue Fotos)
           </Link>
         </Button>
         <AlertDialog>
