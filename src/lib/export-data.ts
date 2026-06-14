@@ -5,11 +5,8 @@ import { fetchPhotoDataUrl } from "./photos";
 import jsPDF from "jspdf";
 
 function photoToJpegDataUrl(dataUrl: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const w = img.naturalWidth || img.width;
-      const h = img.naturalHeight || img.height;
+  return new Promise(async (resolve, reject) => {
+    const drawFromBitmap = (bmp: ImageBitmap | HTMLImageElement, w: number, h: number) => {
       const max = 1200;
       const scale = Math.min(1, max / Math.max(w, h));
       const cw = Math.max(1, Math.round(w * scale));
@@ -24,10 +21,23 @@ function photoToJpegDataUrl(dataUrl: string): Promise<string> {
       }
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, cw, ch);
-      ctx.drawImage(img, 0, 0, cw, ch);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
+      ctx.drawImage(bmp as CanvasImageSource, 0, 0, cw, ch);
+      resolve(canvas.toDataURL("image/jpeg", 0.9));
     };
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const bmp = await createImageBitmap(blob);
+      drawFromBitmap(bmp, bmp.width, bmp.height);
+      bmp.close?.();
+      return;
+    } catch {
+      /* Fallback auf <img> */
+    }
+    const img = new Image();
+    img.onload = () => drawFromBitmap(img, img.naturalWidth || img.width, img.naturalHeight || img.height);
     img.onerror = () => reject(new Error("Foto konnte nicht geladen werden."));
+    img.decoding = "sync";
     img.src = dataUrl;
   });
 }
@@ -227,77 +237,35 @@ export async function exportAllPdf(
 
   // Detailseiten
   let i = 0;
-  doc.addPage();
-  let py = margin;
   for (const m of sorted) {
-    // Foto vorbereiten
-    let jpeg: string | null = null;
-    if (m.photo_paths.length > 0) {
-      try {
-        const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
-        jpeg = await photoToJpegDataUrl(dataUrl);
-      } catch {
-        jpeg = null;
-      }
-    }
+    doc.addPage();
+    let py = margin;
 
-    const photoSize = 40;
-    const textX = jpeg ? margin + photoSize + 5 : margin;
-    const textW = W - margin - textX;
-
-    // Höhe abschätzen
-    const rowsPreview: Array<[string, string | null]> = [
-      ["Begleitmineralien", m.companion_minerals],
-      ["Fundort", m.location],
-      ["Sammlung", m.collection_name],
-      [
-        "Wert",
-        m.value != null
-          ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(m.value)
-          : null,
-      ],
-      [
-        "GPS",
-        m.latitude != null && m.longitude != null
-          ? `${m.latitude.toFixed(5)}, ${m.longitude.toFixed(5)}`
-          : null,
-      ],
-    ];
-    let textHeight = 6 + 7; // Titel + Untertitel
-    doc.setFontSize(10);
-    for (const [, val] of rowsPreview) {
-      if (!val) continue;
-      const wrapped = doc.splitTextToSize(val, textW - 32);
-      textHeight += Math.max(5, wrapped.length * 5) + 1;
-    }
-    if (m.chemical_formula) textHeight += 7;
-    const entryHeight = Math.max(textHeight, jpeg ? photoSize : 0) + 6;
-
-    if (py + entryHeight > H - margin) {
-      doc.addPage();
-      py = margin;
-    }
-
-    const entryTop = py;
-
+    // Kopf: Nummer, Zeilenumbruch, Name
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setTextColor(26, 74, 110);
     doc.text(
       `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}`,
-      textX,
+      margin,
       py + 5,
     );
-    py += 6;
+    py += 9;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(20);
     doc.setTextColor(12, 36, 64);
-    doc.text(m.mineral_name, textX, py + 5);
-    py += 7;
+    doc.text(m.mineral_name, margin, py + 6);
+    py += 12;
 
-    if (jpeg) {
+    // Foto: groß, eins pro Seite
+    if (m.photo_paths.length > 0) {
       try {
-        doc.addImage(jpeg, "JPEG", margin, entryTop, photoSize, photoSize, undefined, "FAST");
+        const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
+        const jpeg = await photoToJpegDataUrl(dataUrl);
+        const photoW = W - margin * 2;
+        const photoH = 110;
+        doc.addImage(jpeg, "JPEG", margin, py, photoW, photoH, undefined, "FAST");
+        py += photoH + 6;
       } catch {
         /* skip */
       }
@@ -305,6 +273,7 @@ export async function exportAllPdf(
 
     doc.setTextColor(18, 40, 60);
     doc.setFontSize(10);
+    const textW = W - margin * 2;
     const rows: Array<[string, string | null]> = [
       ["Begleitmineralien", m.companion_minerals],
       ["Fundort", m.location],
@@ -329,10 +298,10 @@ export async function exportAllPdf(
         py = margin;
       }
       doc.setFont("helvetica", "bold");
-      doc.text(`${label}:`, textX, py);
+      doc.text(`${label}:`, margin, py);
       doc.setFont("helvetica", "normal");
       const wrapped = doc.splitTextToSize(val, textW - 32);
-      doc.text(wrapped, textX + 32, py);
+      doc.text(wrapped, margin + 32, py);
       py += Math.max(5, wrapped.length * 5) + 1;
     }
 
@@ -342,18 +311,10 @@ export async function exportAllPdf(
         py = margin;
       }
       doc.setFont("helvetica", "bold");
-      doc.text("Formel:", textX, py);
-      drawFormula(doc, m.chemical_formula, textX + 32, py, textW - 32, 10);
+      doc.text("Formel:", margin, py);
+      drawFormula(doc, m.chemical_formula, margin + 32, py, textW - 32, 10);
       py += 7;
     }
-
-    // Sicherstellen, dass Cursor unter dem Foto liegt
-    py = Math.max(py, entryTop + (jpeg ? photoSize : 0));
-    // Trennlinie und Abstand
-    py += 3;
-    doc.setDrawColor(210, 220, 230);
-    doc.line(margin, py, W - margin, py);
-    py += 4;
 
     i++;
     onProgress?.(i, sorted.length);
