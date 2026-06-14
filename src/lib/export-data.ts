@@ -1,5 +1,5 @@
-import type { Mineral } from "./minerals";
-import { CATEGORY_LABEL, formatCollectionNumber } from "./minerals";
+import type { Mineral, Category } from "./minerals";
+import { CATEGORY_LABEL, CATEGORY_LABEL_PLURAL, formatCollectionNumber } from "./minerals";
 import { listMinerals } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 import jsPDF from "jspdf";
@@ -110,9 +110,13 @@ function drawFormula(
 
 export async function exportAllPdf(
   sortBy: "category" | "collection" | "location" | "name" = "category",
+  category?: Category,
   onProgress?: (done: number, total: number) => void,
 ) {
-  const minerals = await listMinerals();
+  let minerals = await listMinerals();
+  if (category) {
+    minerals = minerals.filter((m) => m.category === category);
+  }
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -127,7 +131,7 @@ export async function exportAllPdf(
   doc.setFontSize(12);
   doc.setTextColor(18, 52, 80);
   doc.text(
-    `Vollständiger Export · ${new Date().toLocaleDateString("de-DE")}`,
+    `${category ? CATEGORY_LABEL_PLURAL[category] : "Vollständiger Export"} · ${new Date().toLocaleDateString("de-DE")}`,
     W / 2,
     50,
     { align: "center" },
@@ -285,6 +289,7 @@ export async function exportAllPdf(
   }
 
   const stamp = new Date().toISOString().slice(0, 10);
-  doc.save(`Sammlung-Gesamt-${stamp}.pdf`);
+  const suffix = category ? `-${CATEGORY_LABEL[category]}` : "-Gesamt";
+  doc.save(`Sammlung${suffix}-${stamp}.pdf`);
   return minerals.length;
 }
