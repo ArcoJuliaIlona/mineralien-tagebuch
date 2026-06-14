@@ -5,11 +5,8 @@ import { fetchPhotoDataUrl } from "./photos";
 import jsPDF from "jspdf";
 
 function photoToJpegDataUrl(dataUrl: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const w = img.naturalWidth || img.width;
-      const h = img.naturalHeight || img.height;
+  return new Promise(async (resolve, reject) => {
+    const drawFromBitmap = (bmp: ImageBitmap | HTMLImageElement, w: number, h: number) => {
       const max = 1200;
       const scale = Math.min(1, max / Math.max(w, h));
       const cw = Math.max(1, Math.round(w * scale));
@@ -24,10 +21,23 @@ function photoToJpegDataUrl(dataUrl: string): Promise<string> {
       }
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, cw, ch);
-      ctx.drawImage(img, 0, 0, cw, ch);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
+      ctx.drawImage(bmp as CanvasImageSource, 0, 0, cw, ch);
+      resolve(canvas.toDataURL("image/jpeg", 0.9));
     };
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const bmp = await createImageBitmap(blob);
+      drawFromBitmap(bmp, bmp.width, bmp.height);
+      bmp.close?.();
+      return;
+    } catch {
+      /* Fallback auf <img> */
+    }
+    const img = new Image();
+    img.onload = () => drawFromBitmap(img, img.naturalWidth || img.width, img.naturalHeight || img.height);
     img.onerror = () => reject(new Error("Foto konnte nicht geladen werden."));
+    img.decoding = "sync";
     img.src = dataUrl;
   });
 }
