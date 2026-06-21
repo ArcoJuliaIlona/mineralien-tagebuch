@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Database, FileDown, Hash, QrCode } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
@@ -47,6 +49,8 @@ function ExportPage() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [pdfSort, setPdfSort] = useState<PdfSort>("category");
   const [pdfCategory, setPdfCategory] = useState<string>(ALL_CATEGORIES);
+  const [pdfFrom, setPdfFrom] = useState<string>("");
+  const [pdfTo, setPdfTo] = useState<string>("");
 
   const onJson = async () => {
     setBusyJson(true);
@@ -90,10 +94,16 @@ function ExportPage() {
     try {
       const cat: Category | undefined =
         pdfCategory === ALL_CATEGORIES ? undefined : (pdfCategory as Category);
+      const fromN = pdfFrom.trim() === "" ? null : Number(pdfFrom);
+      const toN = pdfTo.trim() === "" ? null : Number(pdfTo);
       const n = await exportAllPdf(
         pdfSort,
         cat,
         (done, total) => setProgress({ done, total }),
+        {
+          from: Number.isFinite(fromN as number) ? (fromN as number) : null,
+          to: Number.isFinite(toN as number) ? (toN as number) : null,
+        },
       );
       toast.success(`PDF mit ${n} Einträgen erstellt`);
     } catch {
@@ -171,6 +181,41 @@ function ExportPage() {
               ))}
             </SelectContent>
           </Select>
+          <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+            <p className="text-sm font-medium">Sammlungsnummer (optional)</p>
+            <p className="text-xs text-muted-foreground">
+              Nur Einträge mit Nummer von – bis. Leer lassen für alle. Die Kategorie-Auswahl oben
+              entscheidet, ob nur Mineralien, Fossilien oder Gesteine gefiltert werden.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="pdf-from" className="text-xs">Von</Label>
+                <Input
+                  id="pdf-from"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  placeholder="z. B. 1"
+                  value={pdfFrom}
+                  onChange={(e) => setPdfFrom(e.target.value)}
+                  className="h-12 text-base"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="pdf-to" className="text-xs">Bis</Label>
+                <Input
+                  id="pdf-to"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  placeholder="z. B. 50"
+                  value={pdfTo}
+                  onChange={(e) => setPdfTo(e.target.value)}
+                  className="h-12 text-base"
+                />
+              </div>
+            </div>
+          </div>
           <Button onClick={onPdf} disabled={busyPdf} size="lg" className="h-14 w-full gap-2 text-base">
             <FileDown className="size-5" />
             {busyPdf

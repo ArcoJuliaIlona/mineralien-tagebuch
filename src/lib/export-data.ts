@@ -150,10 +150,18 @@ export async function exportAllPdf(
   sortBy: "category" | "collection" | "location" | "name" = "category",
   category?: Category,
   onProgress?: (done: number, total: number) => void,
+  numberRange?: { from?: number | null; to?: number | null },
 ) {
   let minerals = await listMinerals();
   if (category) {
     minerals = minerals.filter((m) => m.category === category);
+  }
+  if (numberRange && (numberRange.from != null || numberRange.to != null)) {
+    const from = numberRange.from ?? -Infinity;
+    const to = numberRange.to ?? Infinity;
+    minerals = minerals.filter(
+      (m) => m.collection_number >= from && m.collection_number <= to,
+    );
   }
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
