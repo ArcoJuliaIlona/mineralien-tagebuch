@@ -48,7 +48,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [country, setCountry] = useState(initial?.country ?? "");
   const [collection, setCollection] = useState(initial?.collection_name ?? "");
   const [value, setValue] = useState<string>(
-    initial?.value != null ? String(initial.value) : "",
+    initial?.value != null ? String(initial.value) : "1",
   );
   const [formula, setFormula] = useState<string>(initial?.chemical_formula ?? "");
   const [fetchingFormula, setFetchingFormula] = useState(false);
