@@ -166,7 +166,7 @@ export async function exportAllPdf(
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
-  const margin = 14;
+  const margin = 23; // mind. 23 mm Rand zum Abheften
 
   // Deckblatt
   doc.setFont("helvetica", "bold");
