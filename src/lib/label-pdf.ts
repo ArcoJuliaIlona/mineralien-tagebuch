@@ -211,90 +211,54 @@ export async function generateLabelPdf(m: Mineral) {
   }
 
   const hasPhoto = photoLeftEdge > 0;
-  const contentLeft = hasPhoto ? photoLeftEdge : 16;
-  const contentRight = W - 16;
-  const contentWidth = contentRight - contentLeft;
-  const headerCenterX = hasPhoto ? (contentLeft + contentRight) / 2 : W / 2;
-
-  // Sammlungsnummer (z. B. M38) – oben mittig
-  let y = 22;
-  doc.setTextColor(...ink);
-  doc.setFont("times", "bold");
-  doc.setFontSize(20);
-  doc.text(formatCollectionNumber(m.collection_number, m.category), headerCenterX, y, {
-    align: "center",
-  });
-
-  // Mineralname – darunter, größer
-  y += 9;
-  doc.setFont("times", "bold");
-  doc.setFontSize(22);
-  doc.text(m.mineral_name, headerCenterX, y, { align: "center", maxWidth: contentWidth });
-
-  // Wenn Foto vorhanden: ab unter dem Foto über volle Breite weiterschreiben
   const fullLeft = 16;
   const fullRight = W - 16;
   const fullWidth = fullRight - fullLeft;
-  const belowPhotoY = photoY + photoSize + 6;
-  if (hasPhoto && y < belowPhotoY) y = belowPhotoY;
 
-  // Detail-Block
-  y += 12;
-  doc.setFont("times", "normal");
-  doc.setFontSize(13);
+  // Rechts neben dem Foto: Begleitmineralien zuerst, danach weitere Daten bündig darunter
+  const rightLeft = hasPhoto ? photoLeftEdge : fullLeft;
+  const rightWidth = fullRight - rightLeft;
+  let ry = photoY + 2;
+  const lineGap = 5.5;
+
+  doc.setTextColor(...ink);
+
+  const writeRightLine = (label: string, value: string) => {
+    doc.setFont("times", "bold");
+    doc.setFontSize(11);
+    doc.text(`${label}:`, rightLeft, ry);
+    const labelW = doc.getTextWidth(`${label}: `);
+    doc.setFont("times", "normal");
+    const wrapped = doc.splitTextToSize(value, rightWidth - labelW);
+    doc.text(wrapped, rightLeft + labelW, ry);
+    ry += Math.max(lineGap, wrapped.length * lineGap);
+  };
+
+  if (m.companion_minerals) writeRightLine("Begleitmin.", m.companion_minerals);
 
   if (m.category === "mineral" && m.chemical_formula) {
-    doc.text("Formel: ", fullLeft, y);
+    doc.setFont("times", "bold");
+    doc.setFontSize(11);
+    doc.text("Formel:", rightLeft, ry);
     const labelW = doc.getTextWidth("Formel: ");
-    drawFormula(doc, m.chemical_formula, fullLeft + labelW, y, fullWidth - labelW, 13);
-    y += 7;
+    drawFormula(doc, m.chemical_formula, rightLeft + labelW, ry, rightWidth - labelW, 11);
+    ry += lineGap;
   }
+  if (m.category === "mineral" && m.hardness) writeRightLine("Härte", String(m.hardness));
+  if (m.category === "rock" && m.origin) writeRightLine("Ursprung", m.origin);
+  if (m.notable) writeRightLine("Besonders", m.notable);
+  if (m.country) writeRightLine("Land", m.country);
+  if (m.location) writeRightLine("Fundort", m.location);
 
-  if (m.category === "mineral" && m.hardness) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    doc.text(`Härte: ${m.hardness}`, fullLeft, y);
-    y += 7;
-  }
-
-  if (m.category === "rock" && m.origin) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    doc.text(`Ursprung: ${m.origin}`, fullLeft, y);
-    y += 7;
-  }
-
-  if (m.companion_minerals) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(`Begleitmineralien: ${m.companion_minerals}`, fullWidth);
-    doc.text(wrapped, fullLeft, y);
-    y += wrapped.length * 6 + 1;
-  }
-
-  if (m.notable) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(`Besonders: ${m.notable}`, fullWidth);
-    doc.text(wrapped, fullLeft, y);
-    y += wrapped.length * 6 + 1;
-  }
-
-  if (m.country) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(m.country, fullWidth);
-    doc.text(wrapped, W / 2, y, { align: "center" });
-    y += wrapped.length * 6;
-  }
-
-  if (m.location) {
-    doc.setFont("times", "normal");
-    doc.setFontSize(13);
-    const wrapped = doc.splitTextToSize(m.location, fullWidth);
-    doc.text(wrapped, W / 2, y, { align: "center" });
-    y += wrapped.length * 6;
-  }
+  // Unter Foto / rechtem Block: Nummer und Name linksbündig
+  let y = Math.max(photoY + photoSize + 6, ry + 4);
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  doc.text(formatCollectionNumber(m.collection_number, m.category), fullLeft, y);
+  y += 7;
+  doc.setFont("times", "bold");
+  doc.setFontSize(20);
+  doc.text(m.mineral_name, fullLeft, y, { maxWidth: fullWidth });
 
   // Coll: Arco Boehme – unten mittig
   doc.setFont("times", "italic");
