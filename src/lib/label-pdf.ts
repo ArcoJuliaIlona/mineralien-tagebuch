@@ -187,12 +187,13 @@ export async function generateLabelPdf(m: Mineral) {
 
   const ink: [number, number, number] = [30, 25, 20];
 
-  // Foto oben rechts (falls vorhanden)
-  // Foto oben links (falls vorhanden)
-  let photoLeftEdge = 0;
-  const photoSize = 36;
+  // FESTE Positionen — dürfen sich beim Druck nicht verschieben.
+  // Foto oben links, fixe Koordinaten unabhängig von Textlänge.
   const photoX = 14;
   const photoY = 14;
+  const photoSize = 36;
+  const photoRightEdge = photoX + photoSize; // = 50
+  let photoLeftEdge = 0;
   if (m.photo_paths.length > 0) {
     try {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
@@ -204,39 +205,48 @@ export async function generateLabelPdf(m: Mineral) {
       doc.setDrawColor(42, 78, 112);
       doc.setLineWidth(0.4);
       doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6);
-      photoLeftEdge = photoX + photoSize + 3;
+      photoLeftEdge = photoRightEdge + 3;
     } catch {
       /* Foto optional */
     }
   }
 
   const hasPhoto = photoLeftEdge > 0;
+  // Auch ohne Foto: rechter Block beginnt an derselben festen Spalte,
+  // damit die Geometrie identisch bleibt.
+  const rightColumnX = photoRightEdge + 3;
   const fullLeft = 16;
   const fullRight = W - 16;
   const fullWidth = fullRight - fullLeft;
 
   // Rechts neben dem Foto: Begleitmineralien zuerst, danach weitere Daten bündig darunter
-  const rightLeft = hasPhoto ? photoLeftEdge : fullLeft;
+  const rightLeft = rightColumnX;
   const rightWidth = fullRight - rightLeft;
   let ry = photoY + 2;
   const lineGap = 5.5;
+  // Maximale Y-Grenze für den rechten Block, damit Nummer/Name nie verschoben werden.
+  const rightMaxY = photoY + photoSize; // bündig mit Foto-Unterkante
 
   doc.setTextColor(...ink);
 
   const writeRightLine = (label: string, value: string) => {
+    if (ry > rightMaxY) return; // Platz erschöpft – Layout bleibt fix
     doc.setFont("times", "bold");
     doc.setFontSize(11);
     doc.text(`${label}:`, rightLeft, ry);
     const labelW = doc.getTextWidth(`${label}: `);
     doc.setFont("times", "normal");
     const wrapped = doc.splitTextToSize(value, rightWidth - labelW);
-    doc.text(wrapped, rightLeft + labelW, ry);
-    ry += Math.max(lineGap, wrapped.length * lineGap);
+    // Auf verbleibende Höhe begrenzen
+    const maxLines = Math.max(1, Math.floor((rightMaxY - ry) / lineGap) + 1);
+    const limited = wrapped.slice(0, maxLines);
+    doc.text(limited, rightLeft + labelW, ry);
+    ry += Math.max(lineGap, limited.length * lineGap);
   };
 
   if (m.companion_minerals) writeRightLine("Begleitmin.", m.companion_minerals);
 
-  if (m.category === "mineral" && m.chemical_formula) {
+  if (m.category === "mineral" && m.chemical_formula && ry <= rightMaxY) {
     doc.setFont("times", "bold");
     doc.setFontSize(11);
     doc.text("Formel:", rightLeft, ry);
@@ -250,8 +260,8 @@ export async function generateLabelPdf(m: Mineral) {
   if (m.country) writeRightLine("Land", m.country);
   if (m.location) writeRightLine("Fundort", m.location);
 
-  // Unter Foto / rechtem Block: Nummer und Name linksbündig
-  let y = Math.max(photoY + photoSize + 6, ry + 4);
+  // FESTE Position für Nummer und Name – unabhängig vom rechten Textblock.
+  let y = photoY + photoSize + 8;
   doc.setFont("times", "bold");
   doc.setFontSize(16);
   doc.text(formatCollectionNumber(m.collection_number, m.category), fullLeft, y);
