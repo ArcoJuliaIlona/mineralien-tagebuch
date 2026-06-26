@@ -101,6 +101,7 @@ function DetailPage() {
     try {
       setBusy(true);
       await generateLabelPdf(m);
+      toast.success("Etikett-PDF heruntergeladen");
     } catch {
       toast.error("PDF konnte nicht erstellt werden");
     } finally {
@@ -112,6 +113,7 @@ function DetailPage() {
     try {
       setBusy(true);
       await generateSingleQrPdf(m);
+      toast.success("QR-Code-PDF heruntergeladen");
     } catch {
       toast.error("QR-Code konnte nicht erstellt werden");
     } finally {
