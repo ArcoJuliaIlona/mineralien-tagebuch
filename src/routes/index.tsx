@@ -162,10 +162,15 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   const onBatchStudio = async () => {
     const paths = Array.from(
-      new Set(minerals.map((m) => m.photo_paths?.[0]).filter(Boolean) as string[]),
+      new Set(
+        minerals
+          .filter((m) => m.collection_number >= 1 && m.collection_number <= 149)
+          .map((m) => m.photo_paths?.[0])
+          .filter(Boolean) as string[],
+      ),
     );
     if (paths.length === 0) {
-      toast.info("Keine Fotos vorhanden");
+      toast.info("Keine Fotos im Bereich 1–149 vorhanden");
       return;
     }
     setBatchBusy(true);
