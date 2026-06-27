@@ -92,7 +92,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const studioFn = useServerFn(studioBackgroundPhoto);
   const checkBackupFn = useServerFn(hasOriginalBackup);
   const [batchBusy, setBatchBusy] = useState(false);
-  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -169,7 +169,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       return;
     }
     setBatchBusy(true);
-    setBatchProgress({ done: 0, total: paths.length });
+    const startedAt = Date.now();
+    setBatchProgress({ done: 0, total: paths.length, startedAt });
     let ok = 0, skip = 0, fail = 0;
     for (let i = 0; i < paths.length; i++) {
       const p = paths[i];
@@ -183,7 +184,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       } catch {
         fail++;
       }
-      setBatchProgress({ done: i + 1, total: paths.length });
+      setBatchProgress({ done: i + 1, total: paths.length, startedAt });
     }
     const nextV = Date.now();
     localStorage.setItem("photo-refresh-version", String(nextV));
@@ -223,6 +224,10 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
           ? `Bearbeite ${batchProgress.done}/${batchProgress.total}…`
           : "Alle Fotos: Studio-Hintergrund"}
       </Button>
+
+      {batchBusy && batchProgress && (
+        <BatchProgressBar progress={batchProgress} />
+      )}
 
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <div>
@@ -381,6 +386,40 @@ function EmptyState({ hasAny, category, newCategory }: { hasAny: boolean; catego
           </Button>
         </Link>
       )}
+    </div>
+  );
+}
+
+function BatchProgressBar({ progress }: { progress: { done: number; total: number; startedAt: number } }) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => force((n) => n + 1), 500);
+    return () => clearInterval(id);
+  }, []);
+  const { done, total, startedAt } = progress;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const elapsed = (Date.now() - startedAt) / 1000;
+  const remaining = done > 0 ? Math.max(0, Math.round((elapsed / done) * (total - done))) : null;
+  const fmt = (s: number) => {
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return r ? `${m}m ${r}s` : `${m}m`;
+  };
+  return (
+    <div className="space-y-2 rounded-xl border bg-card p-3">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium">{done} / {total} Fotos · {pct}%</span>
+        <span className="text-muted-foreground">
+          {remaining == null ? "Restzeit wird berechnet…" : `noch ca. ${fmt(remaining)}`}
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full bg-primary transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
