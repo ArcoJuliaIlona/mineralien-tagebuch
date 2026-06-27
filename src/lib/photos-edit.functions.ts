@@ -125,7 +125,7 @@ async function runEdit(
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
       body: JSON.stringify({
-        model: "google/gemini-3-pro-image",
+        model: "google/gemini-2.5-flash-image-preview",
         modalities: ["image", "text"],
         messages: [
           {

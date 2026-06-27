@@ -64,6 +64,32 @@ export async function getPhotoUrl(path: string): Promise<string> {
   return data.signedUrl;
 }
 
+/**
+ * Returns a signed URL for the ORIGINAL (pre-AI-edit) version of a photo
+ * if a backup exists in the `originals/` folder, otherwise falls back to
+ * the current (possibly edited) file.
+ */
+export async function getOriginalPhotoUrl(path: string): Promise<string> {
+  const idx = path.indexOf("/");
+  if (idx > 0) {
+    const userPart = path.slice(0, idx);
+    const rest = path.slice(idx + 1);
+    const originalPath = `${userPart}/originals/${rest}`;
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(originalPath, 60 * 60);
+    if (!error && data?.signedUrl) {
+      try {
+        const head = await fetch(data.signedUrl, { method: "HEAD" });
+        if (head.ok) return data.signedUrl;
+      } catch {
+        /* fall through */
+      }
+    }
+  }
+  return getPhotoUrl(path);
+}
+
 export async function getPhotoUrls(paths: string[]): Promise<string[]> {
   if (paths.length === 0) return [];
   const { data, error } = await supabase.storage
