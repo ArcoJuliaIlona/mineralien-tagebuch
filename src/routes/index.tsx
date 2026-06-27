@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Gem, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Plus, Gem, ArrowUp, ArrowDown, ImageIcon, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { studioBackgroundPhoto, hasOriginalBackup } from "@/lib/photos-edit.functions";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
@@ -86,6 +89,10 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [showValue, setShowValue] = useState(false);
   const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const studioFn = useServerFn(studioBackgroundPhoto);
+  const checkBackupFn = useServerFn(hasOriginalBackup);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -153,6 +160,40 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
 
+  const onBatchStudio = async () => {
+    const paths = Array.from(
+      new Set(filtered.flatMap((m) => m.photo_paths).filter(Boolean) as string[]),
+    );
+    if (paths.length === 0) {
+      toast.info("Keine Fotos vorhanden");
+      return;
+    }
+    if (!confirm(`Hintergrund für ${paths.length} Foto(s) auf Studio umwandeln? Bereits bearbeitete werden übersprungen. Pro Foto einzeln rückgängig machbar.`)) return;
+    setBatchBusy(true);
+    setBatchProgress({ done: 0, total: paths.length });
+    let ok = 0, skip = 0, fail = 0;
+    for (let i = 0; i < paths.length; i++) {
+      const p = paths[i];
+      try {
+        const { exists } = await checkBackupFn({ data: { path: p } });
+        if (exists) { skip++; }
+        else {
+          await studioFn({ data: { path: p } });
+          ok++;
+        }
+      } catch {
+        fail++;
+      }
+      setBatchProgress({ done: i + 1, total: paths.length });
+    }
+    const nextV = Date.now();
+    localStorage.setItem("photo-refresh-version", String(nextV));
+    setPhotoVersion(nextV);
+    setBatchBusy(false);
+    setBatchProgress(null);
+    toast.success(`Fertig: ${ok} bearbeitet, ${skip} übersprungen${fail ? `, ${fail} fehlgeschlagen` : ""}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-1 pt-2">
@@ -171,6 +212,18 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
           <TabsTrigger value={ALL_TAB}>Alle</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <Button
+        onClick={onBatchStudio}
+        disabled={batchBusy}
+        variant="outline"
+        className="h-11 w-full gap-2"
+      >
+        {batchBusy ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
+        {batchBusy && batchProgress
+          ? `Bearbeite ${batchProgress.done}/${batchProgress.total}…`
+          : "Alle Fotos: Studio-Hintergrund"}
+      </Button>
 
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <div>
