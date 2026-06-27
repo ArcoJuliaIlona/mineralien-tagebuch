@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus, Gem, ArrowUp, ArrowDown, ImageIcon, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { studioBackgroundPhoto, hasOriginalBackup } from "@/lib/photos-edit.functions";
+import { studioBackgroundPhoto } from "@/lib/photos-edit.functions";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,6 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const studioFn = useServerFn(studioBackgroundPhoto);
-  const checkBackupFn = useServerFn(hasOriginalBackup);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
 
@@ -176,17 +175,13 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     setBatchBusy(true);
     const startedAt = Date.now();
     setBatchProgress({ done: 0, total: paths.length, startedAt });
-    let ok = 0, skip = 0, fail = 0;
+    let ok = 0, fail = 0;
     let lastError = "";
     for (let i = 0; i < paths.length; i++) {
       const p = paths[i];
       try {
-        const { exists } = await checkBackupFn({ data: { path: p } });
-        if (exists) { skip++; }
-        else {
-          await studioFn({ data: { path: p } });
-          ok++;
-        }
+        await studioFn({ data: { path: p } });
+        ok++;
       } catch (e) {
         fail++;
         lastError = e instanceof Error ? e.message : String(e);
@@ -202,7 +197,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     if (fail > 0 && ok === 0) {
       toast.error(`Keine Fotos bearbeitet (${fail} fehlgeschlagen): ${lastError}`);
     } else {
-      toast.success(`Fertig: ${ok} bearbeitet, ${skip} übersprungen${fail ? `, ${fail} fehlgeschlagen (${lastError})` : ""}`);
+      toast.success(`Fertig: ${ok} bearbeitet${fail ? `, ${fail} fehlgeschlagen (${lastError})` : ""}`);
     }
   };
 
