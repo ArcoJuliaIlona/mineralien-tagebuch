@@ -177,6 +177,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     const startedAt = Date.now();
     setBatchProgress({ done: 0, total: paths.length, startedAt });
     let ok = 0, skip = 0, fail = 0;
+    let lastError = "";
     for (let i = 0; i < paths.length; i++) {
       const p = paths[i];
       try {
@@ -186,8 +187,10 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
           await studioFn({ data: { path: p } });
           ok++;
         }
-      } catch {
+      } catch (e) {
         fail++;
+        lastError = e instanceof Error ? e.message : String(e);
+        console.error("Batch studio failed for", p, e);
       }
       setBatchProgress({ done: i + 1, total: paths.length, startedAt });
     }
@@ -196,7 +199,11 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     setPhotoVersion(nextV);
     setBatchBusy(false);
     setBatchProgress(null);
-    toast.success(`Fertig: ${ok} bearbeitet, ${skip} übersprungen${fail ? `, ${fail} fehlgeschlagen` : ""}`);
+    if (fail > 0 && ok === 0) {
+      toast.error(`Keine Fotos bearbeitet (${fail} fehlgeschlagen): ${lastError}`);
+    } else {
+      toast.success(`Fertig: ${ok} bearbeitet, ${skip} übersprungen${fail ? `, ${fail} fehlgeschlagen (${lastError})` : ""}`);
+    }
   };
 
   return (
