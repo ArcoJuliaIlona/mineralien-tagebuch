@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileDown, Loader2, Pencil, QrCode, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Loader2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { blackenPhoto, hasOriginalBackup, restorePhoto } from "@/lib/photos-edit.functions";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -55,6 +57,12 @@ function DetailPage() {
   const [busy, setBusy] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const [photoVersion, setPhotoVersion] = useState(0);
+  const [hasBackup, setHasBackup] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const blackenFn = useServerFn(blackenPhoto);
+  const restoreFn = useServerFn(restorePhoto);
+  const checkBackupFn = useServerFn(hasOriginalBackup);
 
   useEffect(() => {
     if (!zoomPhoto) {
@@ -63,10 +71,49 @@ function DetailPage() {
     }
     let active = true;
     getPhotoUrl(zoomPhoto)
-      .then((url) => { if (active) setZoomUrl(url); })
+      .then((url) => { if (active) setZoomUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`); })
       .catch(() => {});
     return () => { active = false; };
-  }, [zoomPhoto]);
+  }, [zoomPhoto, photoVersion]);
+
+  useEffect(() => {
+    if (!zoomPhoto) { setHasBackup(false); return; }
+    let active = true;
+    checkBackupFn({ data: { path: zoomPhoto } })
+      .then((r) => { if (active) setHasBackup(r.exists); })
+      .catch(() => { if (active) setHasBackup(false); });
+    return () => { active = false; };
+  }, [zoomPhoto, photoVersion, checkBackupFn]);
+
+  const onBlacken = async () => {
+    if (!zoomPhoto) return;
+    setEditing(true);
+    try {
+      await blackenFn({ data: { path: zoomPhoto } });
+      setPhotoVersion((v) => v + 1);
+      qc.invalidateQueries({ queryKey: ["minerals", id] });
+      toast.success("Hintergrund geschwärzt");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Schwärzen fehlgeschlagen");
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const onRestore = async () => {
+    if (!zoomPhoto) return;
+    setEditing(true);
+    try {
+      await restoreFn({ data: { path: zoomPhoto } });
+      setPhotoVersion((v) => v + 1);
+      qc.invalidateQueries({ queryKey: ["minerals", id] });
+      toast.success("Original wiederhergestellt");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Wiederherstellen fehlgeschlagen");
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const { data: m, isLoading } = useQuery({
     queryKey: ["minerals", id],
@@ -273,6 +320,20 @@ function DetailPage() {
           >
             <X className="size-5" />
           </button>
+          <div
+            className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button size="sm" onClick={onBlacken} disabled={editing} className="gap-2">
+              {editing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              Hintergrund schwärzen
+            </Button>
+            {hasBackup && (
+              <Button size="sm" variant="secondary" onClick={onRestore} disabled={editing} className="gap-2">
+                <RotateCcw className="size-4" /> Original
+              </Button>
+            )}
+          </div>
           {zoomUrl ? (
             <ZoomablePhoto src={zoomUrl} alt="Vergrößertes Foto" />
           ) : (
