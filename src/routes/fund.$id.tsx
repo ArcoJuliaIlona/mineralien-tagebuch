@@ -1,9 +1,9 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileDown, Loader2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Image as ImageIcon, Loader2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { blackenPhoto, hasOriginalBackup, restorePhoto } from "@/lib/photos-edit.functions";
+import { blackenPhoto, hasOriginalBackup, restorePhoto, studioBackgroundPhoto } from "@/lib/photos-edit.functions";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -61,6 +61,7 @@ function DetailPage() {
   const [hasBackup, setHasBackup] = useState(false);
   const [editing, setEditing] = useState(false);
   const blackenFn = useServerFn(blackenPhoto);
+  const studioFn = useServerFn(studioBackgroundPhoto);
   const restoreFn = useServerFn(restorePhoto);
   const checkBackupFn = useServerFn(hasOriginalBackup);
 
@@ -85,43 +86,29 @@ function DetailPage() {
     return () => { active = false; };
   }, [zoomPhoto, photoVersion, checkBackupFn]);
 
-  const onBlacken = async () => {
+  const applyEdit = async (fn: (a: { data: { path: string } }) => Promise<unknown>, successMsg: string) => {
     if (!zoomPhoto) return;
     setEditing(true);
     try {
-      await blackenFn({ data: { path: zoomPhoto } });
+      await fn({ data: { path: zoomPhoto } });
       const nextPhotoVersion = Date.now();
       localStorage.setItem("photo-refresh-version", String(nextPhotoVersion));
       setPhotoVersion(nextPhotoVersion);
       qc.invalidateQueries({ queryKey: ["minerals", id] });
       qc.invalidateQueries({ queryKey: ["minerals"] });
       qc.invalidateQueries({ queryKey: ["thumb-urls"] });
-      toast.success("Hintergrund geschwärzt");
+      toast.success(successMsg);
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Schwärzen fehlgeschlagen");
+      toast.error(e instanceof Error ? e.message : "Bearbeitung fehlgeschlagen");
     } finally {
       setEditing(false);
     }
   };
 
-  const onRestore = async () => {
-    if (!zoomPhoto) return;
-    setEditing(true);
-    try {
-      await restoreFn({ data: { path: zoomPhoto } });
-      const nextPhotoVersion = Date.now();
-      localStorage.setItem("photo-refresh-version", String(nextPhotoVersion));
-      setPhotoVersion(nextPhotoVersion);
-      qc.invalidateQueries({ queryKey: ["minerals", id] });
-      qc.invalidateQueries({ queryKey: ["minerals"] });
-      qc.invalidateQueries({ queryKey: ["thumb-urls"] });
-      toast.success("Original wiederhergestellt");
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Wiederherstellen fehlgeschlagen");
-    } finally {
-      setEditing(false);
-    }
-  };
+  const onBlacken = () => applyEdit(blackenFn, "Hintergrund geschwärzt");
+  const onStudio = () => applyEdit(studioFn, "Studio-Hintergrund angewendet");
+
+  const onRestore = () => applyEdit(restoreFn, "Original wiederhergestellt");
 
   const { data: m, isLoading } = useQuery({
     queryKey: ["minerals", id],
@@ -334,7 +321,11 @@ function DetailPage() {
           >
             <Button size="sm" onClick={onBlacken} disabled={editing} className="gap-2">
               {editing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Hintergrund schwärzen
+              Schwarz
+            </Button>
+            <Button size="sm" onClick={onStudio} disabled={editing} className="gap-2">
+              {editing ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
+              Studio-Hintergrund
             </Button>
             {hasBackup && (
               <Button size="sm" variant="secondary" onClick={onRestore} disabled={editing} className="gap-2">
