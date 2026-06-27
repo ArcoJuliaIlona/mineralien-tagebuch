@@ -11,7 +11,7 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { listMinerals, CATEGORY_LABEL_PLURAL, formatCollectionNumber, type Category } from "@/lib/minerals";
-import { getPhotoUrls } from "@/lib/photos";
+import { getPhotoThumbUrls } from "@/lib/photos";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -72,7 +72,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const { data: thumbUrlMap } = useQuery({
     queryKey: ["thumb-urls", thumbPaths, photoVersion],
     queryFn: async () => {
-      const urls = await getPhotoUrls(thumbPaths);
+      const urls = await getPhotoThumbUrls(thumbPaths, 240);
       const map: Record<string, string> = {};
       thumbPaths.forEach((p, i) => {
         map[p] = urls[i] ?? "";

@@ -73,6 +73,25 @@ export async function getPhotoUrls(paths: string[]): Promise<string[]> {
   return data.map((d) => d.signedUrl ?? "");
 }
 
+/**
+ * Like getPhotoUrls but requests a small, server-side resized thumbnail
+ * via Supabase image transformation. Drastically reduces bytes downloaded
+ * for list views (from ~500 KB–1 MB per full image to ~10–30 KB).
+ */
+export async function getPhotoThumbUrls(
+  paths: string[],
+  size = 200,
+): Promise<string[]> {
+  if (paths.length === 0) return [];
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(paths, 60 * 60, {
+      transform: { width: size, height: size, resize: "cover", quality: 70 },
+    } as never);
+  if (error) throw error;
+  return data.map((d) => d.signedUrl ?? "");
+}
+
 export async function fetchPhotoDataUrl(path: string): Promise<string> {
   const url = await getPhotoUrl(path);
   const res = await fetch(url);
