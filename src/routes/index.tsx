@@ -92,7 +92,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const studioFn = useServerFn(studioBackgroundPhoto);
   const checkBackupFn = useServerFn(hasOriginalBackup);
   const [batchBusy, setBatchBusy] = useState(false);
-  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -169,7 +169,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       return;
     }
     setBatchBusy(true);
-    setBatchProgress({ done: 0, total: paths.length });
+    const startedAt = Date.now();
+    setBatchProgress({ done: 0, total: paths.length, startedAt });
     let ok = 0, skip = 0, fail = 0;
     for (let i = 0; i < paths.length; i++) {
       const p = paths[i];
@@ -183,7 +184,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       } catch {
         fail++;
       }
-      setBatchProgress({ done: i + 1, total: paths.length });
+      setBatchProgress({ done: i + 1, total: paths.length, startedAt });
     }
     const nextV = Date.now();
     localStorage.setItem("photo-refresh-version", String(nextV));
