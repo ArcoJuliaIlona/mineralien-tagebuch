@@ -68,7 +68,33 @@ export const blackenPhoto = createServerFn({ method: "POST" })
     return { path: i.path };
   })
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    assertOwned(data.path, context.userId);
+    return runEdit(data.path, context, "black");
+  });
+
+export const studioBackgroundPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => {
+    const i = input as { path?: unknown };
+    if (!i || typeof i.path !== "string") throw new Error("Pfad fehlt");
+    return { path: i.path };
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    return runEdit(data.path, context, "studio");
+  });
+
+const PROMPTS = {
+  black:
+    "Isolate ONLY the mineral, fossil, or rock specimen in this image and place it on a pure solid black (#000000) background. CRITICAL: Completely remove EVERYTHING that is not the specimen itself — including any human hands, fingers, skin, gloves, tweezers, labels, paper, scale bars, tables, cloth, or other objects. Every pixel that is not the actual stone/fossil/mineral specimen must become pure black. Keep the specimen perfectly intact with its original colors, textures, sharpness, edges, and details — do not alter, recolor, or recrop it. Return the edited image.",
+  studio:
+    "Isolate ONLY the mineral, fossil, or rock specimen and place it on a professional museum-style studio background: a smooth dark radial gradient that is slightly lighter neutral dark grey (#2a2a2a to #3a3a3a) behind and around the specimen, fading softly to near-black (#0a0a0a) at the edges and corners. The look should match high-end mineral collector photography (like Cabinet Nr. 40 / mindat showcase photos). CRITICAL: Completely remove EVERYTHING that is not the specimen — human hands, fingers, skin, gloves, tweezers, labels, paper, scale bars, tables, cloth, original background. Keep the specimen perfectly intact with its original colors, textures, sharpness, edges and details — do not alter, recolor, or recrop it. Add a very subtle soft shadow under the specimen for depth. Return the edited image.",
+} as const;
+
+async function runEdit(
+  path: string,
+  context: { userId: string; supabase: unknown },
+  style: keyof typeof PROMPTS,
+): Promise<{ ok: true }> {
+  assertOwned(path, context.userId);
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("LOVABLE_API_KEY nicht konfiguriert");
 
@@ -77,14 +103,14 @@ export const blackenPhoto = createServerFn({ method: "POST" })
     >;
 
     // 1. Download current photo
-    const { data: file, error: dlErr } = await supabase.storage.from(BUCKET).download(data.path);
+    const { data: file, error: dlErr } = await supabase.storage.from(BUCKET).download(path);
     if (dlErr || !file) throw new Error("Foto konnte nicht geladen werden");
 
     // 2. Save backup if not present
-    if (!(await backupExists(supabase, data.path))) {
+    if (!(await backupExists(supabase, path))) {
       const { error: bErr } = await supabase.storage
         .from(BUCKET)
-        .upload(originalPath(data.path), file, {
+        .upload(originalPath(path), file, {
           contentType: file.type || "image/jpeg",
           upsert: false,
         });
@@ -105,10 +131,7 @@ export const blackenPhoto = createServerFn({ method: "POST" })
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: "Isolate ONLY the mineral, fossil, or rock specimen in this image and place it on a pure solid black (#000000) background. CRITICAL: Completely remove EVERYTHING that is not the specimen itself — including any human hands, fingers, skin, gloves, tweezers, labels, paper, scale bars, tables, cloth, or other objects. Every pixel that is not the actual stone/fossil/mineral specimen must become pure black. Keep the specimen perfectly intact with its original colors, textures, sharpness, edges, and details — do not alter, recolor, or recrop it. Return the edited image.",
-              },
+              { type: "text", text: PROMPTS[style] },
               { type: "image_url", image_url: { url: dataUrl } },
             ],
           },
@@ -137,11 +160,11 @@ export const blackenPhoto = createServerFn({ method: "POST" })
     // 4. Upload over original path
     const { error: upErr } = await supabase.storage
       .from(BUCKET)
-      .upload(data.path, blob, { contentType, upsert: true });
+      .upload(path, blob, { contentType, upsert: true });
     if (upErr) throw new Error("Upload fehlgeschlagen: " + upErr.message);
 
     return { ok: true };
-  });
+}
 
 export const restorePhoto = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
