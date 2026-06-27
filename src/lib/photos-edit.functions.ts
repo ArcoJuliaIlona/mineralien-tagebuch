@@ -107,7 +107,7 @@ export const blackenPhoto = createServerFn({ method: "POST" })
             content: [
               {
                 type: "text",
-                text: "Replace the background of this image with pure solid black (#000000). Keep the main subject (mineral, fossil, or rock) perfectly intact, with all its original colors, textures, sharpness, and details. Do not alter the subject. Only the background must become pure black. Return the edited image.",
+                text: "Isolate ONLY the mineral, fossil, or rock specimen in this image and place it on a pure solid black (#000000) background. CRITICAL: Completely remove EVERYTHING that is not the specimen itself — including any human hands, fingers, skin, gloves, tweezers, labels, paper, scale bars, tables, cloth, or other objects. Every pixel that is not the actual stone/fossil/mineral specimen must become pure black. Keep the specimen perfectly intact with its original colors, textures, sharpness, edges, and details — do not alter, recolor, or recrop it. Return the edited image.",
               },
               { type: "image_url", image_url: { url: dataUrl } },
             ],
