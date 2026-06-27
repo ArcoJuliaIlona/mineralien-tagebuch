@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus, Gem, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -41,10 +41,22 @@ const ALL_TAB = "__ALL__";
 type TabValue = Category | typeof ALL_TAB;
 
 function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
+  const [photoVersion, setPhotoVersion] = useState(0);
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
   });
+
+  useEffect(() => {
+    const syncPhotoVersion = () => setPhotoVersion(Number(localStorage.getItem("photo-refresh-version") || 0));
+    window.addEventListener("focus", syncPhotoVersion);
+    window.addEventListener("storage", syncPhotoVersion);
+    syncPhotoVersion();
+    return () => {
+      window.removeEventListener("focus", syncPhotoVersion);
+      window.removeEventListener("storage", syncPhotoVersion);
+    };
+  }, []);
 
   const thumbPaths = useMemo(
     () =>
@@ -55,7 +67,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   );
 
   const { data: thumbUrlMap } = useQuery({
-    queryKey: ["thumb-urls", thumbPaths],
+    queryKey: ["thumb-urls", thumbPaths, photoVersion],
     queryFn: async () => {
       const urls = await getPhotoUrls(thumbPaths);
       const map: Record<string, string> = {};
@@ -266,6 +278,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
                   path={m.photo_paths[0]}
                   url={m.photo_paths[0] ? thumbUrlMap?.[m.photo_paths[0]] ?? null : null}
                   className="h-20 w-20 shrink-0"
+                  version={photoVersion}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">

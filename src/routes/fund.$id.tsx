@@ -90,9 +90,12 @@ function DetailPage() {
     setEditing(true);
     try {
       await blackenFn({ data: { path: zoomPhoto } });
-      setPhotoVersion((v) => v + 1);
+      const nextPhotoVersion = Date.now();
+      localStorage.setItem("photo-refresh-version", String(nextPhotoVersion));
+      setPhotoVersion(nextPhotoVersion);
       qc.invalidateQueries({ queryKey: ["minerals", id] });
       qc.invalidateQueries({ queryKey: ["minerals"] });
+      qc.invalidateQueries({ queryKey: ["thumb-urls"] });
       toast.success("Hintergrund geschwärzt");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Schwärzen fehlgeschlagen");
@@ -106,9 +109,12 @@ function DetailPage() {
     setEditing(true);
     try {
       await restoreFn({ data: { path: zoomPhoto } });
-      setPhotoVersion((v) => v + 1);
+      const nextPhotoVersion = Date.now();
+      localStorage.setItem("photo-refresh-version", String(nextPhotoVersion));
+      setPhotoVersion(nextPhotoVersion);
       qc.invalidateQueries({ queryKey: ["minerals", id] });
       qc.invalidateQueries({ queryKey: ["minerals"] });
+      qc.invalidateQueries({ queryKey: ["thumb-urls"] });
       toast.success("Original wiederhergestellt");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Wiederherstellen fehlgeschlagen");
