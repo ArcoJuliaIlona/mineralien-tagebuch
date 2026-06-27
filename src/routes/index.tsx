@@ -162,7 +162,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   const onBatchStudio = async () => {
     const paths = Array.from(
-      new Set(minerals.flatMap((m) => m.photo_paths).filter(Boolean) as string[]),
+      new Set(minerals.map((m) => m.photo_paths?.[0]).filter(Boolean) as string[]),
     );
     if (paths.length === 0) {
       toast.info("Keine Fotos vorhanden");
