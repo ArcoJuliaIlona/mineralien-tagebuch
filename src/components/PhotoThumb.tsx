@@ -6,13 +6,20 @@ export function PhotoThumb({
   path,
   url: urlProp,
   className,
+  version,
 }: {
   path?: string;
   url?: string | null;
   className?: string;
+  version?: number;
 }) {
   const [fetchedUrl, setFetchedUrl] = useState<string | null>(null);
-  const url = urlProp ?? fetchedUrl;
+  const baseUrl = urlProp ?? fetchedUrl;
+  const url = baseUrl
+    ? version
+      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}v=${version}`
+      : baseUrl
+    : null;
 
   useEffect(() => {
     let active = true;
@@ -23,7 +30,7 @@ export function PhotoThumb({
     return () => {
       active = false;
     };
-  }, [path, urlProp]);
+  }, [path, urlProp, version]);
 
   if (!path) {
     return (
