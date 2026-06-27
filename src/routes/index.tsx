@@ -41,7 +41,7 @@ const ALL_TAB = "__ALL__";
 type TabValue = Category | typeof ALL_TAB;
 
 function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
-  const [photoVersion, setPhotoVersion] = useState(() => Number(localStorage.getItem("photo-refresh-version") || 0));
+  const [photoVersion, setPhotoVersion] = useState(0);
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
