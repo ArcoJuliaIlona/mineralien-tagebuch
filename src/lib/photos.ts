@@ -86,7 +86,7 @@ export async function getPhotoThumbUrls(
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .createSignedUrls(paths, 60 * 60, {
-      transform: { width: size, height: size, resize: "cover", quality: 70 },
+      transform: { width: size, height: size, resize: "cover", quality: 85 },
     } as never);
   if (error) throw error;
   return data.map((d) => d.signedUrl ?? "");
