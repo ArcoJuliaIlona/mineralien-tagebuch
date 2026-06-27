@@ -225,6 +225,10 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
           : "Alle Fotos: Studio-Hintergrund"}
       </Button>
 
+      {batchBusy && batchProgress && (
+        <BatchProgressBar progress={batchProgress} />
+      )}
+
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
