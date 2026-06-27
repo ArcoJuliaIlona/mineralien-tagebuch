@@ -162,13 +162,12 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
   const onBatchStudio = async () => {
     const paths = Array.from(
-      new Set(filtered.flatMap((m) => m.photo_paths).filter(Boolean) as string[]),
+      new Set(minerals.flatMap((m) => m.photo_paths).filter(Boolean) as string[]),
     );
     if (paths.length === 0) {
       toast.info("Keine Fotos vorhanden");
       return;
     }
-    if (!confirm(`Hintergrund für ${paths.length} Foto(s) auf Studio umwandeln? Bereits bearbeitete werden übersprungen. Pro Foto einzeln rückgängig machbar.`)) return;
     setBatchBusy(true);
     setBatchProgress({ done: 0, total: paths.length });
     let ok = 0, skip = 0, fail = 0;
