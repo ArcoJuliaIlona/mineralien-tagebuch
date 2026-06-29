@@ -99,9 +99,31 @@ export async function getPhotoUrls(paths: string[]): Promise<string[]> {
   return data.map((d) => d.signedUrl ?? "");
 }
 
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex++;
+        results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+      }
+    },
+  );
+
+  await Promise.all(workers);
+  return results;
+}
+
 /**
  * Like getPhotoUrls but requests a small, server-side resized thumbnail
- * via Supabase image transformation. Drastically reduces bytes downloaded
+ * via backend image transformation. Drastically reduces bytes downloaded
  * for list views (from ~500 KB–1 MB per full image to ~10–30 KB).
  */
 export async function getPhotoThumbUrls(
@@ -109,13 +131,19 @@ export async function getPhotoThumbUrls(
   size = 200,
 ): Promise<string[]> {
   if (paths.length === 0) return [];
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .createSignedUrls(paths, 60 * 60, {
-      transform: { width: size, height: size, resize: "cover", quality: 85 },
-    } as never);
-  if (error) throw error;
-  return data.map((d) => d.signedUrl ?? "");
+  return mapWithConcurrency(paths, 6, async (path) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 60 * 60, {
+          transform: { width: size, height: size, resize: "cover", quality: 75 },
+        });
+      if (error) throw error;
+      return data.signedUrl;
+    } catch {
+      return "";
+    }
+  });
 }
 
 export async function fetchPhotoDataUrl(path: string): Promise<string> {
