@@ -132,13 +132,17 @@ export async function getPhotoThumbUrls(
 ): Promise<string[]> {
   if (paths.length === 0) return [];
   return mapWithConcurrency(paths, 6, async (path) => {
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .createSignedUrl(path, 60 * 60, {
-        transform: { width: size, height: size, resize: "cover", quality: 75 },
-      });
-    if (error) throw error;
-    return data.signedUrl;
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 60 * 60, {
+          transform: { width: size, height: size, resize: "cover", quality: 75 },
+        });
+      if (error) throw error;
+      return data.signedUrl;
+    } catch {
+      return "";
+    }
   });
 }
 
