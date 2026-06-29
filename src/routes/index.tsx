@@ -46,6 +46,7 @@ type TabValue = Category | typeof ALL_TAB;
 
 function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
   const [photoVersion, setPhotoVersion] = useState(0);
+  const [thumbUrlMap, setThumbUrlMap] = useState<Record<string, string>>({});
   const { data: minerals = [], isLoading } = useQuery({
     queryKey: ["minerals"],
     queryFn: listMinerals,
@@ -156,19 +157,31 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     [visibleItems],
   );
 
-  const { data: thumbUrlMap } = useQuery({
-    queryKey: ["thumb-urls", thumbPaths, photoVersion],
-    queryFn: async () => {
-      const urls = await getPhotoThumbUrls(thumbPaths, 240);
-      const map: Record<string, string> = {};
-      thumbPaths.forEach((p, i) => {
-        map[p] = urls[i] ?? "";
+  // Reset cached URLs when photos are edited (version bump).
+  useEffect(() => {
+    setThumbUrlMap({});
+  }, [photoVersion]);
+
+  // Incrementally sign only paths we don't have URLs for yet.
+  useEffect(() => {
+    const missing = thumbPaths.filter((p) => !thumbUrlMap[p]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const urls = await getPhotoThumbUrls(missing, 240);
+      if (cancelled) return;
+      setThumbUrlMap((prev) => {
+        const next = { ...prev };
+        missing.forEach((p, i) => {
+          if (urls[i]) next[p] = urls[i];
+        });
+        return next;
       });
-      return map;
-    },
-    enabled: thumbPaths.length > 0,
-    staleTime: 50 * 60 * 1000,
-  });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [thumbPaths, thumbUrlMap]);
 
   const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
 
@@ -353,7 +366,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
               >
                 <PhotoThumb
                   path={m.photo_paths[0]}
-                  url={m.photo_paths[0] ? thumbUrlMap?.[m.photo_paths[0]] ?? null : null}
+                  url={m.photo_paths[0] ? thumbUrlMap[m.photo_paths[0]] ?? null : null}
                   className="h-20 w-20 shrink-0"
                   version={photoVersion}
                 />
