@@ -24,6 +24,7 @@ import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos, getPhotoUrl } from "@/lib/photos";
+import { getPhotoThumbUrls } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { generateSingleQrPdf } from "@/lib/qr-pdf";
@@ -121,6 +122,13 @@ function DetailPage() {
     enabled: !!m && (m?.video_paths?.length ?? 0) > 0,
   });
 
+  const { data: photoThumbUrls } = useQuery({
+    queryKey: ["mineral-photo-thumbs", id, m?.photo_paths, photoVersion],
+    queryFn: () => getPhotoThumbUrls(m?.photo_paths ?? [], 600),
+    enabled: !!m && (m?.photo_paths?.length ?? 0) > 0,
+    staleTime: 50 * 60 * 1000,
+  });
+
   if (isLoading) return <p className="py-12 text-center text-muted-foreground">Lade…</p>;
   if (!m) return <p className="py-12 text-center text-muted-foreground">Nicht gefunden.</p>;
 
@@ -181,14 +189,19 @@ function DetailPage() {
 
       {m.photo_paths.length > 0 && (
         <div className="grid grid-cols-2 gap-2 rounded-xl bg-black p-2">
-          {m.photo_paths.map((p) => (
+          {m.photo_paths.map((p, i) => (
             <button
               key={p}
               type="button"
               onClick={() => setZoomPhoto(p)}
               className="block cursor-zoom-in overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <PhotoThumb path={p} className="aspect-square w-full" version={photoVersion} />
+              <PhotoThumb
+                path={p}
+                url={photoThumbUrls?.[i] ?? null}
+                className="aspect-square w-full"
+                version={photoVersion}
+              />
             </button>
           ))}
         </div>
