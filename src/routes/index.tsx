@@ -41,6 +41,7 @@ export const Route = createFileRoute("/")({
 
 const ALL = "__ALLE__";
 const ALL_TAB = "__ALL__";
+const INITIAL_VISIBLE_COUNT = 30;
 type TabValue = Category | typeof ALL_TAB;
 
 function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
@@ -63,34 +64,13 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     };
   }, []);
 
-  const thumbPaths = useMemo(
-    () =>
-      Array.from(
-        new Set(minerals.map((m) => m.photo_paths[0]).filter(Boolean) as string[]),
-      ),
-    [minerals],
-  );
-
-  const { data: thumbUrlMap } = useQuery({
-    queryKey: ["thumb-urls", thumbPaths, photoVersion],
-    queryFn: async () => {
-      const urls = await getPhotoThumbUrls(thumbPaths, 240);
-      const map: Record<string, string> = {};
-      thumbPaths.forEach((p, i) => {
-        map[p] = urls[i] ?? "";
-      });
-      return map;
-    },
-    enabled: thumbPaths.length > 0,
-    staleTime: 50 * 60 * 1000,
-  });
-
   const [search, setSearch] = useState("");
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [showValue, setShowValue] = useState(false);
   const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
@@ -158,6 +138,37 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
     return sorted;
   }, [inTab, search, filterName, filterLocation, sortBy, sortDir]);
+
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_COUNT);
+  }, [tab, search, filterName, filterLocation, sortBy, sortDir]);
+
+  const visibleItems = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount],
+  );
+
+  const thumbPaths = useMemo(
+    () =>
+      Array.from(
+        new Set(visibleItems.map((m) => m.photo_paths[0]).filter(Boolean) as string[]),
+      ),
+    [visibleItems],
+  );
+
+  const { data: thumbUrlMap } = useQuery({
+    queryKey: ["thumb-urls", thumbPaths, photoVersion],
+    queryFn: async () => {
+      const urls = await getPhotoThumbUrls(thumbPaths, 240);
+      const map: Record<string, string> = {};
+      thumbPaths.forEach((p, i) => {
+        map[p] = urls[i] ?? "";
+      });
+      return map;
+    },
+    enabled: thumbPaths.length > 0,
+    staleTime: 50 * 60 * 1000,
+  });
 
   const categoryLabel = tab === ALL_TAB ? "Objekte" : CATEGORY_LABEL_PLURAL[tab as Category];
 
@@ -333,7 +344,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
         <EmptyState hasAny={inTab.length > 0} category={tab} newCategory={newCategory} />
       ) : (
         <ul className="space-y-3">
-          {filtered.map((m) => (
+          {visibleItems.map((m) => (
             <li key={m.id}>
               <Link
                 to="/fund/$id"
@@ -372,6 +383,18 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
               </Link>
             </li>
           ))}
+          {visibleCount < filtered.length && (
+            <li>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 w-full"
+                onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_COUNT)}
+              >
+                Mehr anzeigen ({Math.min(INITIAL_VISIBLE_COUNT, filtered.length - visibleCount)} von {filtered.length - visibleCount})
+              </Button>
+            </li>
+          )}
         </ul>
       )}
     </div>
