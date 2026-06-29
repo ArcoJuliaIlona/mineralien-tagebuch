@@ -74,7 +74,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const { data: thumbUrlMap } = useQuery({
     queryKey: ["thumb-urls", thumbPaths, photoVersion],
     queryFn: async () => {
-      const urls = await getPhotoThumbUrls(thumbPaths, 400);
+      const urls = await getPhotoThumbUrls(thumbPaths, 240);
       const map: Record<string, string> = {};
       thumbPaths.forEach((p, i) => {
         map[p] = urls[i] ?? "";
