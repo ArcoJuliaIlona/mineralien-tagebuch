@@ -23,7 +23,7 @@ import { LocationMap } from "@/components/LocationMap";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
-import { deletePhotos, getPhotoUrl } from "@/lib/photos";
+import { deletePhotos, getPhotoUrl, getZoomPhotoUrl } from "@/lib/photos";
 import { getPhotoThumbUrls } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
@@ -72,7 +72,7 @@ function DetailPage() {
       return;
     }
     let active = true;
-    getPhotoUrl(zoomPhoto)
+    getZoomPhotoUrl(zoomPhoto)
       .then((url) => { if (active) setZoomUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`); })
       .catch(() => {});
     return () => { active = false; };
