@@ -65,6 +65,29 @@ export async function getPhotoUrl(path: string): Promise<string> {
 }
 
 /**
+ * Signed URL optimized for the zoom/lightbox view: server-side resized to
+ * fit within `maxSize` px on the long edge. Much faster than loading the
+ * full original (which can be multi-MB) while still high enough quality
+ * for pinch-zoom on mobile and desktop inspection.
+ */
+export async function getZoomPhotoUrl(
+  path: string,
+  maxSize = 1600,
+): Promise<string> {
+  try {
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(path, 60 * 60, {
+        transform: { width: maxSize, height: maxSize, resize: "contain", quality: 82 },
+      });
+    if (error) throw error;
+    return data.signedUrl;
+  } catch {
+    return getPhotoUrl(path);
+  }
+}
+
+/**
  * Returns a signed URL for the ORIGINAL (pre-AI-edit) version of a photo
  * if a backup exists in the `originals/` folder, otherwise falls back to
  * the current (possibly edited) file.
