@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileDown, Image as ImageIcon, Loader2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Image as ImageIcon, Loader2, Maximize2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { blackenPhoto, hasOriginalBackup, restorePhoto, studioBackgroundPhoto } from "@/lib/photos-edit.functions";
@@ -23,7 +23,7 @@ import { LocationMap } from "@/components/LocationMap";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
-import { deletePhotos, getZoomPhotoUrl } from "@/lib/photos";
+import { deletePhotos, getPhotoUrl, getZoomPhotoUrl } from "@/lib/photos";
 import { getPhotoThumbUrls } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
@@ -58,6 +58,8 @@ function DetailPage() {
   const [busy, setBusy] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const [presentUrl, setPresentUrl] = useState<string | null>(null);
+  const [presentLoading, setPresentLoading] = useState(false);
   const [photoVersion, setPhotoVersion] = useState(0);
   const [hasBackup, setHasBackup] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -171,6 +173,28 @@ function DetailPage() {
     }
   };
 
+  const onPresent = async () => {
+    if (!m || m.photo_paths.length === 0) return;
+    setPresentLoading(true);
+    try {
+      const url = await getPhotoUrl(m.photo_paths[0]);
+      setPresentUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`);
+      // Request fullscreen after state update
+      setTimeout(() => {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      }, 50);
+    } catch {
+      toast.error("Foto konnte nicht geladen werden");
+    } finally {
+      setPresentLoading(false);
+    }
+  };
+
+  const closePresent = () => {
+    setPresentUrl(null);
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  };
+
   return (
     <div className="space-y-5">
       <Link
@@ -260,6 +284,18 @@ function DetailPage() {
       </dl>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {m.photo_paths.length > 0 && (
+          <Button
+            size="lg"
+            variant="default"
+            className="h-14 gap-2 text-base sm:col-span-2"
+            onClick={onPresent}
+            disabled={presentLoading}
+          >
+            {presentLoading ? <Loader2 className="size-5 animate-spin" /> : <Maximize2 className="size-5" />}
+            Präsentationsmodus
+          </Button>
+        )}
         <Button
           size="lg"
           className="h-14 gap-2 text-base"
@@ -351,6 +387,31 @@ function DetailPage() {
           ) : (
             <Loader2 className="size-10 animate-spin text-white" />
           )}
+        </div>
+      )}
+
+      {presentUrl && (
+        <div
+          role="dialog"
+          aria-label="Präsentationsmodus"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black"
+          onClick={closePresent}
+        >
+          <button
+            type="button"
+            aria-label="Schließen"
+            onClick={(e) => { e.stopPropagation(); closePresent(); }}
+            className="absolute right-3 top-3 z-10 rounded-full bg-background/80 p-2 text-foreground shadow"
+          >
+            <X className="size-5" />
+          </button>
+          <img
+            src={presentUrl}
+            alt="Präsentation"
+            className="max-h-screen max-w-full object-contain"
+            style={{ imageRendering: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
