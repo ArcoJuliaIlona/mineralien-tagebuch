@@ -23,7 +23,7 @@ import { LocationMap } from "@/components/LocationMap";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
 import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
-import { deletePhotos, getPhotoUrl, getZoomPhotoUrl } from "@/lib/photos";
+import { deletePhotos, getOriginalPhotoUrl, getPhotoUrl, getZoomPhotoUrl } from "@/lib/photos";
 import { getPhotoThumbUrls } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
@@ -175,14 +175,13 @@ function DetailPage() {
 
   const onPresent = async () => {
     if (!m || m.photo_paths.length === 0) return;
-    // Fullscreen must be requested inside the user gesture — do it first.
-    try {
-      await document.documentElement.requestFullscreen?.();
-    } catch { /* ignore, still show overlay */ }
     setPresentLoading(true);
     try {
-      const url = await getPhotoUrl(m.photo_paths[0]);
+      // Prefer the pre-edit ORIGINAL backup (up to 2000px) over the
+      // studio-edited file (capped at 1024px by the AI) for maximum sharpness.
+      const url = await getOriginalPhotoUrl(m.photo_paths[0]);
       setPresentUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`);
+      try { await document.documentElement.requestFullscreen?.(); } catch { /* ignore */ }
     } catch {
       toast.error("Foto konnte nicht geladen werden");
     } finally {
