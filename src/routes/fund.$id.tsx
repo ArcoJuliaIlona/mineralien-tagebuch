@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileDown, Image as ImageIcon, Loader2, Maximize2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Focus, Image as ImageIcon, Loader2, Maximize2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { blackenPhoto, hasOriginalBackup, restorePhoto, studioBackgroundPhoto } from "@/lib/photos-edit.functions";
@@ -28,6 +28,7 @@ import { getPhotoThumbUrls } from "@/lib/photos";
 import { deleteVideos, getVideoUrls } from "@/lib/videos";
 import { generateLabelPdf } from "@/lib/label-pdf";
 import { generateSingleQrPdf } from "@/lib/qr-pdf";
+import { sharpenImageUrl } from "@/lib/sharpen";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/fund/$id")({
@@ -60,6 +61,9 @@ function DetailPage() {
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
   const [presentUrl, setPresentUrl] = useState<string | null>(null);
   const [presentLoading, setPresentLoading] = useState(false);
+  const [presentBaseUrl, setPresentBaseUrl] = useState<string | null>(null);
+  const [sharpened, setSharpened] = useState(false);
+  const [sharpening, setSharpening] = useState(false);
   const [photoVersion, setPhotoVersion] = useState(0);
   const [hasBackup, setHasBackup] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -180,7 +184,10 @@ function DetailPage() {
       // Prefer the pre-edit ORIGINAL backup (up to 2000px) over the
       // studio-edited file (capped at 1024px by the AI) for maximum sharpness.
       const url = await getOriginalPhotoUrl(m.photo_paths[0]);
-      setPresentUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`);
+      const versioned = `${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`;
+      setPresentBaseUrl(versioned);
+      setPresentUrl(versioned);
+      setSharpened(false);
       try { await document.documentElement.requestFullscreen?.(); } catch { /* ignore */ }
     } catch {
       toast.error("Foto konnte nicht geladen werden");
@@ -191,7 +198,28 @@ function DetailPage() {
 
   const closePresent = () => {
     setPresentUrl(null);
+    setPresentBaseUrl(null);
+    setSharpened(false);
     if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+  };
+
+  const toggleSharpen = async () => {
+    if (!presentBaseUrl) return;
+    if (sharpened) {
+      setPresentUrl(presentBaseUrl);
+      setSharpened(false);
+      return;
+    }
+    setSharpening(true);
+    try {
+      const sharp = await sharpenImageUrl(presentBaseUrl, 0.6);
+      setPresentUrl(sharp);
+      setSharpened(true);
+    } catch {
+      toast.error("Schärfen fehlgeschlagen");
+    } finally {
+      setSharpening(false);
+    }
   };
 
   return (
@@ -406,6 +434,21 @@ function DetailPage() {
           </button>
           <div className="h-full w-full" onClick={(e) => e.stopPropagation()}>
             <ZoomablePhoto src={presentUrl} alt="Präsentation" />
+          </div>
+          <div
+            className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              size="sm"
+              variant={sharpened ? "default" : "secondary"}
+              onClick={toggleSharpen}
+              disabled={sharpening}
+              className="gap-2"
+            >
+              {sharpening ? <Loader2 className="size-4 animate-spin" /> : <Focus className="size-4" />}
+              {sharpened ? "Schärfen aus" : "Schärfen"}
+            </Button>
           </div>
         </div>
       )}
