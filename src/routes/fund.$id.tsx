@@ -404,13 +404,9 @@ function DetailPage() {
           >
             <X className="size-5" />
           </button>
-          <img
-            src={presentUrl}
-            alt="Präsentation"
-            className="max-h-screen max-w-full object-contain"
-            style={{ imageRendering: "auto" }}
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="h-full w-full" onClick={(e) => e.stopPropagation()}>
+            <ZoomablePhoto src={presentUrl} alt="Präsentation" />
+          </div>
         </div>
       )}
     </div>
