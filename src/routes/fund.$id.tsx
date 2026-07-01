@@ -175,14 +175,14 @@ function DetailPage() {
 
   const onPresent = async () => {
     if (!m || m.photo_paths.length === 0) return;
+    // Fullscreen must be requested inside the user gesture — do it first.
+    try {
+      await document.documentElement.requestFullscreen?.();
+    } catch { /* ignore, still show overlay */ }
     setPresentLoading(true);
     try {
       const url = await getPhotoUrl(m.photo_paths[0]);
       setPresentUrl(`${url}${url.includes("?") ? "&" : "?"}v=${photoVersion}`);
-      // Request fullscreen after state update
-      setTimeout(() => {
-        document.documentElement.requestFullscreen?.().catch(() => {});
-      }, 50);
     } catch {
       toast.error("Foto konnte nicht geladen werden");
     } finally {
