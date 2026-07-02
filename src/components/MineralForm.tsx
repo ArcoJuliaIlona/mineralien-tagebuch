@@ -623,6 +623,65 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         )}
       </div>
 
+      {category === "mineral" && (
+        <div className="space-y-3">
+          <Label className="text-base">UV-Fotos (unter UV-Licht)</Label>
+          <p className="text-xs text-muted-foreground">
+            Wird beim Hochladen automatisch mit Kontrast- und Schwarzabgleich-Preset optimiert.
+          </p>
+          {uvPhotos.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {uvPhotos.map((p) => (
+                <div key={p} className="relative">
+                  <div className="cursor-pointer" onClick={() => setZoomPhoto(p)}>
+                    <PhotoThumb path={p} className="aspect-square w-full" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeUvPhoto(p)}
+                    aria-label="UV-Foto entfernen"
+                    className="absolute right-1 top-1 rounded-full bg-destructive p-1.5 text-destructive-foreground shadow"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                  <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    UV
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+              <Camera className="size-5" /> Kamera
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => handleUvFiles(e.target.files)}
+              />
+            </label>
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+              <ImagePlus className="size-5" /> Galerie
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => handleUvFiles(e.target.files)}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">{uvPhotos.length} UV-Fotos</p>
+          {uploadingUv && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> UV-Foto wird hochgeladen…
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="space-y-3">
         <Label className="text-base">Videos</Label>
         {videos.length > 0 && (
