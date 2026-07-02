@@ -72,6 +72,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [showValue, setShowValue] = useState(false);
   const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
@@ -104,6 +105,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     const list = inTab.filter((m) => {
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
+      if (onlyUv && !(m.uv_photos && m.uv_photos.length > 0)) return false;
       if (!q) return true;
       return [
         m.mineral_name,
@@ -140,11 +142,11 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     });
 
     return sorted;
-  }, [inTab, search, filterName, filterLocation, sortBy, sortDir]);
+  }, [inTab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }, [tab, search, filterName, filterLocation, sortBy, sortDir]);
+  }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
