@@ -11,6 +11,16 @@ function originalPath(path: string): string {
   return `${userPart}/originals/${rest}`;
 }
 
+function cutoutPath(path: string): string {
+  const idx = path.indexOf("/");
+  if (idx < 0) throw new Error("Ungültiger Pfad");
+  const userPart = path.slice(0, idx);
+  const rest = path.slice(idx + 1);
+  // Force .png so alpha/black is lossless
+  const withoutExt = rest.replace(/\.[^./]+$/, "");
+  return `${userPart}/cutouts/${withoutExt}.png`;
+}
+
 function assertOwned(path: string, userId: string) {
   if (!path.startsWith(`${userId}/`)) throw new Error("Zugriff verweigert");
   if (path.includes("..")) throw new Error("Ungültiger Pfad");
