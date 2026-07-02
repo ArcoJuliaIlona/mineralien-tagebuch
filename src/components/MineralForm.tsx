@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
 import { ZoomablePhoto } from "./ZoomablePhoto";
-import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
+import { uploadPhoto, uploadUvPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
@@ -62,6 +62,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
+  const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
+  const [removedUv, setRemovedUv] = useState<string[]>([]);
+  const [uploadingUv, setUploadingUv] = useState(false);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
   const [removedVideos, setRemovedVideos] = useState<string[]>([]);
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
@@ -182,6 +185,29 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     setRemoved((prev) => [...prev, path]);
   };
 
+  const handleUvFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingUv(true);
+    try {
+      const paths: string[] = [];
+      for (const f of Array.from(files)) {
+        const p = await uploadUvPhoto(userId, f);
+        paths.push(p);
+      }
+      setUvPhotos((prev) => [...prev, ...paths]);
+      toast.success("UV-Foto hochgeladen (Kontrast-Preset angewendet)");
+    } catch (e: unknown) {
+      toast.error("UV-Upload fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setUploadingUv(false);
+    }
+  };
+
+  const removeUvPhoto = (path: string) => {
+    setUvPhotos((prev) => prev.filter((p) => p !== path));
+    setRemovedUv((prev) => [...prev, path]);
+  };
+
   const handleVideoFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploadingVideo(true);
@@ -293,10 +319,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           era: era.trim() || null,
           origin: origin.trim() || null,
           notable: notable.trim() || null,
+          uv_photos: category === "mineral" ? uvPhotos : [],
         },
-        removed,
+        [...removed, ...removedUv],
       );
       if (removed.length > 0) await deletePhotos(removed);
+      if (removedUv.length > 0) await deletePhotos(removedUv);
       if (removedVideos.length > 0) await deleteVideos(removedVideos);
     } catch (e: unknown) {
       toast.error("Speichern fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
@@ -594,6 +622,65 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           </p>
         )}
       </div>
+
+      {category === "mineral" && (
+        <div className="space-y-3">
+          <Label className="text-base">UV-Fotos (unter UV-Licht)</Label>
+          <p className="text-xs text-muted-foreground">
+            Wird beim Hochladen automatisch mit Kontrast- und Schwarzabgleich-Preset optimiert.
+          </p>
+          {uvPhotos.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {uvPhotos.map((p) => (
+                <div key={p} className="relative">
+                  <div className="cursor-pointer" onClick={() => setZoomPhoto(p)}>
+                    <PhotoThumb path={p} className="aspect-square w-full" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeUvPhoto(p)}
+                    aria-label="UV-Foto entfernen"
+                    className="absolute right-1 top-1 rounded-full bg-destructive p-1.5 text-destructive-foreground shadow"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                  <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                    UV
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+              <Camera className="size-5" /> Kamera
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => handleUvFiles(e.target.files)}
+              />
+            </label>
+            <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-card text-base font-medium text-foreground transition hover:bg-accent/40">
+              <ImagePlus className="size-5" /> Galerie
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => handleUvFiles(e.target.files)}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">{uvPhotos.length} UV-Fotos</p>
+          {uploadingUv && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> UV-Foto wird hochgeladen…
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-3">
         <Label className="text-base">Videos</Label>

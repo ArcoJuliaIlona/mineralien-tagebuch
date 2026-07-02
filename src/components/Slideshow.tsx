@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Pause, Play, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import type { Mineral } from "@/lib/minerals";
@@ -12,7 +12,21 @@ type Props = {
   intervalMs?: number;
 };
 
+type Frame = { item: Mineral; kind: "normal" | "uv"; path: string };
+
 export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
+  // Compare-Modus: pro Fund zuerst Normalfoto, direkt danach UV-Foto (falls vorhanden)
+  const frames = useMemo<Frame[]>(() => {
+    const out: Frame[] = [];
+    for (const it of items) {
+      const normal = it.photo_paths?.[0];
+      if (normal) out.push({ item: it, kind: "normal", path: normal });
+      const uv = it.uv_photos?.[0];
+      if (uv) out.push({ item: it, kind: "uv", path: uv });
+    }
+    return out;
+  }, [items]);
+
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [urls, setUrls] = useState<Record<number, string>>({});
@@ -21,37 +35,43 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const cutoutFn = useServerFn(cutoutPhoto);
   const inFlight = useRef<Set<number>>(new Set());
 
-  const total = items.length;
-  const current = items[index];
+  const total = frames.length;
+  const current = frames[index];
 
   const next = useCallback(() => setIndex((i) => (i + 1) % total), [total]);
   const prev = useCallback(() => setIndex((i) => (i - 1 + total) % total), [total]);
 
-  // Preload current + next couple of freigestellte (cutout) photos.
+  // Preload current + next couple of photos.
+  // Normal-Frames: KI-Freistellung. UV-Frames: Rohbild direkt (kein Studio).
   useEffect(() => {
     const wanted = [index, (index + 1) % total, (index + 2) % total];
     wanted.forEach((i) => {
       if (urls[i] || inFlight.current.has(i)) return;
-      const path = items[i]?.photo_paths?.[0];
-      if (!path) {
+      const frame = frames[i];
+      if (!frame) {
         setUrls((u) => ({ ...u, [i]: "" }));
         return;
       }
       inFlight.current.add(i);
       (async () => {
         try {
-          const { path: cutout } = await cutoutFn({ data: { path } });
-          const url = await getPhotoUrl(cutout);
-          setUrls((u) => ({ ...u, [i]: url }));
+          if (frame.kind === "uv") {
+            const url = await getPhotoUrl(frame.path);
+            setUrls((u) => ({ ...u, [i]: url }));
+          } else {
+            const { path: cutout } = await cutoutFn({ data: { path: frame.path } });
+            const url = await getPhotoUrl(cutout);
+            setUrls((u) => ({ ...u, [i]: url }));
+          }
         } catch (e) {
-          console.error("Cutout fehlgeschlagen", e);
+          console.error("Slideshow-Foto fehlgeschlagen", e);
           setUrls((u) => ({ ...u, [i]: "" }));
         } finally {
           inFlight.current.delete(i);
         }
       })();
     });
-  }, [index, items, total, urls, cutoutFn]);
+  }, [index, frames, total, urls, cutoutFn]);
 
   // Auto-advance — but only once the current image has loaded.
   useEffect(() => {
@@ -92,6 +112,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   }, []);
 
   const url = urls[index];
+  const item = current?.item;
+  const isUv = current?.kind === "uv";
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black text-white">
@@ -104,7 +126,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
           <img
             key={index}
             src={url}
-            alt={current?.mineral_name ?? ""}
+            alt={item?.mineral_name ?? ""}
             className="absolute inset-0 h-full w-full object-contain animate-in fade-in duration-500"
           />
         ) : url === "" && urls[index] === "" ? (
@@ -114,8 +136,14 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/70">
             <Loader2 className="size-8 animate-spin" />
-            <span className="text-sm">Freistellen läuft…</span>
+            <span className="text-sm">{isUv ? "UV-Foto lädt…" : "Freistellen läuft…"}</span>
           </div>
+        )}
+
+        {isUv && (
+          <span className="pointer-events-none absolute left-4 top-4 rounded bg-purple-600/80 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+            UV
+          </span>
         )}
 
         {/* Close */}
@@ -162,12 +190,12 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-serif text-lg">
             <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
-              #{current ? formatCollectionNumber(current.collection_number, current.category) : ""}
+              #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
             </span>
-            {current?.mineral_name}
+            {item?.mineral_name}{isUv ? " · UV" : ""}
           </p>
           <p className="truncate text-xs text-white/60">
-            {[current?.location, current?.country, current?.era, current?.origin]
+            {[item?.location, item?.country, item?.era, item?.origin]
               .filter(Boolean)
               .join(" · ")}
           </p>

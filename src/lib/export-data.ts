@@ -267,6 +267,7 @@ export async function exportAllPdf(
       ["Begleitmineralien", m.companion_minerals],
       ["Fundort", m.location],
       ["Sammlung", m.collection_name],
+      ["UV", m.uv_photos && m.uv_photos.length > 0 ? "aktiv" : null],
       [
         "Wert",
         m.value != null

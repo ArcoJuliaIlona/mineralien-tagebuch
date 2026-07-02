@@ -259,6 +259,7 @@ export async function generateLabelPdf(m: Mineral) {
   if (m.notable) writeRightLine("Besonders", m.notable);
   if (m.country) writeRightLine("Land", m.country);
   if (m.location) writeRightLine("Fundort", m.location);
+  if (m.uv_photos && m.uv_photos.length > 0) writeRightLine("UV", "aktiv");
 
   // FESTE Position für Nummer und Name – unabhängig vom rechten Textblock.
   let y = photoY + photoSize + 8;
