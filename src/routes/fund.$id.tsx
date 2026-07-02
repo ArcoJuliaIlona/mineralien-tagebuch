@@ -59,6 +59,7 @@ function DetailPage() {
   const [busy, setBusy] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const [zoomIsUv, setZoomIsUv] = useState(false);
   const [presentUrl, setPresentUrl] = useState<string | null>(null);
   const [presentLoading, setPresentLoading] = useState(false);
   const [presentBaseUrl, setPresentBaseUrl] = useState<string | null>(null);
@@ -132,6 +133,13 @@ function DetailPage() {
     queryKey: ["mineral-photo-thumbs", id, m?.photo_paths, photoVersion],
     queryFn: () => getPhotoThumbUrls(m?.photo_paths ?? [], 600),
     enabled: !!m && (m?.photo_paths?.length ?? 0) > 0,
+    staleTime: 50 * 60 * 1000,
+  });
+
+  const { data: uvThumbUrls } = useQuery({
+    queryKey: ["mineral-uv-thumbs", id, m?.uv_photos, photoVersion],
+    queryFn: () => getPhotoThumbUrls(m?.uv_photos ?? [], 600),
+    enabled: !!m && (m?.uv_photos?.length ?? 0) > 0,
     staleTime: 50 * 60 * 1000,
   });
 
@@ -244,7 +252,7 @@ function DetailPage() {
             <button
               key={p}
               type="button"
-              onClick={() => setZoomPhoto(p)}
+              onClick={() => { setZoomIsUv(false); setZoomPhoto(p); }}
               className="block cursor-zoom-in overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <PhotoThumb
@@ -255,6 +263,34 @@ function DetailPage() {
               />
             </button>
           ))}
+        </div>
+      )}
+
+      {m.uv_photos && m.uv_photos.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-purple-400">
+            Unter UV-Licht
+          </p>
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-black p-2">
+            {m.uv_photos.map((p, i) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => { setZoomIsUv(true); setZoomPhoto(p); }}
+                className="relative block cursor-zoom-in overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <PhotoThumb
+                  path={p}
+                  url={uvThumbUrls?.[i] ?? null}
+                  className="aspect-square w-full"
+                  version={photoVersion}
+                />
+                <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  UV
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
