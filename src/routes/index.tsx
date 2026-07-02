@@ -366,6 +366,17 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
             </SelectContent>
           </Select>
         </div>
+        {tab !== "fossil" && tab !== "rock" && (
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+            <input
+              type="checkbox"
+              checked={onlyUv}
+              onChange={(e) => setOnlyUv(e.target.checked)}
+              className="size-4 accent-purple-500"
+            />
+            <span>Nur mit UV-Fotos</span>
+          </label>
+        )}
       </div>
 
       {isLoading ? (
