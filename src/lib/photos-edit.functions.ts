@@ -204,3 +204,97 @@ export const restorePhoto = createServerFn({ method: "POST" })
     await supabase.storage.from(BUCKET).remove([orig]);
     return { ok: true };
   });
+
+/**
+ * Creates a "freigestellte" (cutout) version of a photo on pure black,
+ * generated from the ORIGINAL backup (highest available resolution),
+ * and stores it under `{userId}/cutouts/{name}.png`. Cached — repeated
+ * calls return the existing cutout path without re-running the AI.
+ * Used by the slideshow to make specimens visually float on black.
+ */
+export const cutoutPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => {
+    const i = input as { path?: unknown };
+    if (!i || typeof i.path !== "string") throw new Error("Pfad fehlt");
+    return { path: i.path };
+  })
+  .handler(async ({ data, context }): Promise<{ path: string }> => {
+    assertOwned(data.path, context.userId);
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY nicht konfiguriert");
+
+    const supabase = context.supabase as never as ReturnType<
+      typeof import("@supabase/supabase-js").createClient
+    >;
+    const outPath = cutoutPath(data.path);
+
+    // Return early if the cutout already exists.
+    {
+      const slash = outPath.lastIndexOf("/");
+      const folder = outPath.slice(0, slash);
+      const name = outPath.slice(slash + 1);
+      const { data: list } = await supabase.storage
+        .from(BUCKET)
+        .list(folder, { search: name, limit: 1 });
+      if (list?.some((f) => f.name === name)) {
+        return { path: outPath };
+      }
+    }
+
+    // Prefer the original backup for max quality; fall back to current file.
+    let file: Blob | null = null;
+    const orig = originalPath(data.path);
+    const dlOrig = await supabase.storage.from(BUCKET).download(orig);
+    if (!dlOrig.error && dlOrig.data) {
+      file = dlOrig.data;
+    } else {
+      const dlCur = await supabase.storage.from(BUCKET).download(data.path);
+      if (dlCur.error || !dlCur.data) throw new Error("Foto konnte nicht geladen werden");
+      file = dlCur.data;
+    }
+
+    const dataUrl = await blobToDataUrl(file);
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image-preview",
+        modalities: ["image", "text"],
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: PROMPTS.black },
+              { type: "image_url", image_url: { url: dataUrl } },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (res.status === 429) throw new Error("Zu viele Anfragen, bitte später erneut versuchen.");
+    if (res.status === 402) throw new Error("KI-Guthaben aufgebraucht.");
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`KI-Anfrage fehlgeschlagen (${res.status}) ${body.slice(0, 200)}`);
+    }
+
+    const json = (await res.json()) as {
+      choices?: Array<{
+        message?: { images?: Array<{ image_url?: { url?: string } }>; content?: string };
+      }>;
+    };
+    const imgUrl = json.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imgUrl || !imgUrl.startsWith("data:")) {
+      throw new Error("KI hat kein Bild zurückgegeben");
+    }
+    const { blob, contentType } = dataUrlToBlob(imgUrl);
+
+    const { error: upErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(outPath, blob, { contentType: contentType || "image/png", upsert: true });
+    if (upErr) throw new Error("Upload fehlgeschlagen: " + upErr.message);
+
+    return { path: outPath };
+  });
