@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Pause, Play, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import type { Mineral } from "@/lib/minerals";
@@ -16,13 +16,16 @@ type Frame = { item: Mineral; kind: "normal" | "uv"; path: string };
 
 export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   // Compare-Modus: pro Fund zuerst Normalfoto, direkt danach UV-Foto (falls vorhanden)
-  const frames: Frame[] = [];
-  for (const it of items) {
-    const normal = it.photo_paths?.[0];
-    if (normal) frames.push({ item: it, kind: "normal", path: normal });
-    const uv = it.uv_photos?.[0];
-    if (uv) frames.push({ item: it, kind: "uv", path: uv });
-  }
+  const frames = useMemo<Frame[]>(() => {
+    const out: Frame[] = [];
+    for (const it of items) {
+      const normal = it.photo_paths?.[0];
+      if (normal) out.push({ item: it, kind: "normal", path: normal });
+      const uv = it.uv_photos?.[0];
+      if (uv) out.push({ item: it, kind: "uv", path: uv });
+    }
+    return out;
+  }, [items]);
 
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
