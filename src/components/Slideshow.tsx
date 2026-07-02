@@ -21,8 +21,9 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
     for (const it of items) {
       const normal = it.photo_paths?.[0];
       if (normal) out.push({ item: it, kind: "normal", path: normal });
-      const uv = it.uv_photos?.[0];
-      if (uv) out.push({ item: it, kind: "uv", path: uv });
+      for (const uv of it.uv_photos ?? []) {
+        out.push({ item: it, kind: "uv", path: uv });
+      }
     }
     return out;
   }, [items]);
