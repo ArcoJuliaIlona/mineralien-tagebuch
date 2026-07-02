@@ -36,6 +36,7 @@ export type Database = {
           size: string | null
           updated_at: string
           user_id: string
+          uv_photos: string[]
           value: number | null
           video_paths: string[]
         }
@@ -60,6 +61,7 @@ export type Database = {
           size?: string | null
           updated_at?: string
           user_id: string
+          uv_photos?: string[]
           value?: number | null
           video_paths?: string[]
         }
@@ -84,6 +86,7 @@ export type Database = {
           size?: string | null
           updated_at?: string
           user_id?: string
+          uv_photos?: string[]
           value?: number | null
           video_paths?: string[]
         }
