@@ -51,6 +51,51 @@ export async function uploadPhoto(userId: string, file: File): Promise<string> {
   return path;
 }
 
+/**
+ * UV-Foto: leichtes Kontrast-/Schwarzabgleich-Preset per Canvas anwenden
+ * (mehr Kontrast, kräftigere Farben, dunkleres Schwarz) und in den
+ * Ordner `{userId}/uv/` hochladen.
+ */
+async function applyUvPreset(file: File): Promise<Blob> {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(width, height));
+    const w = Math.round(width * scale);
+    const h = Math.round(height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close?.();
+      return file;
+    }
+    // Preset: mehr Kontrast + tiefere Schwarztöne + kräftigere UV-Farben
+    ctx.filter = "contrast(1.35) saturate(1.4) brightness(0.92)";
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+    );
+    return blob ?? file;
+  } catch {
+    return file;
+  }
+}
+
+export async function uploadUvPhoto(userId: string, file: File): Promise<string> {
+  const blob = await applyUvPreset(file);
+  const path = `${userId}/uv/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
+    contentType: "image/jpeg",
+    upsert: false,
+  });
+  if (error) throw error;
+  return path;
+}
+
 export async function deletePhotos(paths: string[]) {
   if (paths.length === 0) return;
   await supabase.storage.from(BUCKET).remove(paths);
