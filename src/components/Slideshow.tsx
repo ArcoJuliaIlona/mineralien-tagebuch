@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Pause, Play, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Pause, Play, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import type { Mineral } from "@/lib/minerals";
 import { formatCollectionNumber } from "@/lib/minerals";
-import { getOriginalPhotoUrl } from "@/lib/photos";
+import { getPhotoUrl } from "@/lib/photos";
+import { cutoutPhoto } from "@/lib/photos-edit.functions";
 
 type Props = {
   items: Mineral[];
@@ -16,6 +18,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const [urls, setUrls] = useState<Record<number, string>>({});
   const [uiVisible, setUiVisible] = useState(true);
   const timerRef = useRef<number | null>(null);
+  const cutoutFn = useServerFn(cutoutPhoto);
+  const inFlight = useRef<Set<number>>(new Set());
 
   const total = items.length;
   const current = items[index];
@@ -23,30 +27,41 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const next = useCallback(() => setIndex((i) => (i + 1) % total), [total]);
   const prev = useCallback(() => setIndex((i) => (i - 1 + total) % total), [total]);
 
-  // Preload current + next couple of photos in high resolution.
+  // Preload current + next couple of freigestellte (cutout) photos.
   useEffect(() => {
     const wanted = [index, (index + 1) % total, (index + 2) % total];
     wanted.forEach((i) => {
-      if (urls[i]) return;
+      if (urls[i] || inFlight.current.has(i)) return;
       const path = items[i]?.photo_paths?.[0];
       if (!path) {
         setUrls((u) => ({ ...u, [i]: "" }));
         return;
       }
-      getOriginalPhotoUrl(path)
-        .then((url) => setUrls((u) => ({ ...u, [i]: url })))
-        .catch(() => setUrls((u) => ({ ...u, [i]: "" })));
+      inFlight.current.add(i);
+      (async () => {
+        try {
+          const { path: cutout } = await cutoutFn({ data: { path } });
+          const url = await getPhotoUrl(cutout);
+          setUrls((u) => ({ ...u, [i]: url }));
+        } catch (e) {
+          console.error("Cutout fehlgeschlagen", e);
+          setUrls((u) => ({ ...u, [i]: "" }));
+        } finally {
+          inFlight.current.delete(i);
+        }
+      })();
     });
-  }, [index, items, total, urls]);
+  }, [index, items, total, urls, cutoutFn]);
 
-  // Auto-advance.
+  // Auto-advance — but only once the current image has loaded.
   useEffect(() => {
     if (!playing) return;
+    if (!urls[index]) return;
     timerRef.current = window.setTimeout(next, intervalMs);
     return () => {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
-  }, [index, playing, intervalMs, next]);
+  }, [index, playing, intervalMs, next, urls]);
 
   // Keyboard controls.
   useEffect(() => {
@@ -92,9 +107,14 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
             alt={current?.mineral_name ?? ""}
             className="absolute inset-0 h-full w-full object-contain animate-in fade-in duration-500"
           />
-        ) : (
+        ) : url === "" && urls[index] === "" ? (
           <div className="absolute inset-0 flex items-center justify-center text-white/60">
-            Lade…
+            Kein Foto verfügbar
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/70">
+            <Loader2 className="size-8 animate-spin" />
+            <span className="text-sm">Freistellen läuft…</span>
           </div>
         )}
 
