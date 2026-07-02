@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, Gem, ArrowUp, ArrowDown, ImageIcon, Loader2 } from "lucide-react";
+import { Search, Plus, Gem, ArrowUp, ArrowDown, ImageIcon, Loader2, Play } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { studioBackgroundPhoto } from "@/lib/photos-edit.functions";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
+import { Slideshow } from "@/components/Slideshow";
 import { listMinerals, CATEGORY_LABEL_PLURAL, formatCollectionNumber, type Category } from "@/lib/minerals";
 import { getPhotoThumbUrls } from "@/lib/photos";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,6 +76,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
+  const [slideshowOpen, setSlideshowOpen] = useState(false);
 
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
@@ -260,6 +262,19 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
 
       {batchBusy && batchProgress && (
         <BatchProgressBar progress={batchProgress} />
+      )}
+
+      <Button
+        onClick={() => setSlideshowOpen(true)}
+        disabled={filtered.length === 0}
+        variant="outline"
+        className="h-11 w-full gap-2"
+      >
+        <Play className="size-4" /> Diashow starten ({filtered.length})
+      </Button>
+
+      {slideshowOpen && filtered.length > 0 && (
+        <Slideshow items={filtered} onClose={() => setSlideshowOpen(false)} />
       )}
 
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
