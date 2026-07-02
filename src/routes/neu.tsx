@@ -67,6 +67,7 @@ function NewPage() {
       hardness: source.hardness,
       era: source.era,
       origin: source.origin,
+      uv_photos: [],
     });
     setFormKey((k) => k + 1);
   }, [source]);
