@@ -14,6 +14,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [urls, setUrls] = useState<Record<number, string>>({});
+  const [uiVisible, setUiVisible] = useState(true);
   const timerRef = useRef<number | null>(null);
 
   const total = items.length;
@@ -80,7 +81,10 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black text-white">
       {/* Photo */}
-      <div className="relative flex-1 overflow-hidden">
+      <div
+        className="relative flex-1 overflow-hidden"
+        onClick={() => setUiVisible((v) => !v)}
+      >
         {url ? (
           <img
             key={index}
@@ -97,8 +101,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         {/* Close */}
         <button
           type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full bg-white/10 p-2 backdrop-blur transition hover:bg-white/20"
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className={`absolute right-4 top-4 rounded-full bg-white/10 p-2 backdrop-blur transition hover:bg-white/20 ${uiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
           aria-label="Schließen"
         >
           <X className="size-6" />
@@ -107,24 +111,26 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         {/* Prev / Next */}
         <button
           type="button"
-          onClick={prev}
-          className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur transition hover:bg-white/20"
+          onClick={(e) => { e.stopPropagation(); prev(); }}
+          className={`absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur transition hover:bg-white/20 ${uiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
           aria-label="Zurück"
         >
           <ChevronLeft className="size-7" />
         </button>
         <button
           type="button"
-          onClick={next}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur transition hover:bg-white/20"
+          onClick={(e) => { e.stopPropagation(); next(); }}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 backdrop-blur transition hover:bg-white/20 ${uiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
           aria-label="Weiter"
         >
           <ChevronRight className="size-7" />
         </button>
-      </div>
 
-      {/* Info bar */}
-      <div className="flex items-center gap-4 border-t border-white/10 bg-black/80 px-4 py-3 backdrop-blur">
+        {/* Info bar (overlay) */}
+        <div
+          className={`absolute inset-x-0 bottom-0 flex items-center gap-4 bg-black/60 px-4 py-3 backdrop-blur transition-opacity ${uiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
+          onClick={(e) => e.stopPropagation()}
+        >
         <button
           type="button"
           onClick={() => setPlaying((p) => !p)}
@@ -149,6 +155,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         <span className="shrink-0 tabular-nums text-xs text-white/60">
           {index + 1} / {total}
         </span>
+        </div>
       </div>
     </div>
   );
