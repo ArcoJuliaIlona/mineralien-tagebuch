@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PhotoThumb } from "./PhotoThumb";
 import { ZoomablePhoto } from "./ZoomablePhoto";
-import { uploadPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
+import { uploadPhoto, uploadUvPhoto, deletePhotos, getPhotoUrl } from "@/lib/photos";
 import { uploadVideo, deleteVideos, getVideoUrl } from "@/lib/videos";
 import { toast } from "sonner";
 import type { Category, MineralInput } from "@/lib/minerals";
@@ -62,6 +62,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
+  const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
+  const [removedUv, setRemovedUv] = useState<string[]>([]);
+  const [uploadingUv, setUploadingUv] = useState(false);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
   const [removedVideos, setRemovedVideos] = useState<string[]>([]);
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
@@ -182,6 +185,29 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     setRemoved((prev) => [...prev, path]);
   };
 
+  const handleUvFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingUv(true);
+    try {
+      const paths: string[] = [];
+      for (const f of Array.from(files)) {
+        const p = await uploadUvPhoto(userId, f);
+        paths.push(p);
+      }
+      setUvPhotos((prev) => [...prev, ...paths]);
+      toast.success("UV-Foto hochgeladen (Kontrast-Preset angewendet)");
+    } catch (e: unknown) {
+      toast.error("UV-Upload fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setUploadingUv(false);
+    }
+  };
+
+  const removeUvPhoto = (path: string) => {
+    setUvPhotos((prev) => prev.filter((p) => p !== path));
+    setRemovedUv((prev) => [...prev, path]);
+  };
+
   const handleVideoFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploadingVideo(true);
@@ -293,10 +319,12 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           era: era.trim() || null,
           origin: origin.trim() || null,
           notable: notable.trim() || null,
+          uv_photos: category === "mineral" ? uvPhotos : [],
         },
-        removed,
+        [...removed, ...removedUv],
       );
       if (removed.length > 0) await deletePhotos(removed);
+      if (removedUv.length > 0) await deletePhotos(removedUv);
       if (removedVideos.length > 0) await deleteVideos(removedVideos);
     } catch (e: unknown) {
       toast.error("Speichern fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
