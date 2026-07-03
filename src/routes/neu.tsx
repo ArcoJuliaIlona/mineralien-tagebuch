@@ -68,6 +68,7 @@ function NewPage() {
       era: source.era,
       origin: source.origin,
       uv_photos: [],
+      uv_types: [],
     });
     setFormKey((k) => k + 1);
   }, [source]);
