@@ -63,6 +63,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
+  const [uvTypes, setUvTypes] = useState<string[]>(initial?.uv_types ?? []);
   const [removedUv, setRemovedUv] = useState<string[]>([]);
   const [uploadingUv, setUploadingUv] = useState(false);
   const [videos, setVideos] = useState<string[]>(initial?.video_paths ?? []);
@@ -194,7 +195,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         const p = await uploadUvPhoto(userId, f);
         paths.push(p);
       }
-      setUvPhotos((prev) => [...prev, ...paths]);
+      setUvPhotos((prev) => {
+        const nextCount = prev.length + paths.length;
+        setUvTypes((t) => {
+          const out = [...t];
+          // Default new slots: 1st missing -> UVA, 2nd -> UVC, rest -> ""
+          for (let i = prev.length; i < nextCount; i++) {
+            out[i] = out[i] ?? (i === 0 ? "UVA" : i === 1 ? "UVC" : "");
+          }
+          return out;
+        });
+        return [...prev, ...paths];
+      });
       toast.success("UV-Foto hochgeladen (Kontrast-Preset angewendet)");
     } catch (e: unknown) {
       toast.error("UV-Upload fehlgeschlagen: " + (e instanceof Error ? e.message : ""));
@@ -204,7 +216,13 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   };
 
   const removeUvPhoto = (path: string) => {
-    setUvPhotos((prev) => prev.filter((p) => p !== path));
+    setUvPhotos((prev) => {
+      const idx = prev.indexOf(path);
+      if (idx >= 0) {
+        setUvTypes((t) => t.filter((_, i) => i !== idx));
+      }
+      return prev.filter((p) => p !== path);
+    });
     setRemovedUv((prev) => [...prev, path]);
   };
 
@@ -320,6 +338,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           origin: origin.trim() || null,
           notable: notable.trim() || null,
           uv_photos: category === "mineral" ? uvPhotos : [],
+          uv_types: category === "mineral" ? uvTypes.slice(0, uvPhotos.length) : [],
         },
         [...removed, ...removedUv],
       );
@@ -631,7 +650,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           </p>
           {uvPhotos.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              {uvPhotos.map((p) => (
+              {uvPhotos.map((p, idx) => (
                 <div key={p} className="relative">
                   <div className="cursor-pointer" onClick={() => setZoomPhoto(p)}>
                     <PhotoThumb path={p} className="aspect-square w-full" />
@@ -645,8 +664,31 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
                     <Trash2 className="size-4" />
                   </button>
                   <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                    UV
+                    {uvTypes[idx]?.trim() || "UV"}
                   </span>
+                  <Select
+                    value={uvTypes[idx] ?? ""}
+                    onValueChange={(v) =>
+                      setUvTypes((t) => {
+                        const out = [...t];
+                        while (out.length < uvPhotos.length) out.push("");
+                        out[idx] = v;
+                        return out;
+                      })
+                    }
+                  >
+                    <SelectTrigger className="mt-1 h-8 text-xs">
+                      <SelectValue placeholder="UV-Typ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UVA">UVA</SelectItem>
+                      <SelectItem value="UVB">UVB</SelectItem>
+                      <SelectItem value="UVC">UVC</SelectItem>
+                      <SelectItem value="LW">LW (langwellig)</SelectItem>
+                      <SelectItem value="SW">SW (kurzwellig)</SelectItem>
+                      <SelectItem value="UV">UV (allgemein)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               ))}
             </div>

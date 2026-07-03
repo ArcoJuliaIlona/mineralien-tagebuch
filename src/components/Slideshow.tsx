@@ -12,7 +12,7 @@ type Props = {
   intervalMs?: number;
 };
 
-type Frame = { item: Mineral; kind: "normal" | "uv"; path: string };
+type Frame = { item: Mineral; kind: "normal" | "uv"; path: string; label?: string };
 
 export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   // Compare-Modus: pro Fund zuerst Normalfoto, direkt danach UV-Foto (falls vorhanden)
@@ -21,9 +21,10 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
     for (const it of items) {
       const firstNormal = it.photo_paths?.[0];
       if (firstNormal) out.push({ item: it, kind: "normal", path: firstNormal });
-      for (const uv of it.uv_photos ?? []) {
-        out.push({ item: it, kind: "uv", path: uv });
-      }
+      (it.uv_photos ?? []).forEach((uv, i) => {
+        const label = it.uv_types?.[i]?.trim() || "UV";
+        out.push({ item: it, kind: "uv", path: uv, label });
+      });
     }
     return out;
   }, [items]);
@@ -138,7 +139,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
 
         {isUv && (
           <span className="pointer-events-none absolute left-4 top-4 rounded bg-purple-600/80 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-            UV
+            {current?.label || "UV"}
           </span>
         )}
 
@@ -188,7 +189,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
             <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
               #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
             </span>
-            {item?.mineral_name}{isUv ? " · UV" : ""}
+            {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
           </p>
           <p className="truncate text-xs text-white/60">
             {[item?.location, item?.country, item?.era, item?.origin]

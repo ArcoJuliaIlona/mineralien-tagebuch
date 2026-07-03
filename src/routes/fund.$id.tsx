@@ -286,7 +286,7 @@ function DetailPage() {
                   version={photoVersion}
                 />
                 <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  UV
+                  {m.uv_types?.[i]?.trim() || "UV"}
                 </span>
               </button>
             ))}

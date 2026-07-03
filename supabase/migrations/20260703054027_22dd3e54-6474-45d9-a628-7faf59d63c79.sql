@@ -1,0 +1,1 @@
+ALTER TABLE public.minerals ADD COLUMN IF NOT EXISTS uv_types text[] NOT NULL DEFAULT '{}'::text[];

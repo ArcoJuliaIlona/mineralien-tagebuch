@@ -37,6 +37,7 @@ export type Database = {
           updated_at: string
           user_id: string
           uv_photos: string[]
+          uv_types: string[]
           value: number | null
           video_paths: string[]
         }
@@ -62,6 +63,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           uv_photos?: string[]
+          uv_types?: string[]
           value?: number | null
           video_paths?: string[]
         }
@@ -87,6 +89,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           uv_photos?: string[]
+          uv_types?: string[]
           value?: number | null
           video_paths?: string[]
         }
