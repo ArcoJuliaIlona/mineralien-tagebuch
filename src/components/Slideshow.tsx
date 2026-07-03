@@ -189,7 +189,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
             <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
               #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
             </span>
-            {item?.mineral_name}{isUv ? " · UV" : ""}
+            {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
           </p>
           <p className="truncate text-xs text-white/60">
             {[item?.location, item?.country, item?.era, item?.origin]
