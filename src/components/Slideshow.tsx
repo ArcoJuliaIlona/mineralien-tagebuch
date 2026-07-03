@@ -19,9 +19,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const frames = useMemo<Frame[]>(() => {
     const out: Frame[] = [];
     for (const it of items) {
-      for (const normal of it.photo_paths ?? []) {
-        out.push({ item: it, kind: "normal", path: normal });
-      }
+      const firstNormal = it.photo_paths?.[0];
+      if (firstNormal) out.push({ item: it, kind: "normal", path: firstNormal });
       for (const uv of it.uv_photos ?? []) {
         out.push({ item: it, kind: "uv", path: uv });
       }
@@ -57,14 +56,9 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
       inFlight.current.add(i);
       (async () => {
         try {
-          if (frame.kind === "uv") {
-            const url = await getPhotoUrl(frame.path);
-            setUrls((u) => ({ ...u, [i]: url }));
-          } else {
-            const { path: cutout } = await cutoutFn({ data: { path: frame.path } });
-            const url = await getPhotoUrl(cutout);
-            setUrls((u) => ({ ...u, [i]: url }));
-          }
+          const { path: cutout } = await cutoutFn({ data: { path: frame.path } });
+          const url = await getPhotoUrl(cutout);
+          setUrls((u) => ({ ...u, [i]: url }));
         } catch (e) {
           console.error("Slideshow-Foto fehlgeschlagen", e);
           setUrls((u) => ({ ...u, [i]: "" }));
