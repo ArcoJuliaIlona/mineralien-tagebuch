@@ -19,9 +19,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const frames = useMemo<Frame[]>(() => {
     const out: Frame[] = [];
     for (const it of items) {
-      for (const normal of it.photo_paths ?? []) {
-        out.push({ item: it, kind: "normal", path: normal });
-      }
+      const firstNormal = it.photo_paths?.[0];
+      if (firstNormal) out.push({ item: it, kind: "normal", path: firstNormal });
       for (const uv of it.uv_photos ?? []) {
         out.push({ item: it, kind: "uv", path: uv });
       }
@@ -57,14 +56,9 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
       inFlight.current.add(i);
       (async () => {
         try {
-          if (frame.kind === "uv") {
-            const url = await getPhotoUrl(frame.path);
-            setUrls((u) => ({ ...u, [i]: url }));
-          } else {
-            const { path: cutout } = await cutoutFn({ data: { path: frame.path } });
-            const url = await getPhotoUrl(cutout);
-            setUrls((u) => ({ ...u, [i]: url }));
-          }
+          const { path: cutout } = await cutoutFn({ data: { path: frame.path } });
+          const url = await getPhotoUrl(cutout);
+          setUrls((u) => ({ ...u, [i]: url }));
         } catch (e) {
           console.error("Slideshow-Foto fehlgeschlagen", e);
           setUrls((u) => ({ ...u, [i]: "" }));
@@ -138,7 +132,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/70">
             <Loader2 className="size-8 animate-spin" />
-            <span className="text-sm">{isUv ? "UV-Foto lädt…" : "Freistellen läuft…"}</span>
+            <span className="text-sm">Freistellen läuft…</span>
           </div>
         )}
 
