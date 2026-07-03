@@ -19,8 +19,9 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   const frames = useMemo<Frame[]>(() => {
     const out: Frame[] = [];
     for (const it of items) {
-      const normal = it.photo_paths?.[0];
-      if (normal) out.push({ item: it, kind: "normal", path: normal });
+      for (const normal of it.photo_paths ?? []) {
+        out.push({ item: it, kind: "normal", path: normal });
+      }
       for (const uv of it.uv_photos ?? []) {
         out.push({ item: it, kind: "uv", path: uv });
       }
