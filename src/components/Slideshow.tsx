@@ -132,7 +132,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/70">
             <Loader2 className="size-8 animate-spin" />
-            <span className="text-sm">{isUv ? "UV-Foto lädt…" : "Freistellen läuft…"}</span>
+            <span className="text-sm">Freistellen läuft…</span>
           </div>
         )}
 
