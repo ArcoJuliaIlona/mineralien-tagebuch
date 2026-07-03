@@ -650,7 +650,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           </p>
           {uvPhotos.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              {uvPhotos.map((p) => (
+              {uvPhotos.map((p, idx) => (
                 <div key={p} className="relative">
                   <div className="cursor-pointer" onClick={() => setZoomPhoto(p)}>
                     <PhotoThumb path={p} className="aspect-square w-full" />
@@ -664,8 +664,31 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
                     <Trash2 className="size-4" />
                   </button>
                   <span className="pointer-events-none absolute left-1 top-1 rounded bg-purple-600/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                    UV
+                    {uvTypes[idx]?.trim() || "UV"}
                   </span>
+                  <Select
+                    value={uvTypes[idx] ?? ""}
+                    onValueChange={(v) =>
+                      setUvTypes((t) => {
+                        const out = [...t];
+                        while (out.length < uvPhotos.length) out.push("");
+                        out[idx] = v;
+                        return out;
+                      })
+                    }
+                  >
+                    <SelectTrigger className="mt-1 h-8 text-xs">
+                      <SelectValue placeholder="UV-Typ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UVA">UVA</SelectItem>
+                      <SelectItem value="UVB">UVB</SelectItem>
+                      <SelectItem value="UVC">UVC</SelectItem>
+                      <SelectItem value="LW">LW (langwellig)</SelectItem>
+                      <SelectItem value="SW">SW (kurzwellig)</SelectItem>
+                      <SelectItem value="UV">UV (allgemein)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               ))}
             </div>
