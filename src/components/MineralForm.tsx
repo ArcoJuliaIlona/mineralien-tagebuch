@@ -163,6 +163,32 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     }
   };
 
+  const handleNameBlur = async () => {
+    const n = name.trim();
+    if (!n || category !== "mineral") return;
+    const needsFormula = !formula.trim() && !fetchingFormula;
+    const needsHardness = !hardness.trim() && !fetchingHardness;
+    if (!needsFormula && !needsHardness) return;
+    if (needsFormula) {
+      setFetchingFormula(true);
+      fetchFormulaFn({ data: { name: n } })
+        .then((res) => {
+          if (res.formula) setFormula((cur) => (cur.trim() ? cur : res.formula!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingFormula(false));
+    }
+    if (needsHardness) {
+      setFetchingHardness(true);
+      fetchHardnessFn({ data: { name: n } })
+        .then((res) => {
+          if (res.hardness) setHardness((cur) => (cur.trim() ? cur : res.hardness!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingHardness(false));
+    }
+  };
+
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const selected = Array.from(files);
@@ -370,6 +396,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onBlur={handleNameBlur}
           placeholder="z. B. Bergkristall"
           className="h-12 text-base"
         />
