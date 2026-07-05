@@ -11,10 +11,18 @@ type Props = {
   onApply?: (sizeText: string) => Promise<void> | void;
 };
 
+const REF_STORAGE_KEY = "measure.refMm";
+const REF_PRESETS: { label: string; mm: number }[] = [
+  { label: "10 mm (1 cm Würfel)", mm: 10 },
+  { label: "20 mm (2 cm)", mm: 20 },
+  { label: "23,25 mm (1 € Münze)", mm: 23.25 },
+  { label: "25,75 mm (2 € Münze)", mm: 25.75 },
+  { label: "50 mm (Lineal 0–5 cm)", mm: 50 },
+  { label: "100 mm (Lineal 0–10 cm)", mm: 100 },
+];
+
 /**
- * Messen mit 1×1×1 cm Referenzwürfel:
- * 1. Zwei Punkte an gegenüberliegenden Kanten des Würfels antippen (Kalibrierung = 10 mm)
- * 2. Zwei Punkte am Stein antippen → Länge in mm
+ * Messen mit frei wählbarer Referenzlänge (Würfel, Lineal, Münze).
  */
 export function MeasureDialog({ src, onClose, onApply }: Props) {
   const imgRef = useRef<HTMLImageElement>(null);
@@ -27,6 +35,20 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   const [wid, setWid] = useState<[Point, Point] | null>(null);
   const [widTmp, setWidTmp] = useState<Point | null>(null);
   const [applying, setApplying] = useState(false);
+  const [refMm, setRefMm] = useState<number>(() => {
+    if (typeof window === "undefined") return 10;
+    const raw = window.localStorage.getItem(REF_STORAGE_KEY);
+    const n = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 10;
+  });
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customStr, setCustomStr] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(REF_STORAGE_KEY, String(refMm));
+    }
+  }, [refMm]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -93,7 +115,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     setStep("wid1");
   };
 
-  // Umrechnung Pixel → mm (Kalibrierung: 2 Punkte = 10 mm)
+  // Umrechnung Pixel → mm (Kalibrierung: 2 Punkte = refMm)
   const img = imgRef.current;
   const pxDist = (a: Point, b: Point): number => {
     if (!img) return 0;
@@ -104,14 +126,15 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   const calPx = cal ? pxDist(cal[0], cal[1]) : 0;
   const toMm = (pair: [Point, Point] | null): number | null => {
     if (!pair || calPx <= 0) return null;
-    return (pxDist(pair[0], pair[1]) / calPx) * 10;
+    return (pxDist(pair[0], pair[1]) / calPx) * refMm;
   };
   const lenMm = toMm(len);
   const widMm = toMm(wid);
 
+  const refLabel = `${refMm.toString().replace(".", ",")} mm`;
   const instructions: Record<Step, string> = {
-    cal1: "1/6 · Ersten Rand des Würfels antippen",
-    cal2: "2/6 · Gegenüberliegenden Rand des Würfels antippen (= 10 mm)",
+    cal1: `1/6 · Referenz: ersten Punkt antippen (Strecke = ${refLabel})`,
+    cal2: `2/6 · Referenz: zweiten Punkt antippen (= ${refLabel})`,
     len1: "3/6 · Länge: ersten Punkt am Stein antippen",
     len2: "4/6 · Länge: zweiten Punkt am Stein antippen",
     wid1: "5/6 · Breite: ersten Punkt am Stein antippen",
@@ -181,7 +204,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     >
       <div className="flex items-center justify-between p-3 text-white">
         <div className="text-sm">
-          <div className="font-semibold">Messen (1 cm Würfel)</div>
+          <div className="font-semibold">Messen · Referenz {refLabel}</div>
           <div className="text-xs text-white/70">{instructions[step]}</div>
         </div>
         <button
@@ -192,6 +215,64 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
         >
           <X className="size-5" />
         </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 px-3 pb-2 text-xs text-white">
+        <span className="text-white/70">Referenzlänge:</span>
+        <select
+          value={
+            REF_PRESETS.some((p) => p.mm === refMm) && !customOpen
+              ? String(refMm)
+              : "custom"
+          }
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "custom") {
+              setCustomOpen(true);
+              setCustomStr(refMm.toString().replace(".", ","));
+            } else {
+              setCustomOpen(false);
+              setRefMm(parseFloat(v));
+              reset();
+            }
+          }}
+          className="rounded-md bg-white/10 px-2 py-1 text-white outline-none"
+        >
+          {REF_PRESETS.map((p) => (
+            <option key={p.mm} value={p.mm} className="bg-neutral-900">
+              {p.label}
+            </option>
+          ))}
+          <option value="custom" className="bg-neutral-900">
+            Eigener Wert…
+          </option>
+        </select>
+        {customOpen && (
+          <>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={customStr}
+              onChange={(e) => setCustomStr(e.target.value)}
+              placeholder="mm"
+              className="w-24 rounded-md bg-white/10 px-2 py-1 text-white outline-none placeholder:text-white/40"
+            />
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                const n = parseFloat(customStr.replace(",", "."));
+                if (Number.isFinite(n) && n > 0) {
+                  setRefMm(n);
+                  setCustomOpen(false);
+                  reset();
+                }
+              }}
+            >
+              Übernehmen
+            </Button>
+          </>
+        )}
       </div>
 
       <div className="relative flex flex-1 items-center justify-center overflow-hidden p-2">
