@@ -43,8 +43,6 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   });
   const [customOpen, setCustomOpen] = useState(false);
   const [customStr, setCustomStr] = useState("");
-  const [correction, setCorrection] = useState<number>(1);
-  const [trueLenStr, setTrueLenStr] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -101,8 +99,6 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     setWid(null);
     setWidTmp(null);
     setStep("cal1");
-    setCorrection(1);
-    setTrueLenStr("");
   };
 
   const restartLength = () => {
@@ -111,8 +107,6 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     setWid(null);
     setWidTmp(null);
     setStep("len1");
-    setCorrection(1);
-    setTrueLenStr("");
   };
 
   const restartWidth = () => {
@@ -132,7 +126,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   const calPx = cal ? pxDist(cal[0], cal[1]) : 0;
   const toMm = (pair: [Point, Point] | null): number | null => {
     if (!pair || calPx <= 0) return null;
-    return (pxDist(pair[0], pair[1]) / calPx) * refMm * correction;
+    return (pxDist(pair[0], pair[1]) / calPx) * refMm;
   };
   const lenMm = toMm(len);
   const widMm = toMm(wid);
@@ -338,46 +332,6 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
             {applying && <Loader2 className="size-4 animate-spin" />}
             In „Größe" übernehmen
           </Button>
-        )}
-        {lenMm != null && (
-          <div className="mt-2 flex w-full flex-col items-center gap-2 border-t border-white/10 pt-3">
-            <div className="text-center text-xs text-white/70">
-              Weicht ab? Trage die mit Messschieber ermittelte Länge ein – Breite skaliert mit.
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={trueLenStr}
-                onChange={(e) => setTrueLenStr(e.target.value)}
-                placeholder={`tatsächl. Länge in mm`}
-                className="w-44 rounded-md bg-white/10 px-2 py-1 text-sm text-white outline-none placeholder:text-white/40"
-              />
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  const n = parseFloat(trueLenStr.replace(",", "."));
-                  if (Number.isFinite(n) && n > 0 && lenMm > 0) {
-                    setCorrection((c) => c * (n / lenMm));
-                    setTrueLenStr("");
-                  }
-                }}
-              >
-                Kalibrieren
-              </Button>
-              {correction !== 1 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-white/70 hover:text-white"
-                  onClick={() => setCorrection(1)}
-                >
-                  Reset ({Math.round(correction * 100)} %)
-                </Button>
-              )}
-            </div>
-          </div>
         )}
       </div>
     </div>
