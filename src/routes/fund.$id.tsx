@@ -433,25 +433,25 @@ function DetailPage() {
             className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2"
             onClick={(e) => e.stopPropagation()}
           >
+            <Button size="sm" onClick={onBlacken} disabled={editing} className="gap-2">
+              {editing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              Schwarz
+            </Button>
             {!zoomIsUv && (
-              <>
-                <Button size="sm" onClick={onBlacken} disabled={editing} className="gap-2">
-                  {editing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                  Schwarz
-                </Button>
-                <Button size="sm" onClick={onStudio} disabled={editing} className="gap-2">
-                  {editing ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
-                  Studio-Hintergrund
-                </Button>
-                {hasBackup && (
-                  <Button size="sm" variant="secondary" onClick={onRestore} disabled={editing} className="gap-2">
-                    <RotateCcw className="size-4" /> Original
-                  </Button>
-                )}
-                <Button size="sm" variant="secondary" onClick={() => setMeasuring(true)} className="gap-2">
-                  <Ruler className="size-4" /> Messen
-                </Button>
-              </>
+              <Button size="sm" onClick={onStudio} disabled={editing} className="gap-2">
+                {editing ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
+                Studio-Hintergrund
+              </Button>
+            )}
+            {hasBackup && (
+              <Button size="sm" variant="secondary" onClick={onRestore} disabled={editing} className="gap-2">
+                <RotateCcw className="size-4" /> Original
+              </Button>
+            )}
+            {!zoomIsUv && (
+              <Button size="sm" variant="secondary" onClick={() => setMeasuring(true)} className="gap-2">
+                <Ruler className="size-4" /> Messen
+              </Button>
             )}
           </div>
           {zoomUrl ? (
