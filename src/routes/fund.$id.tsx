@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, FileDown, Focus, Image as ImageIcon, Loader2, Maximize2, Pencil, QrCode, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, Copy, FileDown, Focus, Image as ImageIcon, Loader2, Maximize2, Pencil, QrCode, Ruler, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { blackenPhoto, hasOriginalBackup, restorePhoto, studioBackgroundPhoto } from "@/lib/photos-edit.functions";
@@ -21,7 +21,8 @@ import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { LocationMap } from "@/components/LocationMap";
 import { ZoomablePhoto } from "@/components/ZoomablePhoto";
-import { getMineral, deleteMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
+import { MeasureDialog } from "@/components/MeasureDialog";
+import { getMineral, deleteMineral, updateMineral, CATEGORY_LABEL, formatCollectionNumber } from "@/lib/minerals";
 import { FormulaText } from "@/lib/format-formula";
 import { deletePhotos, getOriginalPhotoUrl, getPhotoUrl, getZoomPhotoUrl } from "@/lib/photos";
 import { getPhotoThumbUrls } from "@/lib/photos";
@@ -68,6 +69,7 @@ function DetailPage() {
   const [photoVersion, setPhotoVersion] = useState(0);
   const [hasBackup, setHasBackup] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [measuring, setMeasuring] = useState(false);
   const blackenFn = useServerFn(blackenPhoto);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const restoreFn = useServerFn(restorePhoto);
@@ -446,6 +448,9 @@ function DetailPage() {
                     <RotateCcw className="size-4" /> Original
                   </Button>
                 )}
+                <Button size="sm" variant="secondary" onClick={() => setMeasuring(true)} className="gap-2">
+                  <Ruler className="size-4" /> Messen
+                </Button>
               </>
             )}
           </div>
@@ -453,6 +458,38 @@ function DetailPage() {
             <ZoomablePhoto src={zoomUrl} alt="Vergrößertes Foto" />
           ) : (
             <Loader2 className="size-10 animate-spin text-white" />
+          )}
+          {measuring && zoomUrl && m && (
+            <MeasureDialog
+              src={zoomUrl}
+              onClose={() => setMeasuring(false)}
+              onApply={async (sizeText) => {
+                await updateMineral(m.id, {
+                  mineral_name: m.mineral_name,
+                  companion_minerals: m.companion_minerals,
+                  location: m.location,
+                  country: m.country,
+                  collection_name: m.collection_name,
+                  photo_paths: m.photo_paths,
+                  category: m.category,
+                  latitude: m.latitude,
+                  longitude: m.longitude,
+                  value: m.value,
+                  chemical_formula: m.chemical_formula,
+                  video_paths: m.video_paths,
+                  hardness: m.hardness,
+                  size: sizeText,
+                  era: m.era,
+                  origin: m.origin,
+                  notable: m.notable,
+                  uv_photos: m.uv_photos ?? [],
+                  uv_types: m.uv_types ?? [],
+                });
+                qc.invalidateQueries({ queryKey: ["minerals", m.id] });
+                qc.invalidateQueries({ queryKey: ["minerals"] });
+                toast.success(`Größe gespeichert: ${sizeText}`);
+              }}
+            />
           )}
         </div>
       )}
