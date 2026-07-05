@@ -3,6 +3,7 @@ import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Point = { x: number; y: number };
+type Step = "cal1" | "cal2" | "len1" | "len2" | "wid1" | "wid2" | "done";
 
 type Props = {
   src: string;
@@ -18,11 +19,13 @@ type Props = {
 export function MeasureDialog({ src, onClose, onApply }: Props) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [loaded, setLoaded] = useState(false);
-  const [step, setStep] = useState<"cal1" | "cal2" | "meas1" | "meas2" | "done">("cal1");
+  const [step, setStep] = useState<Step>("cal1");
   const [cal, setCal] = useState<[Point, Point] | null>(null);
   const [calTmp, setCalTmp] = useState<Point | null>(null);
-  const [meas, setMeas] = useState<[Point, Point] | null>(null);
-  const [measTmp, setMeasTmp] = useState<Point | null>(null);
+  const [len, setLen] = useState<[Point, Point] | null>(null);
+  const [lenTmp, setLenTmp] = useState<Point | null>(null);
+  const [wid, setWid] = useState<[Point, Point] | null>(null);
+  const [widTmp, setWidTmp] = useState<Point | null>(null);
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
@@ -38,7 +41,6 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     const img = imgRef.current;
     if (!img) return;
     const r = img.getBoundingClientRect();
-    // relative Koordinaten in % der dargestellten Bildgröße
     const p: Point = {
       x: ((e.clientX - r.left) / r.width) * 100,
       y: ((e.clientY - r.top) / r.height) * 100,
@@ -49,13 +51,20 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     } else if (step === "cal2" && calTmp) {
       setCal([calTmp, p]);
       setCalTmp(null);
-      setStep("meas1");
-    } else if (step === "meas1") {
-      setMeasTmp(p);
-      setStep("meas2");
-    } else if (step === "meas2" && measTmp) {
-      setMeas([measTmp, p]);
-      setMeasTmp(null);
+      setStep("len1");
+    } else if (step === "len1") {
+      setLenTmp(p);
+      setStep("len2");
+    } else if (step === "len2" && lenTmp) {
+      setLen([lenTmp, p]);
+      setLenTmp(null);
+      setStep("wid1");
+    } else if (step === "wid1") {
+      setWidTmp(p);
+      setStep("wid2");
+    } else if (step === "wid2" && widTmp) {
+      setWid([widTmp, p]);
+      setWidTmp(null);
       setStep("done");
     }
   };
@@ -63,38 +72,54 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   const reset = () => {
     setCal(null);
     setCalTmp(null);
-    setMeas(null);
-    setMeasTmp(null);
+    setLen(null);
+    setLenTmp(null);
+    setWid(null);
+    setWidTmp(null);
     setStep("cal1");
   };
 
-  const restartMeasure = () => {
-    setMeas(null);
-    setMeasTmp(null);
-    setStep("meas1");
+  const restartLength = () => {
+    setLen(null);
+    setLenTmp(null);
+    setWid(null);
+    setWidTmp(null);
+    setStep("len1");
   };
 
-  // Länge in mm — Kalibrierung: 2 Punkte = 10 mm
-  const img = imgRef.current;
-  let mm: number | null = null;
-  if (cal && meas && img) {
-    const w = img.clientWidth;
-    const h = img.clientHeight;
-    const dx1 = ((cal[0].x - cal[1].x) / 100) * w;
-    const dy1 = ((cal[0].y - cal[1].y) / 100) * h;
-    const calPx = Math.hypot(dx1, dy1);
-    const dx2 = ((meas[0].x - meas[1].x) / 100) * w;
-    const dy2 = ((meas[0].y - meas[1].y) / 100) * h;
-    const measPx = Math.hypot(dx2, dy2);
-    if (calPx > 0) mm = (measPx / calPx) * 10;
-  }
+  const restartWidth = () => {
+    setWid(null);
+    setWidTmp(null);
+    setStep("wid1");
+  };
 
-  const instructions: Record<typeof step, string> = {
-    cal1: "1/4 · Ersten Rand des Würfels antippen",
-    cal2: "2/4 · Gegenüberliegenden Rand des Würfels antippen (= 10 mm)",
-    meas1: "3/4 · Ersten Punkt am Stein antippen",
-    meas2: "4/4 · Zweiten Punkt am Stein antippen",
-    done: mm != null ? `Länge: ${mm.toFixed(1)} mm` : "Fertig",
+  // Umrechnung Pixel → mm (Kalibrierung: 2 Punkte = 10 mm)
+  const img = imgRef.current;
+  const pxDist = (a: Point, b: Point): number => {
+    if (!img) return 0;
+    const dx = ((a.x - b.x) / 100) * img.clientWidth;
+    const dy = ((a.y - b.y) / 100) * img.clientHeight;
+    return Math.hypot(dx, dy);
+  };
+  const calPx = cal ? pxDist(cal[0], cal[1]) : 0;
+  const toMm = (pair: [Point, Point] | null): number | null => {
+    if (!pair || calPx <= 0) return null;
+    return (pxDist(pair[0], pair[1]) / calPx) * 10;
+  };
+  const lenMm = toMm(len);
+  const widMm = toMm(wid);
+
+  const instructions: Record<Step, string> = {
+    cal1: "1/6 · Ersten Rand des Würfels antippen",
+    cal2: "2/6 · Gegenüberliegenden Rand des Würfels antippen (= 10 mm)",
+    len1: "3/6 · Länge: ersten Punkt am Stein antippen",
+    len2: "4/6 · Länge: zweiten Punkt am Stein antippen",
+    wid1: "5/6 · Breite: ersten Punkt am Stein antippen",
+    wid2: "6/6 · Breite: zweiten Punkt am Stein antippen",
+    done:
+      lenMm != null && widMm != null
+        ? `${lenMm.toFixed(1)} × ${widMm.toFixed(1)} mm`
+        : "Fertig",
   };
 
   const dot = (p: Point, color: string, key: string) => (
@@ -132,10 +157,10 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   );
 
   const apply = async () => {
-    if (mm == null || !onApply) return;
+    if (lenMm == null || widMm == null || !onApply) return;
     setApplying(true);
     try {
-      await onApply(`${mm.toFixed(1)} mm`);
+      await onApply(`${lenMm.toFixed(1)} × ${widMm.toFixed(1)} mm`);
       onClose();
     } finally {
       setApplying(false);
@@ -179,33 +204,44 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
           {loaded && (
             <>
               {cal && line(cal[0], cal[1], "#60a5fa", "cal-line")}
-              {meas && line(meas[0], meas[1], "#22d3ee", "meas-line")}
+              {len && line(len[0], len[1], "#22d3ee", "len-line")}
+              {wid && line(wid[0], wid[1], "#f472b6", "wid-line")}
               {calTmp && dot(calTmp, "#60a5fa", "cal-tmp")}
               {cal && dot(cal[0], "#60a5fa", "cal-0")}
               {cal && dot(cal[1], "#60a5fa", "cal-1")}
-              {measTmp && dot(measTmp, "#22d3ee", "meas-tmp")}
-              {meas && dot(meas[0], "#22d3ee", "meas-0")}
-              {meas && dot(meas[1], "#22d3ee", "meas-1")}
+              {lenTmp && dot(lenTmp, "#22d3ee", "len-tmp")}
+              {len && dot(len[0], "#22d3ee", "len-0")}
+              {len && dot(len[1], "#22d3ee", "len-1")}
+              {widTmp && dot(widTmp, "#f472b6", "wid-tmp")}
+              {wid && dot(wid[0], "#f472b6", "wid-0")}
+              {wid && dot(wid[1], "#f472b6", "wid-1")}
             </>
           )}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-2 p-3 pb-6 text-white">
-        {mm != null && (
+        {(lenMm != null || widMm != null) && (
           <div className="w-full text-center text-2xl font-bold">
-            {mm.toFixed(1)} mm
+            {lenMm != null ? `${lenMm.toFixed(1)} mm` : "—"}
+            <span className="mx-2 text-white/50">×</span>
+            {widMm != null ? `${widMm.toFixed(1)} mm` : "…"}
           </div>
         )}
         <Button size="sm" variant="secondary" onClick={reset}>
           Neu kalibrieren
         </Button>
         {cal && (
-          <Button size="sm" variant="secondary" onClick={restartMeasure}>
-            Neu messen
+          <Button size="sm" variant="secondary" onClick={restartLength}>
+            Länge neu
           </Button>
         )}
-        {mm != null && onApply && (
+        {len && (
+          <Button size="sm" variant="secondary" onClick={restartWidth}>
+            Breite neu
+          </Button>
+        )}
+        {lenMm != null && widMm != null && onApply && (
           <Button size="sm" onClick={apply} disabled={applying} className="gap-2">
             {applying && <Loader2 className="size-4 animate-spin" />}
             In „Größe" übernehmen
