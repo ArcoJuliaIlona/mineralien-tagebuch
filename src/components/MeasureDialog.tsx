@@ -122,21 +122,26 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
         : "Fertig",
   };
 
-  const dot = (p: Point, color: string, key: string) => (
+  const dot = (p: Point, color: string, key: string, size = 10) => (
     <div
       key={key}
-      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white"
+      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full ring-1 ring-white"
       style={{
         left: `${p.x}%`,
         top: `${p.y}%`,
-        width: 14,
-        height: 14,
+        width: size,
+        height: size,
         background: color,
       }}
-    />
+    >
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
+        style={{ width: 2, height: 2 }}
+      />
+    </div>
   );
 
-  const line = (a: Point, b: Point, color: string, key: string) => (
+  const line = (a: Point, b: Point, color: string, key: string, width = 0.4) => (
     <svg
       key={key}
       className="pointer-events-none absolute inset-0 h-full w-full"
@@ -149,7 +154,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
         x2={b.x}
         y2={b.y}
         stroke={color}
-        strokeWidth={0.4}
+        strokeWidth={width}
         vectorEffect="non-scaling-stroke"
         strokeLinecap="round"
       />
@@ -203,12 +208,12 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
           />
           {loaded && (
             <>
-              {cal && line(cal[0], cal[1], "#60a5fa", "cal-line")}
+              {cal && line(cal[0], cal[1], "#60a5fa", "cal-line", 0.2)}
               {len && line(len[0], len[1], "#22d3ee", "len-line")}
               {wid && line(wid[0], wid[1], "#f472b6", "wid-line")}
-              {calTmp && dot(calTmp, "#60a5fa", "cal-tmp")}
-              {cal && dot(cal[0], "#60a5fa", "cal-0")}
-              {cal && dot(cal[1], "#60a5fa", "cal-1")}
+              {calTmp && dot(calTmp, "#60a5fa", "cal-tmp", 8)}
+              {cal && dot(cal[0], "#60a5fa", "cal-0", 8)}
+              {cal && dot(cal[1], "#60a5fa", "cal-1", 8)}
               {lenTmp && dot(lenTmp, "#22d3ee", "len-tmp")}
               {len && dot(len[0], "#22d3ee", "len-0")}
               {len && dot(len[1], "#22d3ee", "len-1")}
