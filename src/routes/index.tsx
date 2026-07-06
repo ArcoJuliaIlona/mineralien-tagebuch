@@ -159,6 +159,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
         setSearch("");
         setFilterName(ALL);
         setFilterLocation(ALL);
+        setSortBy("name");
+        setSortDir("asc");
         setOnlyUv(false);
         if (cat === "mineral" || cat === "fossil" || cat === "rock") {
           setTab(cat);
@@ -179,26 +181,40 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     }
   }, [focusId, filtered, visibleCount]);
 
-  // Scroll to focused item; retry until it mounts.
+  // Scroll to focused item after navigation and after the router/list have settled.
   useEffect(() => {
     if (!focusId) return;
     let cancelled = false;
     let attempts = 0;
+    let highlightTimer: number | undefined;
     const tryScroll = () => {
       if (cancelled) return;
+      attempts += 1;
       const el = document.getElementById(`mineral-${focusId}`);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.scrollIntoView({ behavior: attempts > 2 ? "smooth" : "auto", block: "center" });
         el.classList.add("ring-2", "ring-primary");
-        setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2000);
-        setFocusId(null);
+        if (highlightTimer) window.clearTimeout(highlightTimer);
+        highlightTimer = window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2500);
+        window.setTimeout(() => {
+          if (cancelled) return;
+          const rect = el.getBoundingClientRect();
+          const isVisible = rect.top >= 80 && rect.bottom <= window.innerHeight - 24;
+          if (isVisible || attempts >= 35) {
+            setFocusId(null);
+            return;
+          }
+          tryScroll();
+        }, attempts > 2 ? 260 : 120);
         return;
       }
-      if (++attempts < 20) setTimeout(tryScroll, 80);
+      if (attempts < 35) window.setTimeout(tryScroll, 100);
     };
-    tryScroll();
+    const startTimer = window.setTimeout(tryScroll, 250);
     return () => {
       cancelled = true;
+      window.clearTimeout(startTimer);
+      if (highlightTimer) window.clearTimeout(highlightTimer);
     };
   }, [focusId, filtered, visibleCount]);
 
