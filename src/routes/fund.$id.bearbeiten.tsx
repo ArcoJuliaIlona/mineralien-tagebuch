@@ -72,7 +72,10 @@ function EditPage() {
           qc.invalidateQueries({ queryKey: ["minerals"] });
           qc.invalidateQueries({ queryKey: ["minerals", m.id] });
           toast.success("Gespeichert");
-          navigate({ to: "/fund/$id", params: { id: m.id } });
+          try {
+            sessionStorage.setItem("focus-mineral-id", m.id);
+          } catch {}
+          navigate({ to: "/" });
         }}
       />
     </div>
