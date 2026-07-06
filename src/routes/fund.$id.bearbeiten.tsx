@@ -69,14 +69,20 @@ function EditPage() {
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
-          qc.invalidateQueries({ queryKey: ["minerals"] });
-          qc.invalidateQueries({ queryKey: ["minerals", m.id] });
+          await Promise.all([
+            qc.invalidateQueries({ queryKey: ["minerals"] }),
+            qc.invalidateQueries({ queryKey: ["minerals", m.id] }),
+          ]);
           toast.success("Gespeichert");
           try {
             sessionStorage.setItem("focus-mineral-id", m.id);
             sessionStorage.setItem("focus-mineral-category", input.category);
           } catch {}
-          navigate({ to: "/", resetScroll: false });
+          navigate({
+            to: "/",
+            search: { focus: m.id, category: input.category },
+            resetScroll: false,
+          });
         }}
       />
     </div>
