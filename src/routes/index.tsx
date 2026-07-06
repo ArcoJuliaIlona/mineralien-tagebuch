@@ -22,18 +22,31 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+type FocusSearch = {
+  focus?: string;
+  category?: Category;
+};
+
+const isCategory = (value: unknown): value is Category =>
+  value === "mineral" || value === "fossil" || value === "rock";
+
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): FocusSearch => ({
+    focus: typeof search.focus === "string" ? search.focus : undefined,
+    category: isCategory(search.category) ? search.category : undefined,
+  }),
   head: () => ({
     meta: [{ title: "Meine Mineraliensammlung" }],
   }),
   component: () => {
+    const focusSearch = Route.useSearch();
     const [tab, setTab] = useState<TabValue>("mineral");
     const newButtonLabel = tab === "fossil" ? "Neues Fossil" : tab === "rock" ? "Neues Gestein" : "Neues Mineral";
     const newCategory: Category = tab === "fossil" ? "fossil" : tab === "rock" ? "rock" : "mineral";
     return (
       <AuthGate>
         <AppShell newLabel={newButtonLabel} newSearch={{ category: newCategory }}>
-          <ListPage tab={tab} setTab={setTab} newCategory={newCategory} />
+          <ListPage tab={tab} setTab={setTab} newCategory={newCategory} focusSearch={focusSearch} />
         </AppShell>
       </AuthGate>
     );
@@ -45,7 +58,17 @@ const ALL_TAB = "__ALL__";
 const INITIAL_VISIBLE_COUNT = 30;
 type TabValue = Category | typeof ALL_TAB;
 
-function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: TabValue) => void; newCategory: Category }) {
+function ListPage({
+  tab,
+  setTab,
+  newCategory,
+  focusSearch,
+}: {
+  tab: TabValue;
+  setTab: (v: TabValue) => void;
+  newCategory: Category;
+  focusSearch: FocusSearch;
+}) {
   const [photoVersion, setPhotoVersion] = useState(0);
   const [thumbUrlMap, setThumbUrlMap] = useState<Record<string, string>>({});
   const { data: minerals = [], isLoading } = useQuery({
@@ -152,8 +175,9 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   // On mount: read focus target and switch tab to its category, reset filters.
   useEffect(() => {
     try {
-      const id = sessionStorage.getItem("focus-mineral-id");
-      const cat = sessionStorage.getItem("focus-mineral-category") as Category | null;
+      const id = focusSearch.focus ?? sessionStorage.getItem("focus-mineral-id");
+      const storedCat = sessionStorage.getItem("focus-mineral-category") as Category | null;
+      const cat = focusSearch.category ?? storedCat;
       if (id) {
         setFocusId(id);
         setSearch("");
@@ -170,7 +194,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [focusSearch.focus, focusSearch.category]);
 
   // Ensure the focused item is within the visible window.
   useEffect(() => {
@@ -181,42 +205,45 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
     }
   }, [focusId, filtered, visibleCount]);
 
-  // Scroll to focused item after navigation and after the router/list have settled.
+  // Scroll to focused item repeatedly after navigation so router scroll restoration
+  // and async list rendering cannot leave the page at the top.
   useEffect(() => {
-    if (!focusId) return;
+    if (!focusId || isLoading) return;
+    const targetIndex = filtered.findIndex((m) => m.id === focusId);
+    if (targetIndex < 0 || targetIndex >= visibleCount) return;
+
     let cancelled = false;
-    let attempts = 0;
-    let highlightTimer: number | undefined;
-    const tryScroll = () => {
+    const timers: number[] = [];
+
+    const scrollToTarget = (behavior: ScrollBehavior) => {
       if (cancelled) return;
-      attempts += 1;
       const el = document.getElementById(`mineral-${focusId}`);
       if (el) {
-        el.scrollIntoView({ behavior: attempts > 2 ? "smooth" : "auto", block: "center" });
+        el.scrollIntoView({ behavior, block: "center", inline: "nearest" });
         el.classList.add("ring-2", "ring-primary");
-        if (highlightTimer) window.clearTimeout(highlightTimer);
-        highlightTimer = window.setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2500);
-        window.setTimeout(() => {
-          if (cancelled) return;
-          const rect = el.getBoundingClientRect();
-          const isVisible = rect.top >= 80 && rect.bottom <= window.innerHeight - 24;
-          if (isVisible || attempts >= 35) {
-            setFocusId(null);
-            return;
-          }
-          tryScroll();
-        }, attempts > 2 ? 260 : 120);
-        return;
       }
-      if (attempts < 35) window.setTimeout(tryScroll, 100);
     };
-    const startTimer = window.setTimeout(tryScroll, 250);
+
+    [0, 120, 320, 700, 1200, 1800, 2600].forEach((delay, index) => {
+      timers.push(window.setTimeout(() => {
+        window.requestAnimationFrame(() => scrollToTarget(index < 2 ? "auto" : "smooth"));
+      }, delay));
+    });
+
+    timers.push(window.setTimeout(() => {
+      const el = document.getElementById(`mineral-${focusId}`);
+      el?.classList.remove("ring-2", "ring-primary");
+      setFocusId(null);
+      if (focusSearch.focus) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }, 4200));
+
     return () => {
       cancelled = true;
-      window.clearTimeout(startTimer);
-      if (highlightTimer) window.clearTimeout(highlightTimer);
+      timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [focusId, filtered, visibleCount]);
+  }, [focusId, filtered, visibleCount, isLoading, focusSearch.focus]);
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
