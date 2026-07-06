@@ -180,15 +180,23 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       setVisibleCount(idx + INITIAL_VISIBLE_COUNT);
       return;
     }
-    const el = document.getElementById(`mineral-${focusId}`);
-    if (el) {
-      requestAnimationFrame(() => {
+    // Retry a few times: the DOM node may not be committed yet.
+    let attempts = 0;
+    let cancelled = false;
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(`mineral-${focusId}`);
+      if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.classList.add("ring-2", "ring-primary");
         setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2000);
-      });
-      setFocusId(null);
-    }
+        setFocusId(null);
+        return;
+      }
+      if (attempts++ < 20) setTimeout(tryScroll, 80);
+    };
+    tryScroll();
+    return () => { cancelled = true; };
   }, [focusId, filtered, visibleCount]);
 
   const visibleItems = useMemo(
