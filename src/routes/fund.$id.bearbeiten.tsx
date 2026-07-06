@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/fund/$id/bearbeiten")({
 function EditPage() {
   const { id } = Route.useParams();
   const { session } = useAuth();
-  const navigate = useNavigate();
   const qc = useQueryClient();
 
   const { data: m, isLoading } = useQuery({
@@ -72,10 +71,6 @@ function EditPage() {
           qc.invalidateQueries({ queryKey: ["minerals"] });
           qc.invalidateQueries({ queryKey: ["minerals", m.id] });
           toast.success("Gespeichert");
-          try {
-            sessionStorage.setItem("focus-mineral-id", m.id);
-          } catch {}
-          navigate({ to: "/" });
         }}
       />
     </div>
