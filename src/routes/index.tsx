@@ -70,8 +70,8 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [showValue, setShowValue] = useState(false);
-  const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("created_at");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const studioFn = useServerFn(studioBackgroundPhoto);
