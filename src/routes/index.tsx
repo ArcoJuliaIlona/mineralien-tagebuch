@@ -429,7 +429,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       ) : (
         <ul className="space-y-3">
           {visibleItems.map((m) => (
-            <li key={m.id}>
+            <li key={m.id} id={`mineral-${m.id}`} className="rounded-lg transition-shadow">
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
