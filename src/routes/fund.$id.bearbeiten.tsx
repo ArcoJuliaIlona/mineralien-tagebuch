@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -23,6 +23,7 @@ function EditPage() {
   const { id } = Route.useParams();
   const { session } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: m, isLoading } = useQuery({
     queryKey: ["minerals", id],
@@ -71,6 +72,11 @@ function EditPage() {
           qc.invalidateQueries({ queryKey: ["minerals"] });
           qc.invalidateQueries({ queryKey: ["minerals", m.id] });
           toast.success("Gespeichert");
+          try {
+            sessionStorage.setItem("focus-mineral-id", m.id);
+            sessionStorage.setItem("focus-mineral-category", m.category);
+          } catch {}
+          navigate({ to: "/" });
         }}
       />
     </div>

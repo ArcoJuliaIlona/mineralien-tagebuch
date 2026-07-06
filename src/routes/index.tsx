@@ -74,6 +74,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [focusId, setFocusId] = useState<string | null>(null);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
@@ -147,6 +148,59 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
   }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+
+  // On mount: read focus target and switch tab to its category, reset filters.
+  useEffect(() => {
+    try {
+      const id = sessionStorage.getItem("focus-mineral-id");
+      const cat = sessionStorage.getItem("focus-mineral-category") as Category | null;
+      if (id) {
+        setFocusId(id);
+        setSearch("");
+        setFilterName(ALL);
+        setFilterLocation(ALL);
+        setOnlyUv(false);
+        if (cat === "mineral" || cat === "fossil" || cat === "rock") {
+          setTab(cat);
+        }
+        sessionStorage.removeItem("focus-mineral-id");
+        sessionStorage.removeItem("focus-mineral-category");
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Ensure the focused item is within the visible window.
+  useEffect(() => {
+    if (!focusId) return;
+    const idx = filtered.findIndex((m) => m.id === focusId);
+    if (idx >= 0 && idx >= visibleCount) {
+      setVisibleCount(Math.ceil((idx + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT);
+    }
+  }, [focusId, filtered, visibleCount]);
+
+  // Scroll to focused item; retry until it mounts.
+  useEffect(() => {
+    if (!focusId) return;
+    let cancelled = false;
+    let attempts = 0;
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(`mineral-${focusId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-primary");
+        setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2000);
+        setFocusId(null);
+        return;
+      }
+      if (++attempts < 20) setTimeout(tryScroll, 80);
+    };
+    tryScroll();
+    return () => {
+      cancelled = true;
+    };
+  }, [focusId, filtered, visibleCount]);
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
@@ -386,7 +440,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       ) : (
         <ul className="space-y-3">
           {visibleItems.map((m) => (
-            <li key={m.id} className="rounded-lg transition-shadow">
+            <li key={m.id} id={`mineral-${m.id}`} className="rounded-lg transition-shadow">
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
