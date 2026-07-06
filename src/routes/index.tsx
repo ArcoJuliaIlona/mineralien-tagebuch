@@ -189,7 +189,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
       });
       setFocusId(null);
     }
-  }, [focusId, filtered, visibleCount, visibleItems]);
+  }, [focusId, filtered, visibleCount]);
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
