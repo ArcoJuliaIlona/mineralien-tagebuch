@@ -74,6 +74,7 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [focusId, setFocusId] = useState<string | null>(null);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
@@ -147,6 +148,48 @@ function ListPage({ tab, setTab, newCategory }: { tab: TabValue; setTab: (v: Tab
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
   }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+
+  // On mount: if returning from edit, restore filters and switch to the item's tab.
+  useEffect(() => {
+    let fid: string | null = null;
+    try { fid = sessionStorage.getItem("focus-mineral-id"); } catch {}
+    if (!fid) return;
+    try { sessionStorage.removeItem("focus-mineral-id"); } catch {}
+    setFocusId(fid);
+    setSearch("");
+    setFilterName(ALL);
+    setFilterLocation(ALL);
+    setOnlyUv(false);
+    setSortBy("name");
+    setSortDir("asc");
+  }, []);
+
+  // When the target mineral is known, switch tab to its category.
+  useEffect(() => {
+    if (!focusId || minerals.length === 0) return;
+    const t = minerals.find((m) => m.id === focusId);
+    if (t && tab !== t.category) setTab(t.category);
+  }, [focusId, minerals, tab, setTab]);
+
+  // Once filtered list contains the target, ensure it's visible and scroll to it.
+  useEffect(() => {
+    if (!focusId) return;
+    const idx = filtered.findIndex((m) => m.id === focusId);
+    if (idx < 0) return;
+    if (idx >= visibleCount) {
+      setVisibleCount(idx + INITIAL_VISIBLE_COUNT);
+      return;
+    }
+    const el = document.getElementById(`mineral-${focusId}`);
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-primary");
+        setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2000);
+      });
+      setFocusId(null);
+    }
+  }, [focusId, filtered, visibleCount, visibleItems]);
 
   const visibleItems = useMemo(
     () => filtered.slice(0, visibleCount),
