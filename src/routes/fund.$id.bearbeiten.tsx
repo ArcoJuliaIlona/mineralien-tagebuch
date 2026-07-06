@@ -74,9 +74,9 @@ function EditPage() {
           toast.success("Gespeichert");
           try {
             sessionStorage.setItem("focus-mineral-id", m.id);
-            sessionStorage.setItem("focus-mineral-category", m.category);
+            sessionStorage.setItem("focus-mineral-category", input.category);
           } catch {}
-          navigate({ to: "/" });
+          navigate({ to: "/", resetScroll: false });
         }}
       />
     </div>
