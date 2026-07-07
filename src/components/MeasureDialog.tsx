@@ -330,14 +330,14 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
               {len && line(len[0], len[1], "#22d3ee", "len-line")}
               {wid && line(wid[0], wid[1], "#f472b6", "wid-line")}
               {calTmp && dot(calTmp, "#60a5fa", "cal-tmp", 8)}
-              {cal && dot(cal[0], "#60a5fa", "cal-0", 8)}
-              {cal && dot(cal[1], "#60a5fa", "cal-1", 8)}
+              {cal && arrow(cal[1], cal[0], "#60a5fa", "cal-a0")}
+              {cal && arrow(cal[0], cal[1], "#60a5fa", "cal-a1")}
               {lenTmp && dot(lenTmp, "#22d3ee", "len-tmp")}
-              {len && dot(len[0], "#22d3ee", "len-0")}
-              {len && dot(len[1], "#22d3ee", "len-1")}
+              {len && arrow(len[1], len[0], "#22d3ee", "len-a0")}
+              {len && arrow(len[0], len[1], "#22d3ee", "len-a1")}
               {widTmp && dot(widTmp, "#f472b6", "wid-tmp")}
-              {wid && dot(wid[0], "#f472b6", "wid-0")}
-              {wid && dot(wid[1], "#f472b6", "wid-1")}
+              {wid && arrow(wid[1], wid[0], "#f472b6", "wid-a0")}
+              {wid && arrow(wid[0], wid[1], "#f472b6", "wid-a1")}
             </>
           )}
         </div>
