@@ -57,6 +57,47 @@ const ALL = "__ALLE__";
 const ALL_TAB = "__ALL__";
 const INITIAL_VISIBLE_COUNT = 30;
 type TabValue = Category | typeof ALL_TAB;
+type SortBy = "created_at" | "country" | "location" | "name" | "value";
+type SortDir = "asc" | "desc";
+type ListViewState = {
+  tab: TabValue;
+  search: string;
+  filterName: string;
+  filterLocation: string;
+  sortBy: SortBy;
+  sortDir: SortDir;
+  onlyUv: boolean;
+};
+
+const LIST_VIEW_STATE_KEY = "collection-list-view-state";
+
+const isTabValue = (value: unknown): value is TabValue =>
+  value === ALL_TAB || value === "mineral" || value === "fossil" || value === "rock";
+
+const isSortBy = (value: unknown): value is SortBy =>
+  value === "created_at" || value === "country" || value === "location" || value === "name" || value === "value";
+
+const isSortDir = (value: unknown): value is SortDir => value === "asc" || value === "desc";
+
+const readListViewState = (): ListViewState | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(LIST_VIEW_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ListViewState>;
+    return {
+      tab: isTabValue(parsed.tab) ? parsed.tab : "mineral",
+      search: typeof parsed.search === "string" ? parsed.search : "",
+      filterName: typeof parsed.filterName === "string" ? parsed.filterName : ALL,
+      filterLocation: typeof parsed.filterLocation === "string" ? parsed.filterLocation : ALL,
+      sortBy: isSortBy(parsed.sortBy) ? parsed.sortBy : "name",
+      sortDir: isSortDir(parsed.sortDir) ? parsed.sortDir : "asc",
+      onlyUv: typeof parsed.onlyUv === "boolean" ? parsed.onlyUv : false,
+    };
+  } catch {
+    return null;
+  }
+};
 
 function ListPage({
   tab,
@@ -93,11 +134,12 @@ function ListPage({
   const [filterName, setFilterName] = useState(ALL);
   const [filterLocation, setFilterLocation] = useState(ALL);
   const [showValue, setShowValue] = useState(false);
-  const [sortBy, setSortBy] = useState<"created_at" | "country" | "location" | "name" | "value">("name");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<SortBy>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [viewReady, setViewReady] = useState(!focusSearch.focus);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
@@ -172,23 +214,53 @@ function ListPage({
     setVisibleCount(INITIAL_VISIBLE_COUNT);
   }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
 
-  // On mount: read focus target and switch tab to its category, reset filters.
+  // On return from editing: restore the exact list view first, then focus the edited item.
   useEffect(() => {
     try {
       const id = focusSearch.focus ?? sessionStorage.getItem("focus-mineral-id");
       const storedCat = sessionStorage.getItem("focus-mineral-category") as Category | null;
       const cat = focusSearch.category ?? storedCat;
       if (id) {
-        setFocusId(id);
-        if (cat === "mineral" || cat === "fossil" || cat === "rock") {
+        const savedView = readListViewState();
+        if (savedView) {
+          const restoredTab = savedView.tab === ALL_TAB ? ALL_TAB : isCategory(cat) ? cat : savedView.tab;
+          setTab(restoredTab);
+          setSearch(savedView.search);
+          setFilterName(savedView.filterName);
+          setFilterLocation(savedView.filterLocation);
+          setSortBy(savedView.sortBy);
+          setSortDir(savedView.sortDir);
+          setOnlyUv(savedView.onlyUv);
+        } else if (cat === "mineral" || cat === "fossil" || cat === "rock") {
           setTab(cat);
         }
+        setFocusId(id);
         sessionStorage.removeItem("focus-mineral-id");
         sessionStorage.removeItem("focus-mineral-category");
       }
     } catch {}
+    setViewReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusSearch.focus, focusSearch.category]);
+
+  useEffect(() => {
+    if (!viewReady) return;
+    try {
+      const state: ListViewState = { tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv };
+      sessionStorage.setItem(LIST_VIEW_STATE_KEY, JSON.stringify(state));
+    } catch {}
+  }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+
+  // If the previous filters hide the edited item, keep the sort but clear filters so the focus can work.
+  useEffect(() => {
+    if (!focusId || isLoading) return;
+    if (filtered.some((m) => m.id === focusId)) return;
+    if (!inTab.some((m) => m.id === focusId)) return;
+    setSearch("");
+    setFilterName(ALL);
+    setFilterLocation(ALL);
+    setOnlyUv(false);
+  }, [focusId, filtered, inTab, isLoading]);
 
   // Ensure the focused item is within the visible window.
   useEffect(() => {
@@ -321,6 +393,21 @@ function ListPage({
       toast.success(`Fertig: ${ok} bearbeitet${fail ? `, ${fail} fehlgeschlagen (${lastError})` : ""}`);
     }
   };
+
+  if (!viewReady) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-1 pt-2">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+            Privatsammlung
+          </p>
+          <h1 className="font-serif text-4xl tracking-tight">Meine Sammlung</h1>
+          <div className="h-px w-12 bg-primary/70" />
+        </div>
+        <p className="py-12 text-center text-muted-foreground">Lade…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
