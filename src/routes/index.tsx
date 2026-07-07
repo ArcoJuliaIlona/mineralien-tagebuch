@@ -262,21 +262,31 @@ function ListPage({
     setOnlyUv(false);
   }, [focusId, filtered, inTab, isLoading]);
 
+  const focusedIndex = useMemo(
+    () => (focusId ? filtered.findIndex((m) => m.id === focusId) : -1),
+    [focusId, filtered],
+  );
+
+  const effectiveVisibleCount =
+    focusedIndex >= 0
+      ? Math.max(
+          visibleCount,
+          Math.ceil((focusedIndex + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT,
+        )
+      : visibleCount;
+
   // Ensure the focused item is within the visible window.
   useEffect(() => {
-    if (!focusId) return;
-    const idx = filtered.findIndex((m) => m.id === focusId);
-    if (idx >= 0 && idx >= visibleCount) {
-      setVisibleCount(Math.ceil((idx + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT);
+    if (focusedIndex >= 0 && focusedIndex >= visibleCount) {
+      setVisibleCount(Math.ceil((focusedIndex + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT);
     }
-  }, [focusId, filtered, visibleCount]);
+  }, [focusedIndex, visibleCount]);
 
   // Scroll to focused item repeatedly after navigation so router scroll restoration
   // and async list rendering cannot leave the page at the top.
   useEffect(() => {
     if (!focusId || isLoading) return;
-    const targetIndex = filtered.findIndex((m) => m.id === focusId);
-    if (targetIndex < 0 || targetIndex >= visibleCount) return;
+    if (focusedIndex < 0 || focusedIndex >= effectiveVisibleCount) return;
 
     let cancelled = false;
     const timers: number[] = [];
@@ -285,35 +295,34 @@ function ListPage({
       if (cancelled) return;
       const el = document.getElementById(`mineral-${focusId}`);
       if (el) {
-        el.scrollIntoView({ behavior, block: "center", inline: "nearest" });
-        el.classList.add("ring-2", "ring-primary");
+        const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+        const targetTop = el.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+        window.scrollTo({ top: Math.max(0, targetTop), behavior });
       }
     };
 
-    [0, 120, 320, 700, 1200, 1800, 2600].forEach((delay, index) => {
+    [0, 80, 180, 360, 700, 1200, 2000, 3200].forEach((delay, index) => {
       timers.push(window.setTimeout(() => {
         window.requestAnimationFrame(() => scrollToTarget(index < 2 ? "auto" : "smooth"));
       }, delay));
     });
 
     timers.push(window.setTimeout(() => {
-      const el = document.getElementById(`mineral-${focusId}`);
-      el?.classList.remove("ring-2", "ring-primary");
       setFocusId(null);
       if (focusSearch.focus) {
         window.history.replaceState(null, "", window.location.pathname);
       }
-    }, 4200));
+    }, 6500));
 
     return () => {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [focusId, filtered, visibleCount, isLoading, focusSearch.focus]);
+  }, [focusId, focusedIndex, effectiveVisibleCount, isLoading, focusSearch.focus]);
 
   const visibleItems = useMemo(
-    () => filtered.slice(0, visibleCount),
-    [filtered, visibleCount],
+    () => filtered.slice(0, effectiveVisibleCount),
+    [filtered, effectiveVisibleCount],
   );
 
   const thumbPaths = useMemo(
@@ -564,7 +573,11 @@ function ListPage({
       ) : (
         <ul className="space-y-3">
           {visibleItems.map((m) => (
-            <li key={m.id} id={`mineral-${m.id}`} className="rounded-lg transition-shadow">
+            <li
+              key={m.id}
+              id={`mineral-${m.id}`}
+              className={`scroll-mt-24 rounded-lg transition-shadow ${m.id === focusId ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+            >
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
@@ -602,7 +615,7 @@ function ListPage({
               </Link>
             </li>
           ))}
-          {visibleCount < filtered.length && (
+          {effectiveVisibleCount < filtered.length && (
             <li>
               <Button
                 type="button"
@@ -610,7 +623,7 @@ function ListPage({
                 className="h-12 w-full"
                 onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_COUNT)}
               >
-                Mehr anzeigen ({Math.min(INITIAL_VISIBLE_COUNT, filtered.length - visibleCount)} von {filtered.length - visibleCount})
+                Mehr anzeigen ({Math.min(INITIAL_VISIBLE_COUNT, filtered.length - effectiveVisibleCount)} von {filtered.length - effectiveVisibleCount})
               </Button>
             </li>
           )}
