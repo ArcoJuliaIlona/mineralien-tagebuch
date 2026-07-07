@@ -138,6 +138,7 @@ function ListPage({
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [onlyUv, setOnlyUv] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [minimumVisibleCount, setMinimumVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [viewReady, setViewReady] = useState(!focusSearch.focus);
   const studioFn = useServerFn(studioBackgroundPhoto);
@@ -212,6 +213,7 @@ function ListPage({
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
+    setMinimumVisibleCount(INITIAL_VISIBLE_COUNT);
   }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
 
   // On return from editing: restore the exact list view first, then focus the edited item.
@@ -271,14 +273,17 @@ function ListPage({
     focusedIndex >= 0
       ? Math.max(
           visibleCount,
+          minimumVisibleCount,
           Math.ceil((focusedIndex + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT,
         )
-      : visibleCount;
+      : Math.max(visibleCount, minimumVisibleCount);
 
   // Ensure the focused item is within the visible window.
   useEffect(() => {
     if (focusedIndex >= 0 && focusedIndex >= visibleCount) {
-      setVisibleCount(Math.ceil((focusedIndex + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT);
+      const nextCount = Math.ceil((focusedIndex + 1) / INITIAL_VISIBLE_COUNT) * INITIAL_VISIBLE_COUNT;
+      setVisibleCount(nextCount);
+      setMinimumVisibleCount(nextCount);
     }
   }, [focusedIndex, visibleCount]);
 
@@ -308,7 +313,6 @@ function ListPage({
     });
 
     timers.push(window.setTimeout(() => {
-      setFocusId(null);
       if (focusSearch.focus) {
         window.history.replaceState(null, "", window.location.pathname);
       }
