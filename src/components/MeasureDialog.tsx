@@ -184,6 +184,43 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     </svg>
   );
 
+  // Pfeilspitze am Endpunkt `to`, ausgerichtet entlang from→to.
+  // In Bildschirm-Pixelraum berechnet, damit die Spitze auch bei
+  // nicht-quadratischen Bildern korrekt ausgerichtet ist.
+  const arrow = (from: Point, to: Point, color: string, key: string) => {
+    if (!img) return null;
+    const dx = ((to.x - from.x) / 100) * img.clientWidth;
+    const dy = ((to.y - from.y) / 100) * img.clientHeight;
+    if (dx === 0 && dy === 0) return null;
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+    return (
+      <div
+        key={key}
+        className="pointer-events-none absolute"
+        style={{
+          left: `${to.x}%`,
+          top: `${to.y}%`,
+          transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+        }}
+      >
+        <svg
+          width={18}
+          height={18}
+          viewBox="-9 -9 18 18"
+          style={{ display: "block", overflow: "visible" }}
+        >
+          <polygon
+            points="9,0 -3,-6 -1,0 -3,6"
+            fill={color}
+            stroke="white"
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    );
+  };
+
   const apply = async () => {
     if (lenMm == null || widMm == null || !onApply) return;
     setApplying(true);
@@ -293,14 +330,14 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
               {len && line(len[0], len[1], "#22d3ee", "len-line")}
               {wid && line(wid[0], wid[1], "#f472b6", "wid-line")}
               {calTmp && dot(calTmp, "#60a5fa", "cal-tmp", 8)}
-              {cal && dot(cal[0], "#60a5fa", "cal-0", 8)}
-              {cal && dot(cal[1], "#60a5fa", "cal-1", 8)}
+              {cal && arrow(cal[1], cal[0], "#60a5fa", "cal-a0")}
+              {cal && arrow(cal[0], cal[1], "#60a5fa", "cal-a1")}
               {lenTmp && dot(lenTmp, "#22d3ee", "len-tmp")}
-              {len && dot(len[0], "#22d3ee", "len-0")}
-              {len && dot(len[1], "#22d3ee", "len-1")}
+              {len && arrow(len[1], len[0], "#22d3ee", "len-a0")}
+              {len && arrow(len[0], len[1], "#22d3ee", "len-a1")}
               {widTmp && dot(widTmp, "#f472b6", "wid-tmp")}
-              {wid && dot(wid[0], "#f472b6", "wid-0")}
-              {wid && dot(wid[1], "#f472b6", "wid-1")}
+              {wid && arrow(wid[1], wid[0], "#f472b6", "wid-a0")}
+              {wid && arrow(wid[0], wid[1], "#f472b6", "wid-a1")}
             </>
           )}
         </div>
