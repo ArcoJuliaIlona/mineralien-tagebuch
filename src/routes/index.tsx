@@ -180,12 +180,6 @@ function ListPage({
       const cat = focusSearch.category ?? storedCat;
       if (id) {
         setFocusId(id);
-        setSearch("");
-        setFilterName(ALL);
-        setFilterLocation(ALL);
-        setSortBy("name");
-        setSortDir("asc");
-        setOnlyUv(false);
         if (cat === "mineral" || cat === "fossil" || cat === "rock") {
           setTab(cat);
         }
