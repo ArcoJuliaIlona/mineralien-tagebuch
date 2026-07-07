@@ -184,6 +184,43 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     </svg>
   );
 
+  // Pfeilspitze am Endpunkt `to`, ausgerichtet entlang from→to.
+  // In Bildschirm-Pixelraum berechnet, damit die Spitze auch bei
+  // nicht-quadratischen Bildern korrekt ausgerichtet ist.
+  const arrow = (from: Point, to: Point, color: string, key: string) => {
+    if (!img) return null;
+    const dx = ((to.x - from.x) / 100) * img.clientWidth;
+    const dy = ((to.y - from.y) / 100) * img.clientHeight;
+    if (dx === 0 && dy === 0) return null;
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+    return (
+      <div
+        key={key}
+        className="pointer-events-none absolute"
+        style={{
+          left: `${to.x}%`,
+          top: `${to.y}%`,
+          transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+        }}
+      >
+        <svg
+          width={18}
+          height={18}
+          viewBox="-9 -9 18 18"
+          style={{ display: "block", overflow: "visible" }}
+        >
+          <polygon
+            points="9,0 -3,-6 -1,0 -3,6"
+            fill={color}
+            stroke="white"
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    );
+  };
+
   const apply = async () => {
     if (lenMm == null || widMm == null || !onApply) return;
     setApplying(true);
