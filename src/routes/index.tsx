@@ -146,6 +146,12 @@ function ListPage({
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
   const [slideshowOpen, setSlideshowOpen] = useState(false);
 
+  useEffect(() => {
+    if (sortBy === "created_at" && sortDir !== "desc") {
+      setSortDir("desc");
+    }
+  }, [sortBy, sortDir]);
+
   const inTab = useMemo(
     () => (tab === ALL_TAB ? minerals : minerals.filter((m) => m.category === tab)),
     [minerals, tab],
@@ -511,7 +517,11 @@ function ListPage({
           />
         </div>
         <div className="grid grid-cols-[1fr_auto] gap-2">
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+          <Select value={sortBy} onValueChange={(v) => {
+            const nextSort = v as SortBy;
+            setSortBy(nextSort);
+            if (nextSort === "created_at") setSortDir("desc");
+          }}>
             <SelectTrigger className="h-12 text-base">
               <SelectValue placeholder="Sortierung" />
             </SelectTrigger>
