@@ -140,7 +140,7 @@ function ListPage({
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [minimumVisibleCount, setMinimumVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [focusId, setFocusId] = useState<string | null>(null);
-  const [viewReady, setViewReady] = useState(!focusSearch.focus);
+  const [viewReady, setViewReady] = useState(false);
   const studioFn = useServerFn(studioBackgroundPhoto);
   const [batchBusy, setBatchBusy] = useState(false);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; startedAt: number } | null>(null);
@@ -228,8 +228,8 @@ function ListPage({
       const id = focusSearch.focus ?? sessionStorage.getItem("focus-mineral-id");
       const storedCat = sessionStorage.getItem("focus-mineral-category") as Category | null;
       const cat = focusSearch.category ?? storedCat;
+      const savedView = readListViewState();
       if (id) {
-        const savedView = readListViewState();
         if (savedView) {
           const restoredTab = savedView.tab === ALL_TAB ? ALL_TAB : isCategory(cat) ? cat : savedView.tab;
           setTab(restoredTab);
@@ -245,6 +245,15 @@ function ListPage({
         setFocusId(id);
         sessionStorage.removeItem("focus-mineral-id");
         sessionStorage.removeItem("focus-mineral-category");
+      } else if (savedView) {
+        // No focus target — still restore the last chosen filters & sort.
+        setTab(savedView.tab);
+        setSearch(savedView.search);
+        setFilterName(savedView.filterName);
+        setFilterLocation(savedView.filterLocation);
+        setSortBy(savedView.sortBy);
+        setSortDir(savedView.sortDir);
+        setOnlyUv(savedView.onlyUv);
       }
     } catch {}
     setViewReady(true);
