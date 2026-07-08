@@ -189,6 +189,39 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     }
   };
 
+  // Auto-fetch Formel & Härte, sobald der Name eine Weile stabil ist
+  // (debounced, damit nicht bei jedem Tastendruck ein Request rausgeht).
+  useEffect(() => {
+    const n = name.trim();
+    if (!n || category !== "mineral") return;
+    if (n.length < 3) return;
+    const needsFormula = !formula.trim();
+    const needsHardness = !hardness.trim();
+    if (!needsFormula && !needsHardness) return;
+    const t = setTimeout(() => {
+      if (needsFormula && !fetchingFormula) {
+        setFetchingFormula(true);
+        fetchFormulaFn({ data: { name: n } })
+          .then((res) => {
+            if (res.formula) setFormula((cur) => (cur.trim() ? cur : res.formula!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingFormula(false));
+      }
+      if (needsHardness && !fetchingHardness) {
+        setFetchingHardness(true);
+        fetchHardnessFn({ data: { name: n } })
+          .then((res) => {
+            if (res.hardness) setHardness((cur) => (cur.trim() ? cur : res.hardness!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingHardness(false));
+      }
+    }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, category]);
+
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const selected = Array.from(files);
