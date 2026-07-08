@@ -99,6 +99,13 @@ const readListViewState = (): ListViewState | null => {
   }
 };
 
+const writeListViewState = (state: ListViewState) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(LIST_VIEW_STATE_KEY, JSON.stringify(state));
+  } catch {}
+};
+
 function ListPage({
   tab,
   setTab,
@@ -262,11 +269,12 @@ function ListPage({
 
   useEffect(() => {
     if (!viewReady) return;
-    try {
-      const state: ListViewState = { tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv };
-      sessionStorage.setItem(LIST_VIEW_STATE_KEY, JSON.stringify(state));
-    } catch {}
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv });
   }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+
+  const saveCurrentListView = (overrides: Partial<ListViewState> = {}) => {
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, ...overrides });
+  };
 
   // If the previous filters hide the edited item, keep the sort but clear filters so the focus can work.
   useEffect(() => {
@@ -528,8 +536,10 @@ function ListPage({
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <Select value={sortBy} onValueChange={(v) => {
             const nextSort = v as SortBy;
+            const nextDir = nextSort === "created_at" ? "desc" : sortDir;
             setSortBy(nextSort);
             if (nextSort === "created_at") setSortDir("desc");
+            saveCurrentListView({ sortBy: nextSort, sortDir: nextDir });
           }}>
             <SelectTrigger className="h-12 text-base">
               <SelectValue placeholder="Sortierung" />
@@ -604,6 +614,7 @@ function ListPage({
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
+                onClick={() => saveCurrentListView()}
                 className="flex items-center gap-4 rounded-lg border border-border/70 bg-card p-3 transition hover:border-primary/40 hover:bg-card/80 active:scale-[0.99]"
               >
                 <PhotoThumb
