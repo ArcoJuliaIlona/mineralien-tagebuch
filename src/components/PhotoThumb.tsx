@@ -183,7 +183,9 @@ export function PhotoThumb({
             alt="Mineral"
             loading="lazy"
             decoding="async"
-            className={`h-full w-full object-${fit}`}
+            className={
+              "h-full w-full " + (fit === "contain" ? "object-contain" : "object-cover")
+            }
           />
         )
       ) : (
