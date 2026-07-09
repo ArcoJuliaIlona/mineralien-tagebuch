@@ -262,6 +262,7 @@ function DetailPage() {
                 url={photoThumbUrls?.[i] ?? null}
                 className="aspect-square w-full"
                 version={photoVersion}
+                trim
               />
             </button>
           ))}
