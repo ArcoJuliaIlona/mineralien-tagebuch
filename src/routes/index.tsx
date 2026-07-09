@@ -622,6 +622,7 @@ function ListPage({
                   url={m.photo_paths[0] ? thumbUrlMap[m.photo_paths[0]] ?? null : null}
                   className="h-20 w-20 shrink-0"
                   version={photoVersion}
+                  trim
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
