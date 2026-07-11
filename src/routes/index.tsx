@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Plus, Gem, ArrowUp, ArrowDown, ImageIcon, Loader2, Play } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
