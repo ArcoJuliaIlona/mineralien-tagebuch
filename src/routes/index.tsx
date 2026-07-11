@@ -312,9 +312,12 @@ function ListPage({
 
   // Scroll to focused item repeatedly after navigation so router scroll restoration
   // and async list rendering cannot leave the page at the top.
+  const scrolledFocusIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (!focusId || isLoading) return;
     if (focusedIndex < 0 || focusedIndex >= effectiveVisibleCount) return;
+    if (scrolledFocusIdRef.current === focusId) return;
+    scrolledFocusIdRef.current = focusId;
 
     let cancelled = false;
     const timers: number[] = [];
@@ -335,15 +338,33 @@ function ListPage({
       }, delay));
     });
 
+    // Abort auto-scroll timers as soon as the user interacts, so they aren't
+    // trapped on the focused item.
+    const cancelTimers = () => {
+      cancelled = true;
+      timers.forEach((t) => window.clearTimeout(t));
+    };
+    const opts: AddEventListenerOptions = { passive: true, once: true };
+    window.addEventListener("wheel", cancelTimers, opts);
+    window.addEventListener("touchmove", cancelTimers, opts);
+    window.addEventListener("keydown", cancelTimers, opts);
+
     timers.push(window.setTimeout(() => {
       if (focusSearch.focus) {
         window.history.replaceState(null, "", window.location.pathname);
       }
+      // Clear the focus after the initial scroll completes so subsequent
+      // list re-renders (infinite scroll, filter tweaks) don't hijack the
+      // scroll position again. The highlight ring goes away with it.
+      setFocusId(null);
     }, 6500));
 
     return () => {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener("wheel", cancelTimers);
+      window.removeEventListener("touchmove", cancelTimers);
+      window.removeEventListener("keydown", cancelTimers);
     };
   }, [focusId, focusedIndex, effectiveVisibleCount, isLoading, focusSearch.focus]);
 
