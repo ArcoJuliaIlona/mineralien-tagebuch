@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 
 type Point = { x: number; y: number };
 type Step = "cal1" | "cal2" | "len1" | "len2" | "wid1" | "wid2" | "done";
+type DragTarget = { pair: "cal" | "len" | "wid"; index: 0 | 1 };
 
 type Props = {
   src: string;
@@ -35,6 +36,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   const [wid, setWid] = useState<[Point, Point] | null>(null);
   const [widTmp, setWidTmp] = useState<Point | null>(null);
   const [applying, setApplying] = useState(false);
+  const [drag, setDrag] = useState<DragTarget | null>(null);
   const [refMm, setRefMm] = useState<number>(() => {
     if (typeof window === "undefined") return 10;
     const raw = window.localStorage.getItem(REF_STORAGE_KEY);
@@ -60,6 +62,7 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
 
   const onImgClick = (e: React.MouseEvent<HTMLImageElement>) => {
     e.stopPropagation();
+    if (drag) return;
     const img = imgRef.current;
     if (!img) return;
     const r = img.getBoundingClientRect();
@@ -90,6 +93,56 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
       setStep("done");
     }
   };
+
+  const pointerToPct = (clientX: number, clientY: number): Point | null => {
+    const el = imgRef.current;
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)),
+      y: Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100)),
+    };
+  };
+
+  useEffect(() => {
+    if (!drag) return;
+    const onMove = (e: PointerEvent) => {
+      const p = pointerToPct(e.clientX, e.clientY);
+      if (!p) return;
+      e.preventDefault();
+      if (drag.pair === "cal") {
+        setCal((prev) => {
+          if (!prev) return prev;
+          const next: [Point, Point] = [prev[0], prev[1]];
+          next[drag.index] = p;
+          return next;
+        });
+      } else if (drag.pair === "len") {
+        setLen((prev) => {
+          if (!prev) return prev;
+          const next: [Point, Point] = [prev[0], prev[1]];
+          next[drag.index] = p;
+          return next;
+        });
+      } else {
+        setWid((prev) => {
+          if (!prev) return prev;
+          const next: [Point, Point] = [prev[0], prev[1]];
+          next[drag.index] = p;
+          return next;
+        });
+      }
+    };
+    const onUp = () => setDrag(null);
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [drag]);
 
   const reset = () => {
     setCal(null);
@@ -187,7 +240,13 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
   // Pfeilspitze am Endpunkt `to`, ausgerichtet entlang from→to.
   // In Bildschirm-Pixelraum berechnet, damit die Spitze auch bei
   // nicht-quadratischen Bildern korrekt ausgerichtet ist.
-  const arrow = (from: Point, to: Point, color: string, key: string) => {
+  const arrow = (
+    from: Point,
+    to: Point,
+    color: string,
+    key: string,
+    handle?: DragTarget,
+  ) => {
     if (!img) return null;
     const dx = ((to.x - from.x) / 100) * img.clientWidth;
     const dy = ((to.y - from.y) / 100) * img.clientHeight;
@@ -196,19 +255,38 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
     return (
       <div
         key={key}
-        className="pointer-events-none absolute"
+        className={`absolute ${handle ? "cursor-grab touch-none" : "pointer-events-none"}`}
         style={{
           left: `${to.x}%`,
           top: `${to.y}%`,
           transform: `translate(-50%, -50%) rotate(${angle}deg)`,
         }}
+        onPointerDown={
+          handle
+            ? (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setDrag(handle);
+              }
+            : undefined
+        }
       >
         <svg
-          width={18}
-          height={18}
-          viewBox="-9 -9 18 18"
+          width={handle ? 34 : 18}
+          height={handle ? 34 : 18}
+          viewBox="-17 -17 34 34"
           style={{ display: "block", overflow: "visible" }}
         >
+          {handle && (
+            <circle
+              r={15}
+              cx={0}
+              cy={0}
+              fill="rgba(255,255,255,0.08)"
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth={1}
+            />
+          )}
           <polygon
             points="9,0 -3,-6 -1,0 -3,6"
             fill={color}
@@ -326,18 +404,18 @@ export function MeasureDialog({ src, onClose, onApply }: Props) {
           />
           {loaded && (
             <>
-              {cal && line(cal[0], cal[1], "#60a5fa", "cal-line", 0.2)}
+              {cal && line(cal[0], cal[1], "#60a5fa", "cal-line", 0.4)}
               {len && line(len[0], len[1], "#22d3ee", "len-line")}
               {wid && line(wid[0], wid[1], "#f472b6", "wid-line")}
               {calTmp && dot(calTmp, "#60a5fa", "cal-tmp", 8)}
-              {cal && arrow(cal[1], cal[0], "#60a5fa", "cal-a0")}
-              {cal && arrow(cal[0], cal[1], "#60a5fa", "cal-a1")}
+              {cal && arrow(cal[1], cal[0], "#60a5fa", "cal-a0", { pair: "cal", index: 0 })}
+              {cal && arrow(cal[0], cal[1], "#60a5fa", "cal-a1", { pair: "cal", index: 1 })}
               {lenTmp && dot(lenTmp, "#22d3ee", "len-tmp")}
-              {len && arrow(len[1], len[0], "#22d3ee", "len-a0")}
-              {len && arrow(len[0], len[1], "#22d3ee", "len-a1")}
+              {len && arrow(len[1], len[0], "#22d3ee", "len-a0", { pair: "len", index: 0 })}
+              {len && arrow(len[0], len[1], "#22d3ee", "len-a1", { pair: "len", index: 1 })}
               {widTmp && dot(widTmp, "#f472b6", "wid-tmp")}
-              {wid && arrow(wid[1], wid[0], "#f472b6", "wid-a0")}
-              {wid && arrow(wid[0], wid[1], "#f472b6", "wid-a1")}
+              {wid && arrow(wid[1], wid[0], "#f472b6", "wid-a0", { pair: "wid", index: 0 })}
+              {wid && arrow(wid[0], wid[1], "#f472b6", "wid-a1", { pair: "wid", index: 1 })}
             </>
           )}
         </div>
