@@ -226,6 +226,112 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, category]);
 
+  // Auto-fetch Formel & Härte für das Begleitmineral (nur Kategorie „mineral").
+  useEffect(() => {
+    const n = (companion ?? "").trim();
+    if (!n || category !== "mineral") return;
+    // Für „Begleitmineralien" kann eine Liste stehen (z. B. „Pyrit, Calcit").
+    // Für die Auto-Ermittlung nehmen wir den ersten Eintrag.
+    const first = n.split(/[,;/]| und /i)[0].trim();
+    if (!first || first.length < 3) return;
+    const needsFormula = !companionFormula.trim();
+    const needsHardness = !companionHardness.trim();
+    if (!needsFormula && !needsHardness) return;
+    const t = setTimeout(() => {
+      if (needsFormula && !fetchingCompanionFormula) {
+        setFetchingCompanionFormula(true);
+        fetchFormulaFn({ data: { name: first } })
+          .then((res) => {
+            if (res.formula) setCompanionFormula((cur) => (cur.trim() ? cur : res.formula!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingCompanionFormula(false));
+      }
+      if (needsHardness && !fetchingCompanionHardness) {
+        setFetchingCompanionHardness(true);
+        fetchHardnessFn({ data: { name: first } })
+          .then((res) => {
+            if (res.hardness) setCompanionHardness((cur) => (cur.trim() ? cur : res.hardness!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingCompanionHardness(false));
+      }
+    }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companion, category]);
+
+  const handleCompanionBlur = () => {
+    const raw = (companion ?? "").trim();
+    if (!raw || category !== "mineral") return;
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    if (!first) return;
+    if (!companionFormula.trim() && !fetchingCompanionFormula) {
+      setFetchingCompanionFormula(true);
+      fetchFormulaFn({ data: { name: first } })
+        .then((res) => {
+          if (res.formula) setCompanionFormula((cur) => (cur.trim() ? cur : res.formula!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingCompanionFormula(false));
+    }
+    if (!companionHardness.trim() && !fetchingCompanionHardness) {
+      setFetchingCompanionHardness(true);
+      fetchHardnessFn({ data: { name: first } })
+        .then((res) => {
+          if (res.hardness) setCompanionHardness((cur) => (cur.trim() ? cur : res.hardness!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingCompanionHardness(false));
+    }
+  };
+
+  const autoFetchCompanionFormula = async () => {
+    const raw = (companion ?? "").trim();
+    if (!raw) {
+      toast.error("Bitte zuerst ein Begleitmineral eingeben.");
+      return;
+    }
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    setFetchingCompanionFormula(true);
+    try {
+      const res = await fetchFormulaFn({ data: { name: first } });
+      if (res.formula) {
+        setCompanionFormula(res.formula);
+        toast.success("Formel ergänzt");
+      } else {
+        toast.info("Keine eindeutige Formel gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Formel konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingCompanionFormula(false);
+    }
+  };
+
+  const autoFetchCompanionHardness = async () => {
+    const raw = (companion ?? "").trim();
+    if (!raw) {
+      toast.error("Bitte zuerst ein Begleitmineral eingeben.");
+      return;
+    }
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    setFetchingCompanionHardness(true);
+    try {
+      const res = await fetchHardnessFn({ data: { name: first } });
+      if (res.hardness) {
+        setCompanionHardness(res.hardness);
+        toast.success("Härte ergänzt");
+      } else {
+        toast.info("Keine eindeutige Härte gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Härte konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingCompanionHardness(false);
+    }
+  };
+
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const selected = Array.from(files);
