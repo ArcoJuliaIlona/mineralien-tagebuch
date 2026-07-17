@@ -20,6 +20,8 @@ export type Database = {
           chemical_formula: string | null
           collection_name: string | null
           collection_number: number
+          companion_formula: string | null
+          companion_hardness: string | null
           companion_minerals: string | null
           country: string | null
           created_at: string
@@ -46,6 +48,8 @@ export type Database = {
           chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
+          companion_formula?: string | null
+          companion_hardness?: string | null
           companion_minerals?: string | null
           country?: string | null
           created_at?: string
@@ -72,6 +76,8 @@ export type Database = {
           chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
+          companion_formula?: string | null
+          companion_hardness?: string | null
           companion_minerals?: string | null
           country?: string | null
           created_at?: string
