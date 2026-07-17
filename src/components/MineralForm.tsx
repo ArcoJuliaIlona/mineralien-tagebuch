@@ -546,18 +546,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           className="h-12 text-base"
         />
       </Field>
-      <Field label={category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}>
-        <Input
-          value={companion ?? ""}
-          onChange={(e) => setCompanion(e.target.value)}
-          placeholder={
-            category === "fossil"
-              ? "z. B. Ammonit, Belemnit – Besonderheiten"
-              : "z. B. Pyrit, Calcit"
-          }
-          className="h-12 text-base"
-        />
-      </Field>
       {category === "mineral" && (
       <Field label="Chemische Formel">
         <div className="space-y-2">
@@ -615,6 +603,81 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
             disabled={fetchingHardness}
           >
             {fetchingHardness ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Härte automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
+      )}
+      <Field label={category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}>
+        <Input
+          value={companion ?? ""}
+          onChange={(e) => setCompanion(e.target.value)}
+          onBlur={handleCompanionBlur}
+          placeholder={
+            category === "fossil"
+              ? "z. B. Ammonit, Belemnit – Besonderheiten"
+              : "z. B. Pyrit, Calcit"
+          }
+          className="h-12 text-base"
+        />
+      </Field>
+      {category === "mineral" && (
+      <Field label="Chemische Formel (Begleitmineral)">
+        <div className="space-y-2">
+          <Input
+            value={companionFormula}
+            onChange={(e) => setCompanionFormula(e.target.value)}
+            placeholder="z. B. FeS₂"
+            className="h-12 text-base"
+          />
+          {companionFormula.trim() && (
+            <div className="rounded-md border bg-muted/40 px-3 py-2 text-base">
+              <span className="mr-2 text-xs uppercase tracking-wide text-muted-foreground">
+                Vorschau:
+              </span>
+              <FormulaText value={companionFormula} />
+            </div>
+          )}
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchCompanionFormula}
+            disabled={fetchingCompanionFormula}
+          >
+            {fetchingCompanionFormula ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Formel automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
+      )}
+      {category === "mineral" && (
+      <Field label="Härte (Mohs) – Begleitmineral">
+        <div className="space-y-2">
+          <Input
+            value={companionHardness}
+            onChange={(e) => setCompanionHardness(e.target.value)}
+            placeholder="z. B. 6–6,5"
+            className="h-12 text-base"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchCompanionHardness}
+            disabled={fetchingCompanionHardness}
+          >
+            {fetchingCompanionHardness ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (
               <Sparkles className="size-5" />
