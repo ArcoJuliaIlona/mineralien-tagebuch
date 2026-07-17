@@ -56,6 +56,10 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
+  const [companionFormula, setCompanionFormula] = useState<string>(initial?.companion_formula ?? "");
+  const [fetchingCompanionFormula, setFetchingCompanionFormula] = useState(false);
+  const [companionHardness, setCompanionHardness] = useState<string>(initial?.companion_hardness ?? "");
+  const [fetchingCompanionHardness, setFetchingCompanionHardness] = useState(false);
   const [origin, setOrigin] = useState<string>(initial?.origin ?? "");
   const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
@@ -221,6 +225,112 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, category]);
+
+  // Auto-fetch Formel & Härte für das Begleitmineral (nur Kategorie „mineral").
+  useEffect(() => {
+    const n = (companion ?? "").trim();
+    if (!n || category !== "mineral") return;
+    // Für „Begleitmineralien" kann eine Liste stehen (z. B. „Pyrit, Calcit").
+    // Für die Auto-Ermittlung nehmen wir den ersten Eintrag.
+    const first = n.split(/[,;/]| und /i)[0].trim();
+    if (!first || first.length < 3) return;
+    const needsFormula = !companionFormula.trim();
+    const needsHardness = !companionHardness.trim();
+    if (!needsFormula && !needsHardness) return;
+    const t = setTimeout(() => {
+      if (needsFormula && !fetchingCompanionFormula) {
+        setFetchingCompanionFormula(true);
+        fetchFormulaFn({ data: { name: first } })
+          .then((res) => {
+            if (res.formula) setCompanionFormula((cur) => (cur.trim() ? cur : res.formula!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingCompanionFormula(false));
+      }
+      if (needsHardness && !fetchingCompanionHardness) {
+        setFetchingCompanionHardness(true);
+        fetchHardnessFn({ data: { name: first } })
+          .then((res) => {
+            if (res.hardness) setCompanionHardness((cur) => (cur.trim() ? cur : res.hardness!));
+          })
+          .catch(() => {})
+          .finally(() => setFetchingCompanionHardness(false));
+      }
+    }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companion, category]);
+
+  const handleCompanionBlur = () => {
+    const raw = (companion ?? "").trim();
+    if (!raw || category !== "mineral") return;
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    if (!first) return;
+    if (!companionFormula.trim() && !fetchingCompanionFormula) {
+      setFetchingCompanionFormula(true);
+      fetchFormulaFn({ data: { name: first } })
+        .then((res) => {
+          if (res.formula) setCompanionFormula((cur) => (cur.trim() ? cur : res.formula!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingCompanionFormula(false));
+    }
+    if (!companionHardness.trim() && !fetchingCompanionHardness) {
+      setFetchingCompanionHardness(true);
+      fetchHardnessFn({ data: { name: first } })
+        .then((res) => {
+          if (res.hardness) setCompanionHardness((cur) => (cur.trim() ? cur : res.hardness!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingCompanionHardness(false));
+    }
+  };
+
+  const autoFetchCompanionFormula = async () => {
+    const raw = (companion ?? "").trim();
+    if (!raw) {
+      toast.error("Bitte zuerst ein Begleitmineral eingeben.");
+      return;
+    }
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    setFetchingCompanionFormula(true);
+    try {
+      const res = await fetchFormulaFn({ data: { name: first } });
+      if (res.formula) {
+        setCompanionFormula(res.formula);
+        toast.success("Formel ergänzt");
+      } else {
+        toast.info("Keine eindeutige Formel gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Formel konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingCompanionFormula(false);
+    }
+  };
+
+  const autoFetchCompanionHardness = async () => {
+    const raw = (companion ?? "").trim();
+    if (!raw) {
+      toast.error("Bitte zuerst ein Begleitmineral eingeben.");
+      return;
+    }
+    const first = raw.split(/[,;/]| und /i)[0].trim();
+    setFetchingCompanionHardness(true);
+    try {
+      const res = await fetchHardnessFn({ data: { name: first } });
+      if (res.hardness) {
+        setCompanionHardness(res.hardness);
+        toast.success("Härte ergänzt");
+      } else {
+        toast.info("Keine eindeutige Härte gefunden.");
+      }
+    } catch (e: unknown) {
+      toast.error("Härte konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setFetchingCompanionHardness(false);
+    }
+  };
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -398,6 +508,8 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           notable: notable.trim() || null,
           uv_photos: category === "mineral" ? uvPhotos : [],
           uv_types: category === "mineral" ? uvTypes.slice(0, uvPhotos.length) : [],
+          companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
+          companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
         },
         [...removed, ...removedUv],
       );
@@ -431,18 +543,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           onChange={(e) => setName(e.target.value)}
           onBlur={handleNameBlur}
           placeholder="z. B. Bergkristall"
-          className="h-12 text-base"
-        />
-      </Field>
-      <Field label={category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}>
-        <Input
-          value={companion ?? ""}
-          onChange={(e) => setCompanion(e.target.value)}
-          placeholder={
-            category === "fossil"
-              ? "z. B. Ammonit, Belemnit – Besonderheiten"
-              : "z. B. Pyrit, Calcit"
-          }
           className="h-12 text-base"
         />
       </Field>
@@ -503,6 +603,81 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
             disabled={fetchingHardness}
           >
             {fetchingHardness ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Härte automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
+      )}
+      <Field label={category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}>
+        <Input
+          value={companion ?? ""}
+          onChange={(e) => setCompanion(e.target.value)}
+          onBlur={handleCompanionBlur}
+          placeholder={
+            category === "fossil"
+              ? "z. B. Ammonit, Belemnit – Besonderheiten"
+              : "z. B. Pyrit, Calcit"
+          }
+          className="h-12 text-base"
+        />
+      </Field>
+      {category === "mineral" && (
+      <Field label="Chemische Formel (Begleitmineral)">
+        <div className="space-y-2">
+          <Input
+            value={companionFormula}
+            onChange={(e) => setCompanionFormula(e.target.value)}
+            placeholder="z. B. FeS₂"
+            className="h-12 text-base"
+          />
+          {companionFormula.trim() && (
+            <div className="rounded-md border bg-muted/40 px-3 py-2 text-base">
+              <span className="mr-2 text-xs uppercase tracking-wide text-muted-foreground">
+                Vorschau:
+              </span>
+              <FormulaText value={companionFormula} />
+            </div>
+          )}
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchCompanionFormula}
+            disabled={fetchingCompanionFormula}
+          >
+            {fetchingCompanionFormula ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+            Formel automatisch ermitteln
+          </Button>
+        </div>
+      </Field>
+      )}
+      {category === "mineral" && (
+      <Field label="Härte (Mohs) – Begleitmineral">
+        <div className="space-y-2">
+          <Input
+            value={companionHardness}
+            onChange={(e) => setCompanionHardness(e.target.value)}
+            placeholder="z. B. 6–6,5"
+            className="h-12 text-base"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={autoFetchCompanionHardness}
+            disabled={fetchingCompanionHardness}
+          >
+            {fetchingCompanionHardness ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (
               <Sparkles className="size-5" />

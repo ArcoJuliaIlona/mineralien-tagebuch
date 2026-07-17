@@ -1,0 +1,1 @@
+ALTER TABLE public.minerals ADD COLUMN IF NOT EXISTS companion_formula text, ADD COLUMN IF NOT EXISTS companion_hardness text;

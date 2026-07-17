@@ -66,6 +66,8 @@ function EditPage() {
           era: m.era,
           uv_photos: m.uv_photos ?? [],
           uv_types: m.uv_types ?? [],
+          companion_formula: m.companion_formula,
+          companion_hardness: m.companion_hardness,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
