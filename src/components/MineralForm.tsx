@@ -402,6 +402,8 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           notable: notable.trim() || null,
           uv_photos: category === "mineral" ? uvPhotos : [],
           uv_types: category === "mineral" ? uvTypes.slice(0, uvPhotos.length) : [],
+          companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
+          companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
         },
         [...removed, ...removedUv],
       );
