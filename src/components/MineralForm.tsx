@@ -567,21 +567,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
             Tipp: Zahlen werden automatisch tiefgestellt (H2O → H₂O). Für Ladungen{" "}
             <code>^</code> nutzen (Ca^2+), für Hydrate <code>*</code> (CuSO4*5H2O).
           </p>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="h-12 w-full gap-2 text-base"
-            onClick={autoFetchFormula}
-            disabled={fetchingFormula}
-          >
-            {fetchingFormula ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Sparkles className="size-5" />
-            )}
-            Formel automatisch ermitteln
-          </Button>
         </div>
       </Field>
       )}
@@ -594,21 +579,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
             placeholder="z. B. 7 oder 6,5–7"
             className="h-12 text-base"
           />
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="h-12 w-full gap-2 text-base"
-            onClick={autoFetchHardness}
-            disabled={fetchingHardness}
-          >
-            {fetchingHardness ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Sparkles className="size-5" />
-            )}
-            Härte automatisch ermitteln
-          </Button>
         </div>
       </Field>
       )}
@@ -642,21 +612,6 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
               <FormulaText value={companionFormula} />
             </div>
           )}
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="h-12 w-full gap-2 text-base"
-            onClick={autoFetchCompanionFormula}
-            disabled={fetchingCompanionFormula}
-          >
-            {fetchingCompanionFormula ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Sparkles className="size-5" />
-            )}
-            Formel automatisch ermitteln
-          </Button>
         </div>
       </Field>
       )}
@@ -669,23 +624,40 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
             placeholder="z. B. 6–6,5"
             className="h-12 text-base"
           />
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="h-12 w-full gap-2 text-base"
-            onClick={autoFetchCompanionHardness}
-            disabled={fetchingCompanionHardness}
-          >
-            {fetchingCompanionHardness ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Sparkles className="size-5" />
-            )}
-            Härte automatisch ermitteln
-          </Button>
         </div>
       </Field>
+      )}
+      {category === "mineral" && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="h-12 w-full gap-2 text-base"
+          onClick={async () => {
+            await Promise.all([
+              autoFetchFormula(),
+              autoFetchHardness(),
+              (companion ?? "").trim() ? autoFetchCompanionFormula() : Promise.resolve(),
+              (companion ?? "").trim() ? autoFetchCompanionHardness() : Promise.resolve(),
+            ]);
+          }}
+          disabled={
+            fetchingFormula ||
+            fetchingHardness ||
+            fetchingCompanionFormula ||
+            fetchingCompanionHardness
+          }
+        >
+          {fetchingFormula ||
+          fetchingHardness ||
+          fetchingCompanionFormula ||
+          fetchingCompanionHardness ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            <Sparkles className="size-5" />
+          )}
+          Formel & Härte automatisch ermitteln
+        </Button>
       )}
       {category === "rock" && (
       <Field label="Ursprung">
