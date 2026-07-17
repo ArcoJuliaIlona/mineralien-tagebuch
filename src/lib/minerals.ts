@@ -52,6 +52,8 @@ export type Mineral = {
   country: string | null;
   uv_photos: string[];
   uv_types: string[];
+  companion_formula: string | null;
+  companion_hardness: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -93,6 +95,8 @@ export type MineralInput = {
   country: string | null;
   uv_photos: string[];
   uv_types: string[];
+  companion_formula: string | null;
+  companion_hardness: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {
