@@ -313,15 +313,32 @@ function DetailPage() {
         </div>
       )}
 
-      <dl className="space-y-3 rounded-xl border bg-card p-4">
-        <DataRow label="Begleitmineralien" value={m.companion_minerals} />
+      <dl className="space-y-4 rounded-xl border bg-card p-4">
         {m.category === "mineral" && (
-          <>
+          <div className="space-y-2">
+            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Hauptmineral</dt>
             <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
             <DataRow label="Härte (Mohs)" value={m.hardness} />
-          </>
+          </div>
         )}
         {m.category === "rock" && <DataRow label="Ursprung" value={m.origin} />}
+
+        <div className="space-y-2">
+          <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            {m.category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}
+          </dt>
+          <DataRow
+            label={m.category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}
+            value={m.companion_minerals}
+          />
+          {m.category === "mineral" && (
+            <>
+              <FormulaRow label="Chemische Formel" value={m.companion_formula} />
+              <DataRow label="Härte (Mohs)" value={m.companion_hardness} />
+            </>
+          )}
+        </div>
+
         <DataRow label="Größe" value={m.size} />
         <DataRow label="Besonders" value={m.notable} />
         <DataRow label="Land" value={m.country} />
