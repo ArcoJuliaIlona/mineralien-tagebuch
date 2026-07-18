@@ -95,18 +95,14 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev, onClose]);
 
-  // Request fullscreen on mount, restore body scroll on unmount.
+  // Lock body scroll while the slideshow is open. We do not request
+  // fullscreen here, because the browser would show a security hint with
+  // the page URL. The fixed overlay already covers the viewport.
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    }
     return () => {
       document.body.style.overflow = prevOverflow;
-      if (document.fullscreenElement) {
-        document.exitFullscreen?.().catch(() => {});
-      }
     };
   }, []);
 
