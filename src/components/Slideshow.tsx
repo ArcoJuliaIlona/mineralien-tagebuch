@@ -166,9 +166,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
 
         {/* Permanent name + location overlay — always visible even when UI is hidden */}
         {(item?.mineral_name || item?.location || item?.country) && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-6">
+          <div className={`pointer-events-none absolute inset-x-0 flex justify-center px-6 ${uiVisible ? "bottom-24" : "bottom-6"}`}>
             <p className="max-w-full rounded bg-black/70 px-6 py-3 text-center font-serif text-3xl font-medium leading-tight text-white shadow-lg backdrop-blur">
-              {item?.country && <span className="block break-words text-white/80">{item.country}</span>}
               {item?.mineral_name && (
                 <span className="block break-words">
                   {item.mineral_name}
@@ -180,6 +179,7 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
                 </span>
               )}
               {item?.location && <span className="block break-words">{item.location}</span>}
+              {item?.country && <span className="block break-words text-white/80">{item.country}</span>}
             </p>
           </div>
         )}
@@ -198,11 +198,8 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
             {playing ? <Pause className="size-5" /> : <Play className="size-5" />}
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-serif text-lg">
-              <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
-                #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
-              </span>
-              {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
+            <p className="truncate font-mono text-xs uppercase tracking-wider text-primary/80">
+              #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
             </p>
             {(item?.era || item?.origin) && (
               <p className="truncate text-xs text-white/60">
