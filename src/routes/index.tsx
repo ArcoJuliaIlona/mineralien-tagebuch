@@ -502,7 +502,12 @@ function ListPage({
       )}
 
       <Button
-        onClick={() => setSlideshowOpen(true)}
+        onClick={() => {
+          // Enter fullscreen immediately from the user gesture so the
+          // browser address bar / URL is hidden while the slideshow runs.
+          document.documentElement.requestFullscreen?.().catch(() => {});
+          setSlideshowOpen(true);
+        }}
         disabled={filtered.length === 0}
         variant="outline"
         className="h-11 w-full gap-2"

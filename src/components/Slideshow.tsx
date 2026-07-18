@@ -99,7 +99,9 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    document.documentElement.requestFullscreen?.().catch(() => {});
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
     return () => {
       document.body.style.overflow = prevOverflow;
       if (document.fullscreenElement) {
@@ -172,10 +174,11 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
         </button>
 
         {/* Permanent location overlay — always visible even when UI is hidden */}
-        {[item?.location, item?.country].filter(Boolean).length > 0 && (
+        {(item?.location || item?.country) && (
           <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-6">
-            <p className="max-w-full truncate rounded bg-black/70 px-6 py-3 text-center font-serif text-3xl font-medium text-white shadow-lg backdrop-blur">
-              {[item?.location, item?.country].filter(Boolean).join(" · ")}
+            <p className="max-w-full rounded bg-black/70 px-6 py-3 text-center font-serif text-3xl font-medium leading-tight text-white shadow-lg backdrop-blur">
+              {item?.location && <span className="block break-words">{item.location}</span>}
+              {item?.country && <span className="block break-words text-white/80">{item.country}</span>}
             </p>
           </div>
         )}
