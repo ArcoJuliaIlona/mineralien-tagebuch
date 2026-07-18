@@ -171,40 +171,44 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
           <ChevronRight className="size-7" />
         </button>
 
+        {/* Permanent location overlay — always visible even when UI is hidden */}
+        {[item?.location, item?.country].filter(Boolean).length > 0 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-6">
+            <p className="max-w-full truncate rounded bg-black/70 px-6 py-3 text-center font-serif text-3xl font-medium text-white shadow-lg backdrop-blur">
+              {[item?.location, item?.country].filter(Boolean).join(" · ")}
+            </p>
+          </div>
+        )}
+
         {/* Info bar (overlay) */}
         <div
           className={`absolute inset-x-0 bottom-0 flex items-center gap-4 bg-black/60 px-4 py-3 backdrop-blur transition-opacity ${uiVisible ? "opacity-100" : "pointer-events-none opacity-0"}`}
           onClick={(e) => e.stopPropagation()}
         >
-        <button
-          type="button"
-          onClick={() => setPlaying((p) => !p)}
-          className="rounded-full bg-white/10 p-2 transition hover:bg-white/20"
-          aria-label={playing ? "Pause" : "Abspielen"}
-        >
-          {playing ? <Pause className="size-5" /> : <Play className="size-5" />}
-        </button>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-lg">
-            <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
-              #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
-            </span>
-            {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
-          </p>
-          {[item?.location, item?.country].filter(Boolean).length > 0 && (
-            <p className="truncate text-sm text-white/90">
-              {[item?.location, item?.country].filter(Boolean).join(" · ")}
+          <button
+            type="button"
+            onClick={() => setPlaying((p) => !p)}
+            className="rounded-full bg-white/10 p-2 transition hover:bg-white/20"
+            aria-label={playing ? "Pause" : "Abspielen"}
+          >
+            {playing ? <Pause className="size-5" /> : <Play className="size-5" />}
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-serif text-lg">
+              <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
+                #{item ? formatCollectionNumber(item.collection_number, item.category) : ""}
+              </span>
+              {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
             </p>
-          )}
-          {(item?.era || item?.origin) && (
-            <p className="truncate text-xs text-white/60">
-              {[item?.era, item?.origin].filter(Boolean).join(" · ")}
-            </p>
-          )}
-        </div>
-        <span className="shrink-0 tabular-nums text-xs text-white/60">
-          {index + 1} / {total}
-        </span>
+            {(item?.era || item?.origin) && (
+              <p className="truncate text-xs text-white/60">
+                {[item?.era, item?.origin].filter(Boolean).join(" · ")}
+              </p>
+            )}
+          </div>
+          <span className="shrink-0 tabular-nums text-xs text-white/60">
+            {index + 1} / {total}
+          </span>
         </div>
       </div>
     </div>
