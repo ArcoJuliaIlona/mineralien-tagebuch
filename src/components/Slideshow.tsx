@@ -191,11 +191,16 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
             </span>
             {item?.mineral_name}{isUv ? ` · ${current?.label || "UV"}` : ""}
           </p>
-          <p className="truncate text-xs text-white/60">
-            {[item?.location, item?.country, item?.era, item?.origin]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
+          {[item?.location, item?.country].filter(Boolean).length > 0 && (
+            <p className="truncate text-sm text-white/90">
+              {[item?.location, item?.country].filter(Boolean).join(" · ")}
+            </p>
+          )}
+          {(item?.era || item?.origin) && (
+            <p className="truncate text-xs text-white/60">
+              {[item?.era, item?.origin].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </div>
         <span className="shrink-0 tabular-nums text-xs text-white/60">
           {index + 1} / {total}
