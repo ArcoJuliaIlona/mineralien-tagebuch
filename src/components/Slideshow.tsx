@@ -135,19 +135,6 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
           </div>
         )}
 
-        {/* Permanent mineral name overlay — always visible for normal, UVA, UVC */}
-        {item?.mineral_name && (
-          <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center px-6">
-            <p className="max-w-full rounded bg-black/70 px-6 py-2 text-center font-serif text-2xl font-medium text-white shadow-lg backdrop-blur">
-              {item.mineral_name}
-              {isUv && current?.label && (
-                <span className="ml-3 rounded bg-purple-600/80 px-2 py-0.5 align-middle text-xs font-semibold uppercase tracking-wider text-white">
-                  {current.label}
-                </span>
-              )}
-            </p>
-          </div>
-        )}
 
         {/* Close */}
         <button
@@ -177,10 +164,20 @@ export function Slideshow({ items, onClose, intervalMs = 5000 }: Props) {
           <ChevronRight className="size-7" />
         </button>
 
-        {/* Permanent location overlay — always visible even when UI is hidden */}
-        {(item?.location || item?.country) && (
+        {/* Permanent name + location overlay — always visible even when UI is hidden */}
+        {(item?.mineral_name || item?.location || item?.country) && (
           <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-6">
             <p className="max-w-full rounded bg-black/70 px-6 py-3 text-center font-serif text-3xl font-medium leading-tight text-white shadow-lg backdrop-blur">
+              {item?.mineral_name && (
+                <span className="block break-words">
+                  {item.mineral_name}
+                  {isUv && current?.label && (
+                    <span className="ml-3 rounded bg-purple-600/80 px-2 py-0.5 align-middle text-xs font-semibold uppercase tracking-wider text-white">
+                      {current.label}
+                    </span>
+                  )}
+                </span>
+              )}
               {item?.location && <span className="block break-words">{item.location}</span>}
               {item?.country && <span className="block break-words text-white/80">{item.country}</span>}
             </p>
