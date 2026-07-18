@@ -503,10 +503,10 @@ function ListPage({
 
       <Button
         onClick={() => {
-          // Enter fullscreen immediately from the user gesture so the
-          // browser address bar / URL is hidden while the slideshow runs.
-          // navigationUI: "hide" asks the browser to keep its own hints hidden.
-          document.documentElement.requestFullscreen?.({ navigationUI: "hide" }).catch(() => {});
+          // We intentionally do NOT call requestFullscreen here.
+          // The browser would show a security hint containing the page URL,
+          // which the user wants to avoid. The slideshow renders as a
+          // fixed overlay that already covers the whole viewport.
           setSlideshowOpen(true);
         }}
         disabled={filtered.length === 0}
