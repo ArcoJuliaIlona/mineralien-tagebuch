@@ -400,6 +400,79 @@ function ExportPage() {
           {busyNum ? "Erstelle Bogen…" : "Nummern-Bogen herunterladen"}
         </Button>
       </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="flex items-start gap-3">
+          <Tag className="mt-1 size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Etiketten-Druck</h2>
+            <p className="text-sm text-muted-foreground">
+              A6-Etiketten (quer) mit Foto, Nummer, Name und Details — je ein Etikett pro Seite in
+              einer PDF. Auswahl pro Kategorie: alle, ein Bereich oder einzelne Nummern.
+            </p>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {(
+            [
+              { cat: "mineral" as Category, state: lblMineral, set: setLblMineral },
+              { cat: "fossil" as Category, state: lblFossil, set: setLblFossil },
+              { cat: "rock" as Category, state: lblRock, set: setLblRock },
+            ]
+          ).map(({ cat, state, set }) => (
+            <div key={cat} className="rounded-lg border bg-background p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-sm font-medium">{CATEGORY_LABEL_PLURAL[cat]}</Label>
+                <Select
+                  value={state.mode}
+                  onValueChange={(v) => set({ ...state, mode: v as NumMode })}
+                >
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle</SelectItem>
+                    <SelectItem value="range">Von – Bis</SelectItem>
+                    <SelectItem value="list">Einzelne</SelectItem>
+                    <SelectItem value="none">Keine</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {state.mode === "range" && (
+                <div className="flex gap-2">
+                  <Input
+                    inputMode="numeric"
+                    placeholder="von"
+                    value={state.from}
+                    onChange={(e) => set({ ...state, from: e.target.value })}
+                  />
+                  <Input
+                    inputMode="numeric"
+                    placeholder="bis"
+                    value={state.to}
+                    onChange={(e) => set({ ...state, to: e.target.value })}
+                  />
+                </div>
+              )}
+              {state.mode === "list" && (
+                <Input
+                  placeholder="z. B. 1, 3, 7, 12"
+                  value={state.list}
+                  onChange={(e) => set({ ...state, list: e.target.value })}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        <Button onClick={onLabelSheet} disabled={busyLbl} size="lg" className="h-14 w-full gap-2 text-base">
+          <Tag className="size-5" />
+          {busyLbl
+            ? lblProgress && lblProgress.total
+              ? `Erstelle Etiketten… (${lblProgress.done}/${lblProgress.total})`
+              : "Erstelle Etiketten…"
+            : "Etiketten-PDF herunterladen"}
+        </Button>
+      </div>
     </div>
   );
 }
