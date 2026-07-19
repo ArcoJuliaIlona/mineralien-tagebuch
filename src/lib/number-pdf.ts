@@ -44,8 +44,8 @@ export async function generateNumberSheetPdf(options?: NumberSheetOptions) {
   const H = doc.internal.pageSize.getHeight();
 
   // Etikettenmaße
-  const cellW = 14; // mm Spaltenbreite (inkl. Abstand)
-  const cellH = 7; // mm Zeilenhöhe (inkl. Abstand)
+  const cellW = 10; // mm Spaltenbreite (inkl. Abstand)
+  const cellH = 5; // mm Zeilenhöhe (inkl. Abstand)
   const marginX = 8;
   const marginY = 12;
   const cols = Math.floor((W - 2 * marginX) / cellW);
@@ -86,9 +86,9 @@ export async function generateNumberSheetPdf(options?: NumberSheetOptions) {
     doc.rect(x, y, cellW - 1, cellH - 1);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
-    doc.text(entries[i], x + (cellW - 1) / 2, y + (cellH - 1) / 2 + 1.4, { align: "center" });
+    doc.text(entries[i], x + (cellW - 1) / 2, y + (cellH - 1) / 2 + 1.1, { align: "center" });
   }
 
   const stamp = new Date().toISOString().slice(0, 10);
