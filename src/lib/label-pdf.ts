@@ -178,8 +178,7 @@ function convertPhotoToPdfJpeg(dataUrl: string): Promise<string> {
   });
 }
 
-export async function generateLabelPdf(m: Mineral) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
+async function drawLabelPage(doc: jsPDF, m: Mineral) {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
 
@@ -276,6 +275,22 @@ export async function generateLabelPdf(m: Mineral) {
   doc.setFontSize(10);
   doc.setTextColor(...ink);
   doc.text("Coll: Arco Boehme", W / 2, H - 11, { align: "center" });
+}
 
+export async function generateLabelPdf(m: Mineral) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
+  await drawLabelPage(doc, m);
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
+}
+
+export async function generateLabelsPdf(minerals: Mineral[]) {
+  if (minerals.length === 0) return 0;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
+  for (let i = 0; i < minerals.length; i++) {
+    if (i > 0) doc.addPage("a6", "landscape");
+    await drawLabelPage(doc, minerals[i]);
+  }
+  const stamp = new Date().toISOString().slice(0, 10);
+  doc.save(`Etiketten-${stamp}.pdf`);
+  return minerals.length;
 }

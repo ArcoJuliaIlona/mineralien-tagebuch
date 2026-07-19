@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Database, FileDown, Hash, QrCode } from "lucide-react";
+import { ArrowLeft, Database, FileDown, Hash, QrCode, Tag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
+import { generateLabelsPdf } from "@/lib/label-pdf";
+import { listMinerals } from "@/lib/minerals";
 import {
   generateNumberSheetPdf,
   type NumberSelection,
@@ -50,6 +52,8 @@ function ExportPage() {
   const [busyPdf, setBusyPdf] = useState(false);
   const [busyQr, setBusyQr] = useState(false);
   const [busyNum, setBusyNum] = useState(false);
+  const [busyLbl, setBusyLbl] = useState(false);
+  const [lblProgress, setLblProgress] = useState<{ done: number; total: number } | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [pdfSort, setPdfSort] = useState<PdfSort>("category");
   const [pdfCategory, setPdfCategory] = useState<string>(ALL_CATEGORIES);
@@ -62,6 +66,9 @@ function ExportPage() {
   const [numMineral, setNumMineral] = useState<NumState>(initNum);
   const [numFossil, setNumFossil] = useState<NumState>(initNum);
   const [numRock, setNumRock] = useState<NumState>(initNum);
+  const [lblMineral, setLblMineral] = useState<NumState>({ ...initNum, mode: "none" });
+  const [lblFossil, setLblFossil] = useState<NumState>({ ...initNum, mode: "none" });
+  const [lblRock, setLblRock] = useState<NumState>({ ...initNum, mode: "none" });
 
   const toSelection = (s: NumState): NumberSelection => {
     if (s.mode === "range") {
@@ -124,6 +131,48 @@ function ExportPage() {
       toast.error("Nummern-Bogen fehlgeschlagen");
     } finally {
       setBusyNum(false);
+    }
+  };
+
+  const onLabelSheet = async () => {
+    setBusyLbl(true);
+    setLblProgress(null);
+    try {
+      const sels: Partial<Record<"mineral" | "fossil" | "rock", NumberSelection>> = {
+        mineral: toSelection(lblMineral),
+        fossil: toSelection(lblFossil),
+        rock: toSelection(lblRock),
+      };
+      const match = (n: number, sel: NumberSelection | undefined): boolean => {
+        if (!sel || sel.mode === "none") return false;
+        if (sel.mode === "all") return true;
+        if (sel.mode === "range") {
+          const from = sel.from ?? -Infinity;
+          const to = sel.to ?? Infinity;
+          return n >= from && n <= to;
+        }
+        if (sel.mode === "list") return (sel.list ?? []).includes(n);
+        return false;
+      };
+      const all = await listMinerals();
+      const selected = all
+        .filter((m) => match(m.collection_number, sels[m.category]))
+        .sort(
+          (a, b) =>
+            a.category.localeCompare(b.category) || a.collection_number - b.collection_number,
+        );
+      if (selected.length === 0) {
+        toast.error("Keine Etiketten in Auswahl");
+        return;
+      }
+      setLblProgress({ done: 0, total: selected.length });
+      const n = await generateLabelsPdf(selected);
+      toast.success(`Etiketten-PDF für ${n} Funde erstellt`);
+    } catch {
+      toast.error("Etiketten-PDF fehlgeschlagen");
+    } finally {
+      setBusyLbl(false);
+      setLblProgress(null);
     }
   };
 
@@ -349,6 +398,79 @@ function ExportPage() {
         <Button onClick={onNumberSheet} disabled={busyNum} size="lg" className="h-14 w-full gap-2 text-base">
           <Hash className="size-5" />
           {busyNum ? "Erstelle Bogen…" : "Nummern-Bogen herunterladen"}
+        </Button>
+      </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="flex items-start gap-3">
+          <Tag className="mt-1 size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Etiketten-Druck</h2>
+            <p className="text-sm text-muted-foreground">
+              A6-Etiketten (quer) mit Foto, Nummer, Name und Details — je ein Etikett pro Seite in
+              einer PDF. Auswahl pro Kategorie: alle, ein Bereich oder einzelne Nummern.
+            </p>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {(
+            [
+              { cat: "mineral" as Category, state: lblMineral, set: setLblMineral },
+              { cat: "fossil" as Category, state: lblFossil, set: setLblFossil },
+              { cat: "rock" as Category, state: lblRock, set: setLblRock },
+            ]
+          ).map(({ cat, state, set }) => (
+            <div key={cat} className="rounded-lg border bg-background p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-sm font-medium">{CATEGORY_LABEL_PLURAL[cat]}</Label>
+                <Select
+                  value={state.mode}
+                  onValueChange={(v) => set({ ...state, mode: v as NumMode })}
+                >
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle</SelectItem>
+                    <SelectItem value="range">Von – Bis</SelectItem>
+                    <SelectItem value="list">Einzelne</SelectItem>
+                    <SelectItem value="none">Keine</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {state.mode === "range" && (
+                <div className="flex gap-2">
+                  <Input
+                    inputMode="numeric"
+                    placeholder="von"
+                    value={state.from}
+                    onChange={(e) => set({ ...state, from: e.target.value })}
+                  />
+                  <Input
+                    inputMode="numeric"
+                    placeholder="bis"
+                    value={state.to}
+                    onChange={(e) => set({ ...state, to: e.target.value })}
+                  />
+                </div>
+              )}
+              {state.mode === "list" && (
+                <Input
+                  placeholder="z. B. 1, 3, 7, 12"
+                  value={state.list}
+                  onChange={(e) => set({ ...state, list: e.target.value })}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        <Button onClick={onLabelSheet} disabled={busyLbl} size="lg" className="h-14 w-full gap-2 text-base">
+          <Tag className="size-5" />
+          {busyLbl
+            ? lblProgress && lblProgress.total
+              ? `Erstelle Etiketten… (${lblProgress.done}/${lblProgress.total})`
+              : "Erstelle Etiketten…"
+            : "Etiketten-PDF herunterladen"}
         </Button>
       </div>
     </div>
