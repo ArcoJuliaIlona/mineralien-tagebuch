@@ -56,6 +56,33 @@ function ExportPage() {
   const [pdfFrom, setPdfFrom] = useState<string>("");
   const [pdfTo, setPdfTo] = useState<string>("");
 
+  type NumMode = NumberSelectionMode;
+  type NumState = { mode: NumMode; from: string; to: string; list: string };
+  const initNum: NumState = { mode: "all", from: "", to: "", list: "" };
+  const [numMineral, setNumMineral] = useState<NumState>(initNum);
+  const [numFossil, setNumFossil] = useState<NumState>(initNum);
+  const [numRock, setNumRock] = useState<NumState>(initNum);
+
+  const toSelection = (s: NumState): NumberSelection => {
+    if (s.mode === "range") {
+      return {
+        mode: "range",
+        from: s.from.trim() === "" ? null : Number(s.from),
+        to: s.to.trim() === "" ? null : Number(s.to),
+      };
+    }
+    if (s.mode === "list") {
+      const list = s.list
+        .split(/[,\s]+/)
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((x) => Number(x))
+        .filter((n) => Number.isFinite(n) && n > 0);
+      return { mode: "list", list };
+    }
+    return { mode: s.mode };
+  };
+
   const onJson = async () => {
     setBusyJson(true);
     try {
@@ -83,7 +110,15 @@ function ExportPage() {
   const onNumberSheet = async () => {
     setBusyNum(true);
     try {
-      const n = await generateNumberSheetPdf();
+      const n = await generateNumberSheetPdf({
+        mineral: toSelection(numMineral),
+        fossil: toSelection(numFossil),
+        rock: toSelection(numRock),
+      });
+      if (n === 0) {
+        toast.error("Keine Nummern in Auswahl");
+        return;
+      }
       toast.success(`Nummern-Bogen für ${n} Funde erstellt`);
     } catch {
       toast.error("Nummern-Bogen fehlgeschlagen");
