@@ -407,8 +407,8 @@ function ExportPage() {
           <div className="flex-1">
             <h2 className="text-lg font-semibold">Etiketten-Druck</h2>
             <p className="text-sm text-muted-foreground">
-              A6-Etiketten (quer) mit Foto, Nummer, Name und Details — je ein Etikett pro Seite in
-              einer PDF. Auswahl pro Kategorie: alle, ein Bereich oder einzelne Nummern.
+              A4-Bogen mit 3 × 8 Etiketten (70 × 37 mm) mit Foto, Nummer, Name und Details.
+              Auswahl pro Kategorie: alle, ein Bereich oder einzelne Nummern.
             </p>
           </div>
         </div>
