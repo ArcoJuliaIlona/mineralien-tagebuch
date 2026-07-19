@@ -1,11 +1,44 @@
 import jsPDF from "jspdf";
-import { listMinerals, formatCollectionNumber } from "./minerals";
+import { listMinerals, formatCollectionNumber, type Category } from "./minerals";
+
+export type NumberSelectionMode = "all" | "range" | "list" | "none";
+
+export type NumberSelection = {
+  mode: NumberSelectionMode;
+  from?: number | null;
+  to?: number | null;
+  list?: number[]; // einzelne Nummern
+};
+
+export type NumberSheetOptions = Partial<Record<Category, NumberSelection>>;
+
+function selectionMatches(n: number, sel: NumberSelection | undefined): boolean {
+  if (!sel || sel.mode === "none") return false;
+  if (sel.mode === "all") return true;
+  if (sel.mode === "range") {
+    const from = sel.from ?? -Infinity;
+    const to = sel.to ?? Infinity;
+    return n >= from && n <= to;
+  }
+  if (sel.mode === "list") return (sel.list ?? []).includes(n);
+  return false;
+}
 
 // Kompakter A4-Bogen mit ausschließlich der Sammlungsnummer.
 // Sehr klein (~8 × 5 mm Etiketten), gedacht zum Ausschneiden und mit
 // Klarlack auf den Stein zu kleben – die klassische Museumsmethode.
-export async function generateNumberSheetPdf() {
-  const minerals = await listMinerals();
+export async function generateNumberSheetPdf(options?: NumberSheetOptions) {
+  const allMinerals = await listMinerals();
+  const defaults: NumberSheetOptions = {
+    mineral: { mode: "all" },
+    fossil: { mode: "all" },
+    rock: { mode: "all" },
+  };
+  const opts: NumberSheetOptions = options ?? defaults;
+  const minerals = allMinerals.filter((m) =>
+    selectionMatches(m.collection_number, opts[m.category]),
+  );
+  if (minerals.length === 0) return 0;
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();

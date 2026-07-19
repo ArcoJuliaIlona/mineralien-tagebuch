@@ -8,7 +8,11 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
-import { generateNumberSheetPdf } from "@/lib/number-pdf";
+import {
+  generateNumberSheetPdf,
+  type NumberSelection,
+  type NumberSelectionMode,
+} from "@/lib/number-pdf";
 import { CATEGORY_LABEL_PLURAL, type Category } from "@/lib/minerals";
 import { toast } from "sonner";
 import {
@@ -52,6 +56,33 @@ function ExportPage() {
   const [pdfFrom, setPdfFrom] = useState<string>("");
   const [pdfTo, setPdfTo] = useState<string>("");
 
+  type NumMode = NumberSelectionMode;
+  type NumState = { mode: NumMode; from: string; to: string; list: string };
+  const initNum: NumState = { mode: "all", from: "", to: "", list: "" };
+  const [numMineral, setNumMineral] = useState<NumState>(initNum);
+  const [numFossil, setNumFossil] = useState<NumState>(initNum);
+  const [numRock, setNumRock] = useState<NumState>(initNum);
+
+  const toSelection = (s: NumState): NumberSelection => {
+    if (s.mode === "range") {
+      return {
+        mode: "range",
+        from: s.from.trim() === "" ? null : Number(s.from),
+        to: s.to.trim() === "" ? null : Number(s.to),
+      };
+    }
+    if (s.mode === "list") {
+      const list = s.list
+        .split(/[,\s]+/)
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((x) => Number(x))
+        .filter((n) => Number.isFinite(n) && n > 0);
+      return { mode: "list", list };
+    }
+    return { mode: s.mode };
+  };
+
   const onJson = async () => {
     setBusyJson(true);
     try {
@@ -79,7 +110,15 @@ function ExportPage() {
   const onNumberSheet = async () => {
     setBusyNum(true);
     try {
-      const n = await generateNumberSheetPdf();
+      const n = await generateNumberSheetPdf({
+        mineral: toSelection(numMineral),
+        fossil: toSelection(numFossil),
+        rock: toSelection(numRock),
+      });
+      if (n === 0) {
+        toast.error("Keine Nummern in Auswahl");
+        return;
+      }
       toast.success(`Nummern-Bogen für ${n} Funde erstellt`);
     } catch {
       toast.error("Nummern-Bogen fehlgeschlagen");
@@ -254,6 +293,58 @@ function ExportPage() {
               draufkleben, mit Klarlack versiegeln.
             </p>
           </div>
+        </div>
+        <div className="space-y-3">
+          {(
+            [
+              { cat: "mineral" as Category, state: numMineral, set: setNumMineral },
+              { cat: "fossil" as Category, state: numFossil, set: setNumFossil },
+              { cat: "rock" as Category, state: numRock, set: setNumRock },
+            ]
+          ).map(({ cat, state, set }) => (
+            <div key={cat} className="rounded-lg border bg-background p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-sm font-medium">{CATEGORY_LABEL_PLURAL[cat]}</Label>
+                <Select
+                  value={state.mode}
+                  onValueChange={(v) => set({ ...state, mode: v as NumMode })}
+                >
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle</SelectItem>
+                    <SelectItem value="range">Von – Bis</SelectItem>
+                    <SelectItem value="list">Einzelne</SelectItem>
+                    <SelectItem value="none">Keine</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {state.mode === "range" && (
+                <div className="flex gap-2">
+                  <Input
+                    inputMode="numeric"
+                    placeholder="von"
+                    value={state.from}
+                    onChange={(e) => set({ ...state, from: e.target.value })}
+                  />
+                  <Input
+                    inputMode="numeric"
+                    placeholder="bis"
+                    value={state.to}
+                    onChange={(e) => set({ ...state, to: e.target.value })}
+                  />
+                </div>
+              )}
+              {state.mode === "list" && (
+                <Input
+                  placeholder="z. B. 1, 3, 7, 12"
+                  value={state.list}
+                  onChange={(e) => set({ ...state, list: e.target.value })}
+                />
+              )}
+            </div>
+          ))}
         </div>
         <Button onClick={onNumberSheet} disabled={busyNum} size="lg" className="h-14 w-full gap-2 text-base">
           <Hash className="size-5" />
