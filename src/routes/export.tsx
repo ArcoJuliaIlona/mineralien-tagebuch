@@ -294,6 +294,58 @@ function ExportPage() {
             </p>
           </div>
         </div>
+        <div className="space-y-3">
+          {(
+            [
+              { cat: "mineral" as Category, state: numMineral, set: setNumMineral },
+              { cat: "fossil" as Category, state: numFossil, set: setNumFossil },
+              { cat: "rock" as Category, state: numRock, set: setNumRock },
+            ]
+          ).map(({ cat, state, set }) => (
+            <div key={cat} className="rounded-lg border bg-background p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-sm font-medium">{CATEGORY_LABEL_PLURAL[cat]}</Label>
+                <Select
+                  value={state.mode}
+                  onValueChange={(v) => set({ ...state, mode: v as NumMode })}
+                >
+                  <SelectTrigger className="h-9 w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle</SelectItem>
+                    <SelectItem value="range">Von – Bis</SelectItem>
+                    <SelectItem value="list">Einzelne</SelectItem>
+                    <SelectItem value="none">Keine</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {state.mode === "range" && (
+                <div className="flex gap-2">
+                  <Input
+                    inputMode="numeric"
+                    placeholder="von"
+                    value={state.from}
+                    onChange={(e) => set({ ...state, from: e.target.value })}
+                  />
+                  <Input
+                    inputMode="numeric"
+                    placeholder="bis"
+                    value={state.to}
+                    onChange={(e) => set({ ...state, to: e.target.value })}
+                  />
+                </div>
+              )}
+              {state.mode === "list" && (
+                <Input
+                  placeholder="z. B. 1, 3, 7, 12"
+                  value={state.list}
+                  onChange={(e) => set({ ...state, list: e.target.value })}
+                />
+              )}
+            </div>
+          ))}
+        </div>
         <Button onClick={onNumberSheet} disabled={busyNum} size="lg" className="h-14 w-full gap-2 text-base">
           <Hash className="size-5" />
           {busyNum ? "Erstelle Bogen…" : "Nummern-Bogen herunterladen"}
