@@ -8,7 +8,11 @@ import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { exportJsonBackup, exportAllPdf } from "@/lib/export-data";
 import { generateAllQrSheetPdf } from "@/lib/qr-pdf";
-import { generateNumberSheetPdf } from "@/lib/number-pdf";
+import {
+  generateNumberSheetPdf,
+  type NumberSelection,
+  type NumberSelectionMode,
+} from "@/lib/number-pdf";
 import { CATEGORY_LABEL_PLURAL, type Category } from "@/lib/minerals";
 import { toast } from "sonner";
 import {
