@@ -96,10 +96,10 @@ function drawFormula(
 function drawDecorativeBorder(doc: jsPDF, box: Box) {
   const { x, y, W, H } = box;
   const minDim = Math.min(W, H);
-  const margin = minDim * 0.055;
-  const inset = minDim * 0.095;
-  const triSize = minDim * 0.04;
-  const step = minDim * 0.065;
+  const margin = 1.2;
+  const inset = 2.2;
+  const triSize = 1.1;
+  const step = 2.6;
   const blue = { r: 42, g: 78, b: 112 };
   const blueLight = { r: 110, g: 145, b: 175 };
 
@@ -143,15 +143,15 @@ function drawDecorativeBorder(doc: jsPDF, box: Box) {
   ];
   doc.setFillColor(blueLight.r, blueLight.g, blueLight.b);
   for (const [cx, cy] of corners) {
-    doc.circle(cx, cy, minDim * 0.025, "F");
+    doc.circle(cx, cy, 0.7, "F");
     doc.setDrawColor(blue.r, blue.g, blue.b);
     doc.setLineWidth(0.3);
-    doc.circle(cx, cy, minDim * 0.025, "S");
+    doc.circle(cx, cy, 0.7, "S");
   }
 
   // Innenfeld (helleres Cremerechteck wie auf dem Foto)
   doc.setFillColor(250, 240, 222);
-  doc.rect(x + inset + 2, y + inset + 2, W - 2 * (inset + 2), H - 2 * (inset + 2), "F");
+  doc.rect(x + inset + 1.2, y + inset + 1.2, W - 2 * (inset + 1.2), H - 2 * (inset + 1.2), "F");
 }
 
 function convertPhotoToPdfJpeg(dataUrl: string): Promise<string> {
