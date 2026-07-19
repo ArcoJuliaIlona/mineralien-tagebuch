@@ -4,6 +4,7 @@ import { formatCollectionNumber } from "./minerals";
 import { fetchPhotoDataUrl } from "./photos";
 
 type FToken = { type: "text" | "sub" | "sup"; value: string };
+type Box = { x: number; y: number; W: number; H: number };
 
 function tokenizeFormula(input: string): FToken[] {
   const tokens: FToken[] = [];
@@ -63,7 +64,7 @@ function drawFormula(
   fontSize: number,
 ): number {
   const tokens = tokenizeFormula(formula);
-  const lineHeight = fontSize * 0.5; // grob mm bei pt -> mm
+  const lineHeight = fontSize * 0.5;
   const subSize = fontSize * 0.7;
   const subDy = fontSize * 0.18;
   const supDy = -fontSize * 0.25;
@@ -90,67 +91,67 @@ function drawFormula(
   return cursorY;
 }
 
-// Zeichnet einen dekorativen Rahmen im Stil des Fotos (blaue Fächer/Dreiecke).
-function drawDecorativeBorder(doc: jsPDF, W: number, H: number) {
-  const margin = 4;
-  const inset = 7;
+// Zeichnet einen dekorativen Rahmen im Stil des Fotos (blaue Fächer/Dreiecke),
+// skaliert an die Etikettengröße.
+function drawDecorativeBorder(doc: jsPDF, box: Box) {
+  const { x, y, W, H } = box;
+  const minDim = Math.min(W, H);
+  const margin = minDim * 0.055;
+  const inset = minDim * 0.095;
+  const triSize = minDim * 0.04;
+  const step = minDim * 0.065;
   const blue = { r: 42, g: 78, b: 112 };
   const blueLight = { r: 110, g: 145, b: 175 };
 
   // Cremefarbener Hintergrund
   doc.setFillColor(245, 232, 210);
-  doc.rect(0, 0, W, H, "F");
+  doc.rect(x, y, W, H, "F");
 
   // Äußerer dünner Rahmen
   doc.setDrawColor(blue.r, blue.g, blue.b);
   doc.setLineWidth(0.5);
-  doc.rect(margin, margin, W - 2 * margin, H - 2 * margin);
+  doc.rect(x + margin, y + margin, W - 2 * margin, H - 2 * margin);
 
   // Innerer Rahmen
   doc.setLineWidth(0.3);
-  doc.rect(inset, inset, W - 2 * inset, H - 2 * inset);
+  doc.rect(x + inset, y + inset, W - 2 * inset, H - 2 * inset);
 
-  // Dekorative Dreiecke/Fächer entlang der Kanten
-  const triSize = 2.2;
-  const step = 3.2;
-  const x0 = inset + 0.5;
-  const x1 = W - inset - 0.5;
-  const y0 = inset + 0.5;
-  const y1 = H - inset - 0.5;
+  const x0 = x + inset + 0.5;
+  const x1 = x + W - inset - 0.5;
+  const y0 = y + inset + 0.5;
+  const y1 = y + H - inset - 0.5;
 
   doc.setFillColor(blue.r, blue.g, blue.b);
 
   // Oben & Unten
-  for (let x = x0 + step / 2; x < x1 - 1; x += step) {
-    // oben (Spitze nach unten)
-    doc.triangle(x - triSize / 2, y0, x + triSize / 2, y0, x, y0 + triSize, "F");
-    // unten (Spitze nach oben)
-    doc.triangle(x - triSize / 2, y1, x + triSize / 2, y1, x, y1 - triSize, "F");
+  for (let cx = x0 + step / 2; cx < x1 - 1; cx += step) {
+    doc.triangle(cx - triSize / 2, y0, cx + triSize / 2, y0, cx, y0 + triSize, "F");
+    doc.triangle(cx - triSize / 2, y1, cx + triSize / 2, y1, cx, y1 - triSize, "F");
   }
   // Links & Rechts
-  for (let y = y0 + step / 2; y < y1 - 1; y += step) {
-    doc.triangle(x0, y - triSize / 2, x0, y + triSize / 2, x0 + triSize, y, "F");
-    doc.triangle(x1, y - triSize / 2, x1, y + triSize / 2, x1 - triSize, y, "F");
+  for (let cy = y0 + step / 2; cy < y1 - 1; cy += step) {
+    doc.triangle(x0, cy - triSize / 2, x0, cy + triSize / 2, x0 + triSize, cy, "F");
+    doc.triangle(x1, cy - triSize / 2, x1, cy + triSize / 2, x1 - triSize, cy, "F");
   }
 
   // Eckornamente (kleine Fächer)
   const corners: Array<[number, number]> = [
-    [inset + 4, inset + 4],
-    [W - inset - 4, inset + 4],
-    [inset + 4, H - inset - 4],
-    [W - inset - 4, H - inset - 4],
+    [x0 + 3, y0 + 3],
+    [x1 - 3, y0 + 3],
+    [x0 + 3, y1 - 3],
+    [x1 - 3, y1 - 3],
   ];
   doc.setFillColor(blueLight.r, blueLight.g, blueLight.b);
   for (const [cx, cy] of corners) {
-    doc.circle(cx, cy, 1.4, "F");
+    doc.circle(cx, cy, minDim * 0.025, "F");
     doc.setDrawColor(blue.r, blue.g, blue.b);
     doc.setLineWidth(0.3);
-    doc.circle(cx, cy, 1.4, "S");
+    doc.circle(cx, cy, minDim * 0.025, "S");
   }
 
   // Innenfeld (helleres Cremerechteck wie auf dem Foto)
   doc.setFillColor(250, 240, 222);
-  doc.rect(inset + 3, inset + 3, W - 2 * (inset + 3), H - 2 * (inset + 3), "F");
+  doc.rect(x + inset + 2, y + inset + 2, W - 2 * (inset + 2), H - 2 * (inset + 2), "F");
 }
 
 function convertPhotoToPdfJpeg(dataUrl: string): Promise<string> {
@@ -178,65 +179,61 @@ function convertPhotoToPdfJpeg(dataUrl: string): Promise<string> {
   });
 }
 
-async function drawLabelPage(doc: jsPDF, m: Mineral) {
-  const W = doc.internal.pageSize.getWidth();
-  const H = doc.internal.pageSize.getHeight();
-
-  drawDecorativeBorder(doc, W, H);
-
+async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
+  const { x, y, W, H } = box;
   const ink: [number, number, number] = [30, 25, 20];
 
-  // FESTE Positionen — dürfen sich beim Druck nicht verschieben.
-  // Foto oben links, fixe Koordinaten unabhängig von Textlänge.
-  const photoX = 14;
-  const photoY = 14;
-  const photoSize = 36;
-  const photoRightEdge = photoX + photoSize; // = 50
-  let photoLeftEdge = 0;
+  // Innerer Zeichenbereich
+  const pad = 2;
+  const innerX = x + pad;
+  const innerY = y + pad;
+  const innerW = W - 2 * pad;
+  const innerH = H - 2 * pad;
+
+  // Foto oben links
+  const photoSize = 22;
+  const photoX = innerX;
+  const photoY = innerY;
+  const photoRightEdge = photoX + photoSize;
+  let hasPhoto = false;
   if (m.photo_paths.length > 0) {
     try {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
       const pdfPhoto = await convertPhotoToPdfJpeg(dataUrl);
-      // Heller Hintergrund + dünner blauer Rahmen
       doc.setFillColor(255, 255, 255);
-      doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6, "F");
+      doc.rect(photoX - 0.6, photoY - 0.6, photoSize + 1.2, photoSize + 1.2, "F");
       doc.addImage(pdfPhoto, "JPEG", photoX, photoY, photoSize, photoSize);
       doc.setDrawColor(42, 78, 112);
-      doc.setLineWidth(0.4);
-      doc.rect(photoX - 0.8, photoY - 0.8, photoSize + 1.6, photoSize + 1.6);
-      photoLeftEdge = photoRightEdge + 3;
+      doc.setLineWidth(0.3);
+      doc.rect(photoX - 0.6, photoY - 0.6, photoSize + 1.2, photoSize + 1.2);
+      hasPhoto = true;
     } catch {
       /* Foto optional */
     }
   }
 
-  const hasPhoto = photoLeftEdge > 0;
-  // Auch ohne Foto: rechter Block beginnt an derselben festen Spalte,
-  // damit die Geometrie identisch bleibt.
-  const rightColumnX = photoRightEdge + 3;
-  const fullLeft = 16;
-  const fullRight = W - 16;
+  const rightColumnX = photoRightEdge + 1.5;
+  const fullLeft = innerX + 1;
+  const fullRight = x + W - pad - 1;
   const fullWidth = fullRight - fullLeft;
 
-  // Rechts neben dem Foto: Begleitmineralien zuerst, danach weitere Daten bündig darunter
   const rightLeft = rightColumnX;
   const rightWidth = fullRight - rightLeft;
-  let ry = photoY + 2;
-  const lineGap = 5.5;
-  // Maximale Y-Grenze für den rechten Block, damit Nummer/Name nie verschoben werden.
-  const rightMaxY = photoY + photoSize; // bündig mit Foto-Unterkante
+  let ry = photoY + 1.5;
+  const lineGap = 2.8;
+  const rightMaxY = photoY + photoSize;
+  const detailFontSize = 6.5;
 
   doc.setTextColor(...ink);
 
   const writeRightLine = (label: string, value: string) => {
-    if (ry > rightMaxY) return; // Platz erschöpft – Layout bleibt fix
+    if (ry > rightMaxY) return;
     doc.setFont("times", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(detailFontSize);
     doc.text(`${label}:`, rightLeft, ry);
     const labelW = doc.getTextWidth(`${label}: `);
     doc.setFont("times", "normal");
     const wrapped = doc.splitTextToSize(value, rightWidth - labelW);
-    // Auf verbleibende Höhe begrenzen
     const maxLines = Math.max(1, Math.floor((rightMaxY - ry) / lineGap) + 1);
     const limited = wrapped.slice(0, maxLines);
     doc.text(limited, rightLeft + labelW, ry);
@@ -247,10 +244,10 @@ async function drawLabelPage(doc: jsPDF, m: Mineral) {
 
   if (m.category === "mineral" && m.chemical_formula && ry <= rightMaxY) {
     doc.setFont("times", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(detailFontSize);
     doc.text("Formel:", rightLeft, ry);
     const labelW = doc.getTextWidth("Formel: ");
-    drawFormula(doc, m.chemical_formula, rightLeft + labelW, ry, rightWidth - labelW, 11);
+    drawFormula(doc, m.chemical_formula, rightLeft + labelW, ry, rightWidth - labelW, detailFontSize);
     ry += lineGap;
   }
   if (m.category === "mineral" && m.hardness) writeRightLine("Härte", String(m.hardness));
@@ -260,36 +257,74 @@ async function drawLabelPage(doc: jsPDF, m: Mineral) {
   if (m.location) writeRightLine("Fundort", m.location);
   if (m.uv_photos && m.uv_photos.length > 0) writeRightLine("UV", "aktiv");
 
-  // FESTE Position für Nummer und Name – unabhängig vom rechten Textblock.
-  let y = photoY + photoSize + 8;
+  // Nummer und Name unter dem Foto
+  let yPos = photoY + photoSize + 2;
   doc.setFont("times", "bold");
-  doc.setFontSize(16);
-  doc.text(formatCollectionNumber(m.collection_number, m.category), fullLeft, y);
-  y += 7;
+  doc.setFontSize(9);
+  doc.text(formatCollectionNumber(m.collection_number, m.category), fullLeft, yPos);
+  yPos += 4.5;
   doc.setFont("times", "bold");
-  doc.setFontSize(20);
-  doc.text(m.mineral_name, fullLeft, y, { maxWidth: fullWidth });
+  doc.setFontSize(11);
+  const nameLines = doc.splitTextToSize(m.mineral_name, fullWidth);
+  const maxNameLines = 2;
+  doc.text(nameLines.slice(0, maxNameLines), fullLeft, yPos);
 
   // Coll: Arco Boehme – unten mittig
   doc.setFont("times", "italic");
-  doc.setFontSize(10);
+  doc.setFontSize(7);
   doc.setTextColor(...ink);
-  doc.text("Coll: Arco Boehme", W / 2, H - 11, { align: "center" });
+  doc.text("Coll: Arco Boehme", x + W / 2, y + H - 2, { align: "center" });
+}
+
+async function drawLabelPage(doc: jsPDF, m: Mineral) {
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const box: Box = { x: 0, y: 0, W, H };
+  drawDecorativeBorder(doc, box);
+  await drawLabelContent(doc, m, box);
 }
 
 export async function generateLabelPdf(m: Mineral) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: [70, 37] });
   await drawLabelPage(doc, m);
   doc.save(`Etikett-${m.mineral_name.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
 }
 
-export async function generateLabelsPdf(minerals: Mineral[]) {
+export async function generateLabelsPdf(
+  minerals: Mineral[],
+  onProgress?: (done: number, total: number) => void,
+) {
   if (minerals.length === 0) return 0;
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a6" });
+
+  const labelW = 70;
+  const labelH = 37;
+  const cols = 3;
+  const rows = 8;
+  const perPage = cols * rows;
+  const topMargin = 0.5;
+
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
   for (let i = 0; i < minerals.length; i++) {
-    if (i > 0) doc.addPage("a6", "landscape");
-    await drawLabelPage(doc, minerals[i]);
+    if (i > 0 && i % perPage === 0) {
+      doc.addPage("a4", "portrait");
+    }
+
+    const pageIndex = i % perPage;
+    const col = pageIndex % cols;
+    const row = Math.floor(pageIndex / cols);
+    const box: Box = {
+      x: col * labelW,
+      y: topMargin + row * labelH,
+      W: labelW,
+      H: labelH,
+    };
+
+    drawDecorativeBorder(doc, box);
+    await drawLabelContent(doc, minerals[i], box);
+    onProgress?.(i + 1, minerals.length);
   }
+
   const stamp = new Date().toISOString().slice(0, 10);
   doc.save(`Etiketten-${stamp}.pdf`);
   return minerals.length;
