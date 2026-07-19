@@ -183,15 +183,16 @@ async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
   const { x, y, W, H } = box;
   const ink: [number, number, number] = [30, 25, 20];
 
-  // Innerer Zeichenbereich
-  const pad = 2;
-  const innerX = x + pad;
-  const innerY = y + pad;
-  const innerW = W - 2 * pad;
-  const innerH = H - 2 * pad;
+  // Innerer Zeichenbereich (innerhalb des dekorativen Rahmens)
+  const padX = 4.0;
+  const padY = 4.0;
+  const innerX = x + padX;
+  const innerY = y + padY;
+  const innerW = W - 2 * padX;
+  const innerH = H - 2 * padY;
 
-  // Foto oben links
-  const photoSize = 22;
+  // Foto oben links – klein halten, damit rechts Platz für Text bleibt
+  const photoSize = 17;
   const photoX = innerX;
   const photoY = innerY;
   const photoRightEdge = photoX + photoSize;
@@ -201,28 +202,28 @@ async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
       const dataUrl = await fetchPhotoDataUrl(m.photo_paths[0]);
       const pdfPhoto = await convertPhotoToPdfJpeg(dataUrl);
       doc.setFillColor(255, 255, 255);
-      doc.rect(photoX - 0.6, photoY - 0.6, photoSize + 1.2, photoSize + 1.2, "F");
+      doc.rect(photoX - 0.4, photoY - 0.4, photoSize + 0.8, photoSize + 0.8, "F");
       doc.addImage(pdfPhoto, "JPEG", photoX, photoY, photoSize, photoSize);
       doc.setDrawColor(42, 78, 112);
-      doc.setLineWidth(0.3);
-      doc.rect(photoX - 0.6, photoY - 0.6, photoSize + 1.2, photoSize + 1.2);
+      doc.setLineWidth(0.2);
+      doc.rect(photoX - 0.4, photoY - 0.4, photoSize + 0.8, photoSize + 0.8);
       hasPhoto = true;
     } catch {
       /* Foto optional */
     }
   }
 
-  const rightColumnX = photoRightEdge + 1.5;
-  const fullLeft = innerX + 1;
-  const fullRight = x + W - pad - 1;
+  const rightColumnX = photoRightEdge + 2;
+  const fullLeft = innerX;
+  const fullRight = innerX + innerW;
   const fullWidth = fullRight - fullLeft;
 
   const rightLeft = rightColumnX;
   const rightWidth = fullRight - rightLeft;
-  let ry = photoY + 1.5;
-  const lineGap = 2.8;
-  const rightMaxY = photoY + photoSize;
-  const detailFontSize = 6.5;
+  let ry = photoY + 2;
+  const lineGap = 2.4;
+  const rightMaxY = photoY + photoSize + 0.5;
+  const detailFontSize = 5.5;
 
   doc.setTextColor(...ink);
 
@@ -230,8 +231,9 @@ async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
     if (ry > rightMaxY) return;
     doc.setFont("times", "bold");
     doc.setFontSize(detailFontSize);
-    doc.text(`${label}:`, rightLeft, ry);
-    const labelW = doc.getTextWidth(`${label}: `);
+    const labelText = `${label}: `;
+    doc.text(labelText, rightLeft, ry);
+    const labelW = doc.getTextWidth(labelText);
     doc.setFont("times", "normal");
     const wrapped = doc.splitTextToSize(value, rightWidth - labelW);
     const maxLines = Math.max(1, Math.floor((rightMaxY - ry) / lineGap) + 1);
@@ -257,23 +259,27 @@ async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
   if (m.location) writeRightLine("Fundort", m.location);
   if (m.uv_photos && m.uv_photos.length > 0) writeRightLine("UV", "aktiv");
 
-  // Nummer und Name unter dem Foto
-  let yPos = photoY + photoSize + 2;
+  // Nummer und Name unter dem Foto (zweispaltig: Nummer links klein, Name daneben)
+  const bottomY = innerY + innerH;
+  const collFooterHeight = 3;
+  let yPos = photoY + photoSize + 3;
+  doc.setFont("times", "bold");
+  doc.setFontSize(7);
+  const numLabel = formatCollectionNumber(m.collection_number, m.category);
+  doc.text(numLabel, fullLeft, yPos);
+  const numW = doc.getTextWidth(numLabel);
+
   doc.setFont("times", "bold");
   doc.setFontSize(9);
-  doc.text(formatCollectionNumber(m.collection_number, m.category), fullLeft, yPos);
-  yPos += 4.5;
-  doc.setFont("times", "bold");
-  doc.setFontSize(11);
-  const nameLines = doc.splitTextToSize(m.mineral_name, fullWidth);
-  const maxNameLines = 2;
-  doc.text(nameLines.slice(0, maxNameLines), fullLeft, yPos);
+  const nameMax = fullWidth - numW - 1.5;
+  const nameLines = doc.splitTextToSize(m.mineral_name, nameMax);
+  doc.text(nameLines.slice(0, 2), fullLeft + numW + 1.5, yPos);
 
   // Coll: Arco Boehme – unten mittig
   doc.setFont("times", "italic");
-  doc.setFontSize(7);
+  doc.setFontSize(5.5);
   doc.setTextColor(...ink);
-  doc.text("Coll: Arco Boehme", x + W / 2, y + H - 2, { align: "center" });
+  doc.text("Coll: Arco Boehme", x + W / 2, bottomY + collFooterHeight - 0.5, { align: "center" });
 }
 
 async function drawLabelPage(doc: jsPDF, m: Mineral) {
