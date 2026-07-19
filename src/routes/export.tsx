@@ -166,7 +166,7 @@ function ExportPage() {
         return;
       }
       setLblProgress({ done: 0, total: selected.length });
-      const n = await generateLabelsPdf(selected);
+      const n = await generateLabelsPdf(selected, (done, total) => setLblProgress({ done, total }));
       toast.success(`Etiketten-PDF für ${n} Funde erstellt`);
     } catch {
       toast.error("Etiketten-PDF fehlgeschlagen");
