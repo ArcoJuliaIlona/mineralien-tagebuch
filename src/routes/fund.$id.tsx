@@ -507,6 +507,9 @@ function DetailPage() {
                   companion_hardness: m.companion_hardness ?? null,
                   radioactive: m.radioactive ?? false,
                   custom_number: m.custom_number ?? null,
+                  storage_floor: m.storage_floor ?? null,
+                  storage_cabinet: m.storage_cabinet ?? null,
+                  storage_shelf: m.storage_shelf ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });
