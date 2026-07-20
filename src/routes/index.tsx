@@ -345,9 +345,13 @@ function ListPage({
       timers.forEach((t) => window.clearTimeout(t));
     };
     const opts: AddEventListenerOptions = { passive: true, once: true };
-    window.addEventListener("wheel", cancelTimers, opts);
-    window.addEventListener("touchmove", cancelTimers, opts);
-    window.addEventListener("keydown", cancelTimers, opts);
+    const cancelAndClearFocus = () => {
+      cancelTimers();
+      setFocusId(null);
+    };
+    window.addEventListener("wheel", cancelAndClearFocus, opts);
+    window.addEventListener("touchmove", cancelAndClearFocus, opts);
+    window.addEventListener("keydown", cancelAndClearFocus, opts);
 
     timers.push(window.setTimeout(() => {
       if (focusSearch.focus) {
@@ -362,9 +366,9 @@ function ListPage({
     return () => {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
-      window.removeEventListener("wheel", cancelTimers);
-      window.removeEventListener("touchmove", cancelTimers);
-      window.removeEventListener("keydown", cancelTimers);
+      window.removeEventListener("wheel", cancelAndClearFocus);
+      window.removeEventListener("touchmove", cancelAndClearFocus);
+      window.removeEventListener("keydown", cancelAndClearFocus);
     };
   }, [focusId, focusedIndex, effectiveVisibleCount, isLoading, focusSearch.focus]);
 
