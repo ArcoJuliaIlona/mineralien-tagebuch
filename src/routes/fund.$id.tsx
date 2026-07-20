@@ -246,6 +246,14 @@ function DetailPage() {
           {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
           {m.custom_number ? ` · ${m.custom_number}` : ""}
         </p>
+        {(m.storage_floor || m.storage_cabinet || m.storage_shelf) && (
+          <p className="text-sm text-muted-foreground">
+            Ort:
+            {m.storage_floor ? ` Etage ${m.storage_floor}` : ""}
+            {m.storage_cabinet ? ` · Schrank ${m.storage_cabinet}` : ""}
+            {m.storage_shelf ? ` · Ebene ${m.storage_shelf}` : ""}
+          </p>
+        )}
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
 
@@ -507,6 +515,9 @@ function DetailPage() {
                   companion_hardness: m.companion_hardness ?? null,
                   radioactive: m.radioactive ?? false,
                   custom_number: m.custom_number ?? null,
+                  storage_floor: m.storage_floor ?? null,
+                  storage_cabinet: m.storage_cabinet ?? null,
+                  storage_shelf: m.storage_shelf ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

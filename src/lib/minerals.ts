@@ -66,6 +66,9 @@ export type Mineral = {
   companion_formula: string | null;
   companion_hardness: string | null;
   radioactive: boolean;
+  storage_floor: string | null;
+  storage_cabinet: string | null;
+  storage_shelf: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -111,6 +114,9 @@ export type MineralInput = {
   companion_hardness: string | null;
   radioactive: boolean;
   custom_number: string | null;
+  storage_floor: string | null;
+  storage_cabinet: string | null;
+  storage_shelf: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

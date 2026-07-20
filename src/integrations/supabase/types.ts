@@ -38,6 +38,9 @@ export type Database = {
           photo_paths: string[]
           radioactive: boolean
           size: string | null
+          storage_cabinet: string | null
+          storage_floor: string | null
+          storage_shelf: string | null
           updated_at: string
           user_id: string
           uv_photos: string[]
@@ -68,6 +71,9 @@ export type Database = {
           photo_paths?: string[]
           radioactive?: boolean
           size?: string | null
+          storage_cabinet?: string | null
+          storage_floor?: string | null
+          storage_shelf?: string | null
           updated_at?: string
           user_id: string
           uv_photos?: string[]
@@ -98,6 +104,9 @@ export type Database = {
           photo_paths?: string[]
           radioactive?: boolean
           size?: string | null
+          storage_cabinet?: string | null
+          storage_floor?: string | null
+          storage_shelf?: string | null
           updated_at?: string
           user_id?: string
           uv_photos?: string[]

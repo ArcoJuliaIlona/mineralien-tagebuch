@@ -66,6 +66,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
   const [customNumber, setCustomNumber] = useState<string>(initial?.custom_number ?? "");
+  const [storageFloor, setStorageFloor] = useState<string>(initial?.storage_floor ?? "");
+  const [storageCabinet, setStorageCabinet] = useState<string>(initial?.storage_cabinet ?? "");
+  const [storageShelf, setStorageShelf] = useState<string>(initial?.storage_shelf ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -514,6 +517,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
           radioactive,
           custom_number: customNumber.trim() || null,
+          storage_floor: storageFloor.trim() || null,
+          storage_cabinet: storageCabinet.trim() || null,
+          storage_shelf: storageShelf.trim() || null,
         },
         [...removed, ...removedUv],
       );
@@ -818,6 +824,36 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           className="h-12 text-base"
         />
       </Field>
+
+      <div className="space-y-3 rounded-lg border bg-card px-3 py-3">
+        <Label className="text-base font-medium">Ort</Label>
+        <div className="grid grid-cols-3 gap-2">
+          <Field label="Etage">
+            <Input
+              value={storageFloor}
+              onChange={(e) => setStorageFloor(e.target.value)}
+              placeholder="z. B. 1"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Schrank">
+            <Input
+              value={storageCabinet}
+              onChange={(e) => setStorageCabinet(e.target.value)}
+              placeholder="z. B. A"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Ebene">
+            <Input
+              value={storageShelf}
+              onChange={(e) => setStorageShelf(e.target.value)}
+              placeholder="z. B. 3"
+              className="h-12 text-base"
+            />
+          </Field>
+        </div>
+      </div>
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
