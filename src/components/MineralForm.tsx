@@ -66,6 +66,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
   const [customNumber, setCustomNumber] = useState<string>(initial?.custom_number ?? "");
+  const [storageFloor, setStorageFloor] = useState<string>(initial?.storage_floor ?? "");
+  const [storageCabinet, setStorageCabinet] = useState<string>(initial?.storage_cabinet ?? "");
+  const [storageShelf, setStorageShelf] = useState<string>(initial?.storage_shelf ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -514,6 +517,9 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
           radioactive,
           custom_number: customNumber.trim() || null,
+          storage_floor: storageFloor.trim() || null,
+          storage_cabinet: storageCabinet.trim() || null,
+          storage_shelf: storageShelf.trim() || null,
         },
         [...removed, ...removedUv],
       );
