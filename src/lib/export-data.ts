@@ -236,7 +236,13 @@ export async function exportAllPdf(
       doc.addPage();
       y = margin;
     }
-    doc.text(formatCollectionNumber(m.collection_number, m.category), margin, y);
+    doc.text(
+      m.custom_number
+        ? `${formatCollectionNumber(m.collection_number, m.category)} · ${m.custom_number}`
+        : formatCollectionNumber(m.collection_number, m.category),
+      margin,
+      y,
+    );
     doc.text(doc.splitTextToSize(m.mineral_name, 52)[0] ?? "", margin + 14, y);
     doc.text(CATEGORY_LABEL[m.category], margin + 70, y);
     doc.text(doc.splitTextToSize(m.location ?? "—", 80)[0] ?? "", margin + 100, y);
@@ -305,7 +311,7 @@ export async function exportAllPdf(
     doc.setFontSize(10);
     doc.setTextColor(26, 74, 110);
     doc.text(
-      `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}`,
+      `${CATEGORY_LABEL[m.category]} · Nr. ${formatCollectionNumber(m.collection_number, m.category)}${m.custom_number ? ` · ${m.custom_number}` : ""}`,
       textX,
       py + 4,
     );
