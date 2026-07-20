@@ -246,6 +246,14 @@ function DetailPage() {
           {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
           {m.custom_number ? ` · ${m.custom_number}` : ""}
         </p>
+        {(m.storage_floor || m.storage_cabinet || m.storage_shelf) && (
+          <p className="text-sm text-muted-foreground">
+            Ort:
+            {m.storage_floor ? ` Etage ${m.storage_floor}` : ""}
+            {m.storage_cabinet ? ` · Schrank ${m.storage_cabinet}` : ""}
+            {m.storage_shelf ? ` · Ebene ${m.storage_shelf}` : ""}
+          </p>
+        )}
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
 

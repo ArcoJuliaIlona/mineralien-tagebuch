@@ -70,6 +70,9 @@ function EditPage() {
           companion_hardness: m.companion_hardness,
           radioactive: m.radioactive ?? false,
           custom_number: m.custom_number ?? null,
+          storage_floor: m.storage_floor ?? null,
+          storage_cabinet: m.storage_cabinet ?? null,
+          storage_shelf: m.storage_shelf ?? null,
         }}
         onSubmit={async (input) => {
           await updateMineral(m.id, input);
