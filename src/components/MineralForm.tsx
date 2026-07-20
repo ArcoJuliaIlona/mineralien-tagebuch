@@ -513,6 +513,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
           radioactive,
+          custom_number: customNumber.trim() || null,
         },
         [...removed, ...removedUv],
       );
