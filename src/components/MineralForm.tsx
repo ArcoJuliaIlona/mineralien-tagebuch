@@ -796,6 +796,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         />
       </Field>
 
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card px-3 py-3">
+        <input
+          type="checkbox"
+          checked={radioactive}
+          onChange={(e) => setRadioactive(e.target.checked)}
+          className="size-5 accent-yellow-500"
+        />
+        <span className="text-base font-medium">
+          <span aria-hidden className="mr-2">☢️</span>radioaktiv
+        </span>
+      </label>
+
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
         {photos.length > 0 && (
