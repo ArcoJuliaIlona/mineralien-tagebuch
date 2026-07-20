@@ -64,6 +64,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
+  const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -510,6 +511,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           uv_types: category === "mineral" ? uvTypes.slice(0, uvPhotos.length) : [],
           companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
+          radioactive,
         },
         [...removed, ...removedUv],
       );
@@ -793,6 +795,18 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           className="min-h-[80px] text-base"
         />
       </Field>
+
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card px-3 py-3">
+        <input
+          type="checkbox"
+          checked={radioactive}
+          onChange={(e) => setRadioactive(e.target.checked)}
+          className="size-5 accent-yellow-500"
+        />
+        <span className="text-base font-medium">
+          <span aria-hidden className="mr-2">☢️</span>radioaktiv
+        </span>
+      </label>
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>

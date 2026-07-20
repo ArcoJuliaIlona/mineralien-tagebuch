@@ -54,6 +54,7 @@ export type Mineral = {
   uv_types: string[];
   companion_formula: string | null;
   companion_hardness: string | null;
+  radioactive: boolean;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -97,6 +98,7 @@ export type MineralInput = {
   uv_types: string[];
   companion_formula: string | null;
   companion_hardness: string | null;
+  radioactive: boolean;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

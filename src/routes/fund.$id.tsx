@@ -504,6 +504,7 @@ function DetailPage() {
                   uv_types: m.uv_types ?? [],
                   companion_formula: m.companion_formula ?? null,
                   companion_hardness: m.companion_hardness ?? null,
+                  radioactive: m.radioactive ?? false,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

@@ -35,6 +35,7 @@ export type Database = {
           notable: string | null
           origin: string | null
           photo_paths: string[]
+          radioactive: boolean
           size: string | null
           updated_at: string
           user_id: string
@@ -63,6 +64,7 @@ export type Database = {
           notable?: string | null
           origin?: string | null
           photo_paths?: string[]
+          radioactive?: boolean
           size?: string | null
           updated_at?: string
           user_id: string
@@ -91,6 +93,7 @@ export type Database = {
           notable?: string | null
           origin?: string | null
           photo_paths?: string[]
+          radioactive?: boolean
           size?: string | null
           updated_at?: string
           user_id?: string
