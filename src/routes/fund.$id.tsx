@@ -505,6 +505,7 @@ function DetailPage() {
                   companion_formula: m.companion_formula ?? null,
                   companion_hardness: m.companion_hardness ?? null,
                   radioactive: m.radioactive ?? false,
+                  custom_number: m.custom_number ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });
