@@ -67,6 +67,7 @@ type ListViewState = {
   sortBy: SortBy;
   sortDir: SortDir;
   onlyUv: boolean;
+  onlyRadioactive: boolean;
 };
 
 const LIST_VIEW_STATE_KEY = "collection-list-view-state";
@@ -93,6 +94,7 @@ const readListViewState = (): ListViewState | null => {
       sortBy: isSortBy(parsed.sortBy) ? parsed.sortBy : "name",
       sortDir: isSortDir(parsed.sortDir) ? parsed.sortDir : "asc",
       onlyUv: typeof parsed.onlyUv === "boolean" ? parsed.onlyUv : false,
+      onlyRadioactive: typeof parsed.onlyRadioactive === "boolean" ? parsed.onlyRadioactive : false,
     };
   } catch {
     return null;
@@ -144,6 +146,7 @@ function ListPage({
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [onlyUv, setOnlyUv] = useState(false);
+  const [onlyRadioactive, setOnlyRadioactive] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [minimumVisibleCount, setMinimumVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -186,6 +189,7 @@ function ListPage({
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
       if (onlyUv && !(m.uv_photos && m.uv_photos.length > 0)) return false;
+      if (onlyRadioactive && !m.radioactive) return false;
       if (!q) return true;
       return [
         m.mineral_name,
@@ -222,12 +226,12 @@ function ListPage({
     });
 
     return sorted;
-  }, [inTab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+  }, [inTab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
     setMinimumVisibleCount(INITIAL_VISIBLE_COUNT);
-  }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+  }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   // On return from editing: restore the exact list view first, then focus the edited item.
   useEffect(() => {
@@ -246,6 +250,7 @@ function ListPage({
           setSortBy(savedView.sortBy);
           setSortDir(savedView.sortDir);
           setOnlyUv(savedView.onlyUv);
+          setOnlyRadioactive(savedView.onlyRadioactive);
         } else if (cat === "mineral" || cat === "fossil" || cat === "rock") {
           setTab(cat);
         }
@@ -261,6 +266,7 @@ function ListPage({
         setSortBy(savedView.sortBy);
         setSortDir(savedView.sortDir);
         setOnlyUv(savedView.onlyUv);
+        setOnlyRadioactive(savedView.onlyRadioactive);
       }
     } catch {}
     setViewReady(true);
@@ -269,11 +275,11 @@ function ListPage({
 
   useEffect(() => {
     if (!viewReady) return;
-    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv });
-  }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive });
+  }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   const saveCurrentListView = (overrides: Partial<ListViewState> = {}) => {
-    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, ...overrides });
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive, ...overrides });
   };
 
   // If the previous filters hide the edited item, keep the sort but clear filters so the focus can work.
@@ -285,6 +291,7 @@ function ListPage({
     setFilterName(ALL);
     setFilterLocation(ALL);
     setOnlyUv(false);
+    setOnlyRadioactive(false);
   }, [focusId, filtered, inTab, isLoading]);
 
   const focusedIndex = useMemo(
@@ -628,6 +635,15 @@ function ListPage({
             <span>Nur mit UV-Fotos</span>
           </label>
         )}
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={onlyRadioactive}
+            onChange={(e) => setOnlyRadioactive(e.target.checked)}
+            className="size-4 accent-yellow-500"
+          />
+          <span>☢️ Nur radioaktiv</span>
+        </label>
       </div>
 
       {isLoading ? (
