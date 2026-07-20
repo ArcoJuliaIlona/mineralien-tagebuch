@@ -64,6 +64,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [notable, setNotable] = useState<string>(initial?.notable ?? "");
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
+  const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -510,6 +511,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           uv_types: category === "mineral" ? uvTypes.slice(0, uvPhotos.length) : [],
           companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
+          radioactive,
         },
         [...removed, ...removedUv],
       );
