@@ -67,6 +67,7 @@ type ListViewState = {
   sortBy: SortBy;
   sortDir: SortDir;
   onlyUv: boolean;
+  onlyRadioactive: boolean;
 };
 
 const LIST_VIEW_STATE_KEY = "collection-list-view-state";
