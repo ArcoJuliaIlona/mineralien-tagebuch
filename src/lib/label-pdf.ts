@@ -266,8 +266,9 @@ async function drawLabelContent(doc: jsPDF, m: Mineral, box: Box) {
   doc.setFont("times", "bold");
   doc.setFontSize(7);
   const numLabel = formatCollectionNumber(m.collection_number, m.category);
-  doc.text(numLabel, fullLeft, yPos);
-  const numW = doc.getTextWidth(numLabel);
+  const numDisplay = m.custom_number ? `${numLabel} · ${m.custom_number}` : numLabel;
+  doc.text(numDisplay, fullLeft, yPos);
+  const numW = doc.getTextWidth(numDisplay);
 
   doc.setFont("times", "bold");
   doc.setFontSize(9);

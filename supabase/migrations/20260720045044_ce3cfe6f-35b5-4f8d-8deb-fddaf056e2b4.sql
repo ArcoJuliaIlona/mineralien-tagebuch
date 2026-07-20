@@ -1,0 +1,1 @@
+ALTER TABLE public.minerals ADD COLUMN IF NOT EXISTS custom_number text;

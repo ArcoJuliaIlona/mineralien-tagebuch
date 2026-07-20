@@ -27,6 +27,16 @@ export function formatCollectionNumber(
   return `${n ?? 0}${CATEGORY_SUFFIX[category]}`;
 }
 
+export function formatDisplayNumber(
+  n: number | null | undefined,
+  category: Category,
+  custom?: string | null,
+): string {
+  const auto = formatCollectionNumber(n, category);
+  const c = (custom ?? "").trim();
+  return c ? `${auto} (${c})` : auto;
+}
+
 export type Mineral = {
   id: string;
   user_id: string;
@@ -39,6 +49,7 @@ export type Mineral = {
   latitude: number | null;
   longitude: number | null;
   collection_number: number;
+  custom_number: string | null;
   value: number | null;
   chemical_formula: string | null;
   created_at: string;
@@ -99,6 +110,7 @@ export type MineralInput = {
   companion_formula: string | null;
   companion_hardness: string | null;
   radioactive: boolean;
+  custom_number: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {

@@ -244,6 +244,7 @@ function DetailPage() {
       <div className="space-y-1">
         <p className="text-sm font-medium uppercase tracking-wider text-primary">
           {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
+          {m.custom_number ? ` · ${m.custom_number}` : ""}
         </p>
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
@@ -505,6 +506,7 @@ function DetailPage() {
                   companion_formula: m.companion_formula ?? null,
                   companion_hardness: m.companion_hardness ?? null,
                   radioactive: m.radioactive ?? false,
+                  custom_number: m.custom_number ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

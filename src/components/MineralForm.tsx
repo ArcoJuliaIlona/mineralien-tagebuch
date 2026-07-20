@@ -65,6 +65,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
+  const [customNumber, setCustomNumber] = useState<string>(initial?.custom_number ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -512,6 +513,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           companion_formula: category === "mineral" ? (companionFormula.trim() || null) : null,
           companion_hardness: category === "mineral" ? (companionHardness.trim() || null) : null,
           radioactive,
+          custom_number: customNumber.trim() || null,
         },
         [...removed, ...removedUv],
       );
@@ -807,6 +809,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           <span aria-hidden className="mr-2">☢️</span>radioaktiv
         </span>
       </label>
+
+      <Field label="Alternative Nummer">
+        <Input
+          value={customNumber}
+          onChange={(e) => setCustomNumber(e.target.value)}
+          placeholder="z. B. A34, X-12, Slg. Müller 7"
+          className="h-12 text-base"
+        />
+      </Field>
 
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
