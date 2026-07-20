@@ -810,6 +810,15 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         </span>
       </label>
 
+      <Field label="Alternative Nummer">
+        <Input
+          value={customNumber}
+          onChange={(e) => setCustomNumber(e.target.value)}
+          placeholder="z. B. A34, X-12, Slg. Müller 7"
+          className="h-12 text-base"
+        />
+      </Field>
+
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
         {photos.length > 0 && (
