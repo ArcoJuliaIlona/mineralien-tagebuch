@@ -825,6 +825,36 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         />
       </Field>
 
+      <div className="space-y-3 rounded-lg border bg-card px-3 py-3">
+        <Label className="text-base font-medium">Ort</Label>
+        <div className="grid grid-cols-3 gap-2">
+          <Field label="Etage">
+            <Input
+              value={storageFloor}
+              onChange={(e) => setStorageFloor(e.target.value)}
+              placeholder="z. B. 1"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Schrank">
+            <Input
+              value={storageCabinet}
+              onChange={(e) => setStorageCabinet(e.target.value)}
+              placeholder="z. B. A"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Ebene">
+            <Input
+              value={storageShelf}
+              onChange={(e) => setStorageShelf(e.target.value)}
+              placeholder="z. B. 3"
+              className="h-12 text-base"
+            />
+          </Field>
+        </div>
+      </div>
+
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
         {photos.length > 0 && (
