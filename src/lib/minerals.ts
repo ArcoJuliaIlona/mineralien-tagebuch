@@ -66,7 +66,6 @@ export type Mineral = {
   companion_formula: string | null;
   companion_hardness: string | null;
   radioactive: boolean;
-  custom_number: string | null;
   storage_floor: string | null;
   storage_cabinet: string | null;
   storage_shelf: string | null;
