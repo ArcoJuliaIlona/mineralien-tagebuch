@@ -635,6 +635,15 @@ function ListPage({
             <span>Nur mit UV-Fotos</span>
           </label>
         )}
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={onlyRadioactive}
+            onChange={(e) => setOnlyRadioactive(e.target.checked)}
+            className="size-4 accent-yellow-500"
+          />
+          <span>☢️ Nur radioaktiv</span>
+        </label>
       </div>
 
       {isLoading ? (
