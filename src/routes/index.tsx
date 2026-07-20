@@ -226,12 +226,12 @@ function ListPage({
     });
 
     return sorted;
-  }, [inTab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+  }, [inTab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_COUNT);
     setMinimumVisibleCount(INITIAL_VISIBLE_COUNT);
-  }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+  }, [tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   // On return from editing: restore the exact list view first, then focus the edited item.
   useEffect(() => {
@@ -250,6 +250,7 @@ function ListPage({
           setSortBy(savedView.sortBy);
           setSortDir(savedView.sortDir);
           setOnlyUv(savedView.onlyUv);
+          setOnlyRadioactive(savedView.onlyRadioactive);
         } else if (cat === "mineral" || cat === "fossil" || cat === "rock") {
           setTab(cat);
         }
@@ -265,6 +266,7 @@ function ListPage({
         setSortBy(savedView.sortBy);
         setSortDir(savedView.sortDir);
         setOnlyUv(savedView.onlyUv);
+        setOnlyRadioactive(savedView.onlyRadioactive);
       }
     } catch {}
     setViewReady(true);
@@ -273,11 +275,11 @@ function ListPage({
 
   useEffect(() => {
     if (!viewReady) return;
-    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv });
-  }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv]);
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive });
+  }, [viewReady, tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive]);
 
   const saveCurrentListView = (overrides: Partial<ListViewState> = {}) => {
-    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, ...overrides });
+    writeListViewState({ tab, search, filterName, filterLocation, sortBy, sortDir, onlyUv, onlyRadioactive, ...overrides });
   };
 
   // If the previous filters hide the edited item, keep the sort but clear filters so the focus can work.
@@ -289,6 +291,7 @@ function ListPage({
     setFilterName(ALL);
     setFilterLocation(ALL);
     setOnlyUv(false);
+    setOnlyRadioactive(false);
   }, [focusId, filtered, inTab, isLoading]);
 
   const focusedIndex = useMemo(
