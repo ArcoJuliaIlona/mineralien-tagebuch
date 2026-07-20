@@ -146,6 +146,7 @@ function ListPage({
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [onlyUv, setOnlyUv] = useState(false);
+  const [onlyRadioactive, setOnlyRadioactive] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [minimumVisibleCount, setMinimumVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -188,6 +189,7 @@ function ListPage({
       if (filterName !== ALL && m.mineral_name !== filterName) return false;
       if (filterLocation !== ALL && (m.location || "") !== filterLocation) return false;
       if (onlyUv && !(m.uv_photos && m.uv_photos.length > 0)) return false;
+      if (onlyRadioactive && !m.radioactive) return false;
       if (!q) return true;
       return [
         m.mineral_name,
