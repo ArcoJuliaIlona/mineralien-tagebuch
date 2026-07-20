@@ -254,6 +254,11 @@ function DetailPage() {
             {m.storage_shelf ? ` · Ebene ${m.storage_shelf}` : ""}
           </p>
         )}
+        {m.radioactive && (
+          <p className="inline-flex items-center gap-1 rounded-full bg-yellow-500/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-yellow-500">
+            ☢️ radioaktiv
+          </p>
+        )}
         <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
       </div>
 
