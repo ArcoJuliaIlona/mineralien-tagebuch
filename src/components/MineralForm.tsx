@@ -65,6 +65,7 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [size, setSize] = useState<string>(initial?.size ?? "");
   const [era, setEra] = useState<string>(initial?.era ?? "");
   const [radioactive, setRadioactive] = useState<boolean>(initial?.radioactive ?? false);
+  const [customNumber, setCustomNumber] = useState<string>(initial?.custom_number ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
