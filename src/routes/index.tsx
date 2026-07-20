@@ -94,6 +94,7 @@ const readListViewState = (): ListViewState | null => {
       sortBy: isSortBy(parsed.sortBy) ? parsed.sortBy : "name",
       sortDir: isSortDir(parsed.sortDir) ? parsed.sortDir : "asc",
       onlyUv: typeof parsed.onlyUv === "boolean" ? parsed.onlyUv : false,
+      onlyRadioactive: typeof parsed.onlyRadioactive === "boolean" ? parsed.onlyRadioactive : false,
     };
   } catch {
     return null;
