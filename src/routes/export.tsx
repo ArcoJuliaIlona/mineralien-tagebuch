@@ -218,6 +218,18 @@ function ExportPage() {
         </p>
       </div>
 
+      <Link to="/import" className="block">
+        <div className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-accent/40">
+          <Upload className="size-6 shrink-0 text-primary" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Listen importieren</h2>
+            <p className="text-sm text-muted-foreground">
+              Excel-, CSV- oder Word-Tabellen einlesen und übernehmen.
+            </p>
+          </div>
+        </div>
+      </Link>
+
       <div className="space-y-3 rounded-xl border bg-card p-4">
         <div className="flex items-start gap-3">
           <Database className="mt-1 size-6 shrink-0 text-primary" />
