@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Database, FileDown, Hash, QrCode, Tag } from "lucide-react";
+import { ArrowLeft, Database, FileDown, Hash, QrCode, Tag, Upload } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

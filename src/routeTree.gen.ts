@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NeuRouteImport } from './routes/neu'
+import { Route as ImportRouteImport } from './routes/import'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as AnmeldenRouteImport } from './routes/anmelden'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +20,11 @@ import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeit
 const NeuRoute = NeuRouteImport.update({
   id: '/neu',
   path: '/neu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportRoute = ImportRouteImport.update({
+  id: '/import',
+  path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExportRoute = ExportRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
+  '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
+  '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anmelden': typeof AnmeldenRoute
   '/export': typeof ExportRoute
+  '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
+    | '/import'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
+    | '/import'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anmelden'
     | '/export'
+    | '/import'
     | '/neu'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnmeldenRoute: typeof AnmeldenRoute
   ExportRoute: typeof ExportRoute
+  ImportRoute: typeof ImportRoute
   NeuRoute: typeof NeuRoute
   FundIdRoute: typeof FundIdRouteWithChildren
 }
@@ -114,6 +127,13 @@ declare module '@tanstack/react-router' {
       path: '/neu'
       fullPath: '/neu'
       preLoaderRoute: typeof NeuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/export': {
@@ -169,6 +189,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnmeldenRoute: AnmeldenRoute,
   ExportRoute: ExportRoute,
+  ImportRoute: ImportRoute,
   NeuRoute: NeuRoute,
   FundIdRoute: FundIdRouteWithChildren,
 }
