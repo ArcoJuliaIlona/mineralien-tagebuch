@@ -9,6 +9,7 @@ import {
   listMinerals,
   formatCollectionNumber,
   CATEGORY_LABEL_PLURAL,
+  splitCollectionNames,
 } from "@/lib/minerals";
 import { getPhotoThumbUrls } from "@/lib/photos";
 
@@ -41,7 +42,7 @@ function VitrineDetail() {
   const entries = useMemo(
     () =>
       items
-        .filter((m) => (m.collection_name ?? "").trim() === name)
+        .filter((m) => splitCollectionNames(m.collection_name).includes(name))
         .sort((a, b) =>
           a.mineral_name.localeCompare(b.mineral_name, "de", {
             sensitivity: "base",
