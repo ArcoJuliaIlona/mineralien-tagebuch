@@ -157,3 +157,22 @@
     letter-spacing: -0.01em;
   }
 }
+
+@utility smallcaps {
+  font-family: var(--font-serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.14em;
+  font-feature-settings: "smcp", "c2sc";
+}
+
+@utility gold-rule {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    color-mix(in oklab, var(--color-primary) 70%, transparent) 20%,
+    color-mix(in oklab, var(--color-primary) 70%, transparent) 80%,
+    transparent 100%
+  );
+}
