@@ -381,7 +381,8 @@ function DetailPage() {
       <dl className="space-y-4 rounded-xl border bg-card p-4">
         {m.category === "mineral" && (
           <div className="space-y-2">
-            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Hauptmineral</dt>
+            <dt className="smallcaps text-[13px] text-primary">Hauptmineral</dt>
+            <hr className="gold-rule w-16" aria-hidden />
             <FormulaRow label="Chemische Formel" value={m.chemical_formula} />
             <DataRow label="Härte (Mohs)" value={m.hardness} />
           </div>
@@ -389,9 +390,10 @@ function DetailPage() {
         {m.category === "rock" && <DataRow label="Ursprung" value={m.origin} />}
 
         <div className="space-y-2">
-          <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <dt className="smallcaps text-[13px] text-primary">
             {m.category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}
           </dt>
+          <hr className="gold-rule w-16" aria-hidden />
           <DataRow
             label={m.category === "fossil" ? "Weitere Fossilien & Besonderheiten" : "Begleitmineralien"}
             value={m.companion_minerals}
@@ -420,7 +422,8 @@ function DetailPage() {
         />
         {(m.previous_owner || m.acquired_at || m.acquisition_type || m.acquisition_price != null) && (
           <div className="space-y-2">
-            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Herkunft &amp; Erwerb</dt>
+            <dt className="smallcaps text-[13px] text-primary">Herkunft &amp; Erwerb</dt>
+            <hr className="gold-rule w-16" aria-hidden />
             <DataRow label="Vorbesitzer" value={m.previous_owner} />
             <DataRow
               label="Erwerbsdatum"
@@ -439,7 +442,8 @@ function DetailPage() {
         )}
         {m.description && (
           <div className="space-y-2">
-            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Beschreibung</dt>
+            <dt className="smallcaps text-[13px] text-primary">Beschreibung</dt>
+            <hr className="gold-rule w-16" aria-hidden />
             <dd className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
               {m.description}
             </dd>
