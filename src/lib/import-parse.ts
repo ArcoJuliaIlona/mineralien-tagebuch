@@ -126,6 +126,11 @@ function rowsToImport(rows: Record<string, unknown>[]): ImportRow[] {
       uv_types: [],
       latitude: null,
       longitude: null,
+      previous_owner: null,
+      acquired_at: null,
+      acquisition_type: null,
+      acquisition_price: null,
+      description: null,
     };
     return row;
   });

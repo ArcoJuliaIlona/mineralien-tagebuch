@@ -523,6 +523,11 @@ function DetailPage() {
                   storage_floor: m.storage_floor ?? null,
                   storage_cabinet: m.storage_cabinet ?? null,
                   storage_shelf: m.storage_shelf ?? null,
+                  previous_owner: m.previous_owner ?? null,
+                  acquired_at: m.acquired_at ?? null,
+                  acquisition_type: m.acquisition_type ?? null,
+                  acquisition_price: m.acquisition_price ?? null,
+                  description: m.description ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

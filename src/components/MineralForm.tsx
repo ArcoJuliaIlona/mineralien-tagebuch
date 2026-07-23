@@ -69,6 +69,13 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [storageFloor, setStorageFloor] = useState<string>(initial?.storage_floor ?? "");
   const [storageCabinet, setStorageCabinet] = useState<string>(initial?.storage_cabinet ?? "");
   const [storageShelf, setStorageShelf] = useState<string>(initial?.storage_shelf ?? "");
+  const [previousOwner, setPreviousOwner] = useState<string>(initial?.previous_owner ?? "");
+  const [acquiredAt, setAcquiredAt] = useState<string>(initial?.acquired_at ?? "");
+  const [acquisitionType, setAcquisitionType] = useState<string>(initial?.acquisition_type ?? "");
+  const [acquisitionPrice, setAcquisitionPrice] = useState<string>(
+    initial?.acquisition_price != null ? String(initial.acquisition_price) : "",
+  );
+  const [description, setDescription] = useState<string>(initial?.description ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -520,6 +527,17 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           storage_floor: storageFloor.trim() || null,
           storage_cabinet: storageCabinet.trim() || null,
           storage_shelf: storageShelf.trim() || null,
+          previous_owner: previousOwner.trim() || null,
+          acquired_at: acquiredAt.trim() || null,
+          acquisition_type: acquisitionType.trim() || null,
+          acquisition_price:
+            acquisitionPrice.trim() === ""
+              ? null
+              : (() => {
+                  const n = Number(acquisitionPrice.replace(",", "."));
+                  return isFinite(n) && n >= 0 ? n : null;
+                })(),
+          description: description.trim() || null,
         },
         [...removed, ...removedUv],
       );
