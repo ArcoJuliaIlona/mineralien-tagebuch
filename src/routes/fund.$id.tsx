@@ -674,3 +674,14 @@ function FormulaRow({ label, value }: { label: string; value: string | null }) {
     </div>
   );
 }
+
+function CatalogRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[6rem_minmax(0,1fr)] gap-3 border-b border-primary/10 py-1.5 last:border-b-0">
+      <dt className="text-[10px] font-sans font-semibold uppercase tracking-[0.24em] text-primary/80">
+        {label}
+      </dt>
+      <dd className="text-neutral-100">{children}</dd>
+    </div>
+  );
+}
