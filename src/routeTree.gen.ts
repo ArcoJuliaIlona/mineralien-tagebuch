@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VitrinenRouteImport } from './routes/vitrinen'
 import { Route as NeuRouteImport } from './routes/neu'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as ExportRouteImport } from './routes/export'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FundIdRouteImport } from './routes/fund.$id'
 import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeiten'
 
+const VitrinenRoute = VitrinenRouteImport.update({
+  id: '/vitrinen',
+  path: '/vitrinen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NeuRoute = NeuRouteImport.update({
   id: '/neu',
   path: '/neu',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
+  '/vitrinen': typeof VitrinenRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
+  '/vitrinen': typeof VitrinenRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
+  '/vitrinen': typeof VitrinenRoute
   '/fund/$id': typeof FundIdRouteWithChildren
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/export'
     | '/import'
     | '/neu'
+    | '/vitrinen'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/export'
     | '/import'
     | '/neu'
+    | '/vitrinen'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/export'
     | '/import'
     | '/neu'
+    | '/vitrinen'
     | '/fund/$id'
     | '/fund/$id/bearbeiten'
   fileRoutesById: FileRoutesById
@@ -117,11 +129,19 @@ export interface RootRouteChildren {
   ExportRoute: typeof ExportRoute
   ImportRoute: typeof ImportRoute
   NeuRoute: typeof NeuRoute
+  VitrinenRoute: typeof VitrinenRoute
   FundIdRoute: typeof FundIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vitrinen': {
+      id: '/vitrinen'
+      path: '/vitrinen'
+      fullPath: '/vitrinen'
+      preLoaderRoute: typeof VitrinenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/neu': {
       id: '/neu'
       path: '/neu'
@@ -191,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExportRoute: ExportRoute,
   ImportRoute: ImportRoute,
   NeuRoute: NeuRoute,
+  VitrinenRoute: VitrinenRoute,
   FundIdRoute: FundIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
