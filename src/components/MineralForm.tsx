@@ -873,6 +873,64 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
         </div>
       </div>
 
+      <div className="space-y-3 rounded-lg border bg-card px-3 py-3">
+        <Label className="text-base font-medium">Herkunft &amp; Erwerb</Label>
+        <Field label="Vorbesitzer / Herkunftssammlung">
+          <Input
+            value={previousOwner}
+            onChange={(e) => setPreviousOwner(e.target.value)}
+            placeholder="z. B. Slg. Dr. Müller, Freiberg"
+            className="h-12 text-base"
+          />
+        </Field>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Erwerbsdatum">
+            <Input
+              type="date"
+              value={acquiredAt}
+              onChange={(e) => setAcquiredAt(e.target.value)}
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Erwerbsart">
+            <Select value={acquisitionType || "none"} onValueChange={(v) => setAcquisitionType(v === "none" ? "" : v)}>
+              <SelectTrigger className="h-12 text-base">
+                <SelectValue placeholder="Wählen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                <SelectItem value="Kauf">Kauf</SelectItem>
+                <SelectItem value="Tausch">Tausch</SelectItem>
+                <SelectItem value="Fund">Fund</SelectItem>
+                <SelectItem value="Geschenk">Geschenk</SelectItem>
+                <SelectItem value="Erbe">Erbe</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+        <Field label="Erwerbspreis (€)">
+          <Input
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            value={acquisitionPrice}
+            onChange={(e) => setAcquisitionPrice(e.target.value)}
+            placeholder="z. B. 45.00"
+            className="h-12 text-base"
+          />
+        </Field>
+      </div>
+
+      <Field label="Beschreibung (Kuratorentext)">
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Kuratorische Beschreibung, Geschichte, Kontext…"
+          className="min-h-[100px] text-base"
+        />
+      </Field>
+
       <div className="space-y-3">
         <Label className="text-base">Fotos</Label>
         {photos.length > 0 && (
