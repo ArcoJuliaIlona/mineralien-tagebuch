@@ -246,6 +246,34 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, category]);
 
+  // Auto-fetch Systematik (Kristallsystem, Strunz, Strich, Glanz) – ohne Farbe.
+  useEffect(() => {
+    const n = name.trim();
+    if (!n || category !== "mineral") return;
+    if (n.length < 3) return;
+    const needs =
+      !crystalSystem.trim() ||
+      !strunzClass.trim() ||
+      !streak.trim() ||
+      !luster.trim();
+    if (!needs) return;
+    const t = setTimeout(() => {
+      if (fetchingSystematics) return;
+      setFetchingSystematics(true);
+      fetchSystematicsFn({ data: { name: n } })
+        .then((res) => {
+          if (res.crystal_system) setCrystalSystem((cur) => (cur.trim() ? cur : res.crystal_system!));
+          if (res.strunz_class) setStrunzClass((cur) => (cur.trim() ? cur : res.strunz_class!));
+          if (res.streak) setStreak((cur) => (cur.trim() ? cur : res.streak!));
+          if (res.luster) setLuster((cur) => (cur.trim() ? cur : res.luster!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingSystematics(false));
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, category]);
+
   // Auto-fetch Formel & Härte für das Begleitmineral (nur Kategorie „mineral").
   useEffect(() => {
     const n = (companion ?? "").trim();
