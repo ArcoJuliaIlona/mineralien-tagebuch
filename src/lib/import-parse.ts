@@ -26,6 +26,11 @@ const FIELDS = [
   "storage_cabinet",
   "storage_shelf",
   "radioactive",
+  "previous_owner",
+  "acquired_at",
+  "acquisition_type",
+  "acquisition_price",
+  "description",
 ] as const;
 
 type Field = (typeof FIELDS)[number];
@@ -55,6 +60,11 @@ add("storage_floor", ["etage", "floor", "stockwerk"]);
 add("storage_cabinet", ["schrank", "cabinet", "kasten"]);
 add("storage_shelf", ["ebene", "shelf", "fach", "regal"]);
 add("radioactive", ["radioaktiv", "radioactive", "strahlend"]);
+add("previous_owner", ["vorbesitzer", "herkunftssammlung", "provenienz", "previous owner", "provenance"]);
+add("acquired_at", ["erwerbsdatum", "kaufdatum", "datum", "acquired", "acquired at"]);
+add("acquisition_type", ["erwerbsart", "erwerb", "acquisition", "acquisition type"]);
+add("acquisition_price", ["erwerbspreis", "kaufpreis", "acquisition price"]);
+add("description", ["beschreibung", "description", "kuratorentext", "text"]);
 
 function normalizeHeader(s: string): string {
   return s
@@ -126,6 +136,11 @@ function rowsToImport(rows: Record<string, unknown>[]): ImportRow[] {
       uv_types: [],
       latitude: null,
       longitude: null,
+      previous_owner: str(mapped.previous_owner),
+      acquired_at: str(mapped.acquired_at),
+      acquisition_type: str(mapped.acquisition_type),
+      acquisition_price: parseValue(mapped.acquisition_price),
+      description: str(mapped.description),
     };
     return row;
   });

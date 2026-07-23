@@ -16,6 +16,9 @@ export type Database = {
     Tables: {
       minerals: {
         Row: {
+          acquired_at: string | null
+          acquisition_price: number | null
+          acquisition_type: string | null
           category: string
           chemical_formula: string | null
           collection_name: string | null
@@ -26,6 +29,7 @@ export type Database = {
           country: string | null
           created_at: string
           custom_number: string | null
+          description: string | null
           era: string | null
           hardness: string | null
           id: string
@@ -36,6 +40,7 @@ export type Database = {
           notable: string | null
           origin: string | null
           photo_paths: string[]
+          previous_owner: string | null
           radioactive: boolean
           size: string | null
           storage_cabinet: string | null
@@ -49,6 +54,9 @@ export type Database = {
           video_paths: string[]
         }
         Insert: {
+          acquired_at?: string | null
+          acquisition_price?: number | null
+          acquisition_type?: string | null
           category?: string
           chemical_formula?: string | null
           collection_name?: string | null
@@ -59,6 +67,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           custom_number?: string | null
+          description?: string | null
           era?: string | null
           hardness?: string | null
           id?: string
@@ -69,6 +78,7 @@ export type Database = {
           notable?: string | null
           origin?: string | null
           photo_paths?: string[]
+          previous_owner?: string | null
           radioactive?: boolean
           size?: string | null
           storage_cabinet?: string | null
@@ -82,6 +92,9 @@ export type Database = {
           video_paths?: string[]
         }
         Update: {
+          acquired_at?: string | null
+          acquisition_price?: number | null
+          acquisition_type?: string | null
           category?: string
           chemical_formula?: string | null
           collection_name?: string | null
@@ -92,6 +105,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           custom_number?: string | null
+          description?: string | null
           era?: string | null
           hardness?: string | null
           id?: string
@@ -102,6 +116,7 @@ export type Database = {
           notable?: string | null
           origin?: string | null
           photo_paths?: string[]
+          previous_owner?: string | null
           radioactive?: boolean
           size?: string | null
           storage_cabinet?: string | null

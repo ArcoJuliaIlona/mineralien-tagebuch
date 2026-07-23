@@ -280,6 +280,19 @@ export async function exportAllPdf(
           ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(m.value)
           : null,
       ],
+      ["Vorbesitzer", m.previous_owner],
+      [
+        "Erwerbsdatum",
+        m.acquired_at ? new Date(m.acquired_at).toLocaleDateString("de-DE") : null,
+      ],
+      ["Erwerbsart", m.acquisition_type],
+      [
+        "Erwerbspreis",
+        m.acquisition_price != null
+          ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(m.acquisition_price)
+          : null,
+      ],
+      ["Beschreibung", m.description],
       [
         "GPS",
         m.latitude != null && m.longitude != null

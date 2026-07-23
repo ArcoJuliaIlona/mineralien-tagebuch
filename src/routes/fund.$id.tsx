@@ -367,6 +367,33 @@ function DetailPage() {
               : null
           }
         />
+        {(m.previous_owner || m.acquired_at || m.acquisition_type || m.acquisition_price != null) && (
+          <div className="space-y-2">
+            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Herkunft &amp; Erwerb</dt>
+            <DataRow label="Vorbesitzer" value={m.previous_owner} />
+            <DataRow
+              label="Erwerbsdatum"
+              value={m.acquired_at ? new Date(m.acquired_at).toLocaleDateString("de-DE") : null}
+            />
+            <DataRow label="Erwerbsart" value={m.acquisition_type} />
+            <DataRow
+              label="Erwerbspreis"
+              value={
+                m.acquisition_price != null
+                  ? new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(m.acquisition_price)
+                  : null
+              }
+            />
+          </div>
+        )}
+        {m.description && (
+          <div className="space-y-2">
+            <dt className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Beschreibung</dt>
+            <dd className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+              {m.description}
+            </dd>
+          </div>
+        )}
         {m.latitude != null && m.longitude != null && (
           <div>
             <dt className="text-sm font-medium text-muted-foreground">GPS-Koordinaten</dt>
@@ -523,6 +550,11 @@ function DetailPage() {
                   storage_floor: m.storage_floor ?? null,
                   storage_cabinet: m.storage_cabinet ?? null,
                   storage_shelf: m.storage_shelf ?? null,
+                  previous_owner: m.previous_owner ?? null,
+                  acquired_at: m.acquired_at ?? null,
+                  acquisition_type: m.acquisition_type ?? null,
+                  acquisition_price: m.acquisition_price ?? null,
+                  description: m.description ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

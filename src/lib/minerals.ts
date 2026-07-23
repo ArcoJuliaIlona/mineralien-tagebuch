@@ -69,6 +69,11 @@ export type Mineral = {
   storage_floor: string | null;
   storage_cabinet: string | null;
   storage_shelf: string | null;
+  previous_owner: string | null;
+  acquired_at: string | null;
+  acquisition_type: string | null;
+  acquisition_price: number | null;
+  description: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -117,6 +122,11 @@ export type MineralInput = {
   storage_floor: string | null;
   storage_cabinet: string | null;
   storage_shelf: string | null;
+  previous_owner: string | null;
+  acquired_at: string | null;
+  acquisition_type: string | null;
+  acquisition_price: number | null;
+  description: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {
