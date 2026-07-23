@@ -12,6 +12,7 @@ import {
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchHardness } from "@/lib/hardness.functions";
+import { fetchSystematics } from "@/lib/systematics.functions";
 import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
