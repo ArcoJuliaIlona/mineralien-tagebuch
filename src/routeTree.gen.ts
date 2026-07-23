@@ -15,6 +15,7 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as AnmeldenRouteImport } from './routes/anmelden'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VitrinenNameRouteImport } from './routes/vitrinen.$name'
 import { Route as FundIdRouteImport } from './routes/fund.$id'
 import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeiten'
 
@@ -48,6 +49,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VitrinenNameRoute = VitrinenNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => VitrinenRoute,
+} as any)
 const FundIdRoute = FundIdRouteImport.update({
   id: '/fund/$id',
   path: '/fund/$id',
@@ -65,8 +71,9 @@ export interface FileRoutesByFullPath {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
-  '/vitrinen': typeof VitrinenRoute
+  '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
+  '/vitrinen/$name': typeof VitrinenNameRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesByTo {
@@ -75,8 +82,9 @@ export interface FileRoutesByTo {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
-  '/vitrinen': typeof VitrinenRoute
+  '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
+  '/vitrinen/$name': typeof VitrinenNameRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesById {
@@ -86,8 +94,9 @@ export interface FileRoutesById {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
-  '/vitrinen': typeof VitrinenRoute
+  '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
+  '/vitrinen/$name': typeof VitrinenNameRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/neu'
     | '/vitrinen'
     | '/fund/$id'
+    | '/vitrinen/$name'
     | '/fund/$id/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/neu'
     | '/vitrinen'
     | '/fund/$id'
+    | '/vitrinen/$name'
     | '/fund/$id/bearbeiten'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/neu'
     | '/vitrinen'
     | '/fund/$id'
+    | '/vitrinen/$name'
     | '/fund/$id/bearbeiten'
   fileRoutesById: FileRoutesById
 }
@@ -129,7 +141,7 @@ export interface RootRouteChildren {
   ExportRoute: typeof ExportRoute
   ImportRoute: typeof ImportRoute
   NeuRoute: typeof NeuRoute
-  VitrinenRoute: typeof VitrinenRoute
+  VitrinenRoute: typeof VitrinenRouteWithChildren
   FundIdRoute: typeof FundIdRouteWithChildren
 }
 
@@ -177,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vitrinen/$name': {
+      id: '/vitrinen/$name'
+      path: '/$name'
+      fullPath: '/vitrinen/$name'
+      preLoaderRoute: typeof VitrinenNameRouteImport
+      parentRoute: typeof VitrinenRoute
+    }
     '/fund/$id': {
       id: '/fund/$id'
       path: '/fund/$id'
@@ -193,6 +212,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface VitrinenRouteChildren {
+  VitrinenNameRoute: typeof VitrinenNameRoute
+}
+
+const VitrinenRouteChildren: VitrinenRouteChildren = {
+  VitrinenNameRoute: VitrinenNameRoute,
+}
+
+const VitrinenRouteWithChildren = VitrinenRoute._addFileChildren(
+  VitrinenRouteChildren,
+)
 
 interface FundIdRouteChildren {
   FundIdBearbeitenRoute: typeof FundIdBearbeitenRoute
@@ -211,7 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExportRoute: ExportRoute,
   ImportRoute: ImportRoute,
   NeuRoute: NeuRoute,
-  VitrinenRoute: VitrinenRoute,
+  VitrinenRoute: VitrinenRouteWithChildren,
   FundIdRoute: FundIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
