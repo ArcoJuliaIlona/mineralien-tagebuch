@@ -57,6 +57,17 @@ function DetailPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const backTo = useMemo(() => {
+    try {
+      const raw = sessionStorage.getItem("fund:backTo");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed?.kind === "vitrine" && typeof parsed.name === "string") {
+        return { kind: "vitrine" as const, name: parsed.name as string };
+      }
+    } catch {}
+    return null;
+  }, []);
   const [busy, setBusy] = useState(false);
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
@@ -234,12 +245,22 @@ function DetailPage() {
 
   return (
     <div className="space-y-5">
-      <Link
-        to="/"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Zur Liste
-      </Link>
+      {backTo?.kind === "vitrine" ? (
+        <Link
+          to="/vitrinen/$name"
+          params={{ name: backTo.name }}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Zur Vitrine „{backTo.name}"
+        </Link>
+      ) : (
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Zur Liste
+        </Link>
+      )}
 
       {/* Katalog-Ansicht: großes Foto auf schwarz + Museums-Tafel */}
       <section className="overflow-hidden rounded-xl border border-primary/20 bg-black shadow-2xl">
