@@ -241,47 +241,98 @@ function DetailPage() {
         <ArrowLeft className="size-4" /> Zur Liste
       </Link>
 
-      <div className="space-y-1">
-        <p className="text-sm font-medium uppercase tracking-wider text-primary">
-          {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
-          {m.custom_number ? ` · ${m.custom_number}` : ""}
-        </p>
-        {(m.storage_floor || m.storage_cabinet || m.storage_shelf) && (
-          <p className="text-sm text-muted-foreground">
-            Ort:
-            {m.storage_floor ? ` Etage ${m.storage_floor}` : ""}
-            {m.storage_cabinet ? ` · Schrank ${m.storage_cabinet}` : ""}
-            {m.storage_shelf ? ` · Ebene ${m.storage_shelf}` : ""}
-          </p>
-        )}
-        {m.radioactive && (
-          <p className="inline-flex items-center gap-1 rounded-full bg-yellow-500/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-yellow-500">
-            ☢️ radioaktiv
-          </p>
-        )}
-        <h1 className="text-3xl font-bold tracking-tight">{m.mineral_name}</h1>
-      </div>
-
-      {m.photo_paths.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 rounded-xl bg-black p-2">
-          {m.photo_paths.map((p, i) => (
+      {/* Katalog-Ansicht: großes Foto auf schwarz + Museums-Tafel */}
+      <section className="overflow-hidden rounded-xl border border-primary/20 bg-black shadow-2xl">
+        <div className="grid gap-0 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          {m.photo_paths.length > 0 ? (
             <button
-              key={p}
               type="button"
-              onClick={() => { setZoomIsUv(false); setZoomPhoto(p); }}
-              className="block cursor-zoom-in overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              onClick={() => { setZoomIsUv(false); setZoomPhoto(m.photo_paths[0]); }}
+              className="group relative block cursor-zoom-in bg-black focus:outline-none"
+              aria-label="Foto vergrößern"
             >
               <PhotoThumb
-                path={p}
-                url={photoThumbUrls?.[i] ?? null}
-                className="aspect-square w-full"
+                path={m.photo_paths[0]}
+                url={photoThumbUrls?.[0] ?? null}
+                className="aspect-square w-full md:aspect-[4/5] md:h-full"
                 version={photoVersion}
                 trim
               />
             </button>
-          ))}
+          ) : (
+            <div className="aspect-square w-full bg-black md:aspect-[4/5]" />
+          )}
+
+          <div className="flex flex-col justify-center gap-4 bg-black px-6 py-8 text-neutral-100 md:px-8 md:py-10">
+            <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-primary">
+              {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
+              {m.custom_number ? ` · ${m.custom_number}` : ""}
+            </p>
+            <h1 className="font-serif text-4xl italic leading-[1.05] tracking-tight text-neutral-50 md:text-5xl">
+              {m.mineral_name}
+            </h1>
+            <div className="h-px w-16 bg-primary/70" aria-hidden />
+            <dl className="font-serif text-[15px] leading-relaxed text-neutral-200">
+              {m.category === "mineral" && m.chemical_formula && (
+                <CatalogRow label="Formel">
+                  <FormulaText value={m.chemical_formula} />
+                </CatalogRow>
+              )}
+              {m.category === "mineral" && m.hardness && (
+                <CatalogRow label="Härte">{m.hardness} <span className="text-neutral-400">Mohs</span></CatalogRow>
+              )}
+              {m.category === "rock" && m.origin && (
+                <CatalogRow label="Ursprung">{m.origin}</CatalogRow>
+              )}
+              {m.category === "fossil" && m.era && (
+                <CatalogRow label="Zeitalter">{m.era}</CatalogRow>
+              )}
+              {m.size && <CatalogRow label="Maße">{m.size}</CatalogRow>}
+              {(m.location || m.country) && (
+                <CatalogRow label="Fundort">
+                  {[m.location, m.country].filter(Boolean).join(", ")}
+                </CatalogRow>
+              )}
+              {m.collection_name && <CatalogRow label="Sammlung">{m.collection_name}</CatalogRow>}
+              {(m.storage_floor || m.storage_cabinet || m.storage_shelf) && (
+                <CatalogRow label="Ort">
+                  {[
+                    m.storage_floor ? `Etage ${m.storage_floor}` : null,
+                    m.storage_cabinet ? `Schrank ${m.storage_cabinet}` : null,
+                    m.storage_shelf ? `Ebene ${m.storage_shelf}` : null,
+                  ].filter(Boolean).join(" · ")}
+                </CatalogRow>
+              )}
+            </dl>
+            {m.radioactive && (
+              <p className="inline-flex w-fit items-center gap-1 rounded-full bg-yellow-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-yellow-400">
+                ☢ radioaktiv
+              </p>
+            )}
+          </div>
         </div>
-      )}
+
+        {m.photo_paths.length > 1 && (
+          <div className="grid grid-cols-4 gap-1 border-t border-primary/10 bg-black p-1 sm:grid-cols-6">
+            {m.photo_paths.slice(1).map((p, i) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => { setZoomIsUv(false); setZoomPhoto(p); }}
+                className="block cursor-zoom-in overflow-hidden rounded focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <PhotoThumb
+                  path={p}
+                  url={photoThumbUrls?.[i + 1] ?? null}
+                  className="aspect-square w-full"
+                  version={photoVersion}
+                  trim
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
 
       {m.uv_photos && m.uv_photos.length > 0 && (
         <div className="space-y-2">
