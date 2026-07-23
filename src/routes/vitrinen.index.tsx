@@ -7,7 +7,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { listMinerals } from "@/lib/minerals";
 
-export const Route = createFileRoute("/vitrinen")({
+export const Route = createFileRoute("/vitrinen/")({
   head: () => ({
     meta: [
       { title: "Vitrinen · Kuratierte Sammlungen" },
