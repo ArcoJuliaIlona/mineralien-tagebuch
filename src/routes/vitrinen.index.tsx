@@ -5,7 +5,7 @@ import { Library } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
-import { listMinerals } from "@/lib/minerals";
+import { listMinerals, splitCollectionNames } from "@/lib/minerals";
 import { getPhotoThumbUrls } from "@/lib/photos";
 
 export const Route = createFileRoute("/vitrinen/")({
@@ -36,12 +36,14 @@ function VitrinenPage() {
       { name: string; count: number; cover: string | null }
     >();
     for (const m of items) {
-      const name = (m.collection_name ?? "").trim();
-      if (!name) continue;
-      const cur = map.get(name) ?? { name, count: 0, cover: null };
-      cur.count += 1;
-      if (!cur.cover && m.photo_paths?.[0]) cur.cover = m.photo_paths[0];
-      map.set(name, cur);
+      const names = splitCollectionNames(m.collection_name);
+      if (names.length === 0) continue;
+      for (const name of names) {
+        const cur = map.get(name) ?? { name, count: 0, cover: null };
+        cur.count += 1;
+        if (!cur.cover && m.photo_paths?.[0]) cur.cover = m.photo_paths[0];
+        map.set(name, cur);
+      }
     }
     return Array.from(map.values()).sort((a, b) =>
       a.name.localeCompare(b.name, "de"),
