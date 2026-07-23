@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Library } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { PhotoThumb } from "@/components/PhotoThumb";
 import { listMinerals } from "@/lib/minerals";
+import { getPhotoThumbUrls } from "@/lib/photos";
 
 export const Route = createFileRoute("/vitrinen/")({
   head: () => ({
@@ -47,6 +48,31 @@ function VitrinenPage() {
     );
   }, [items]);
 
+  const coverPaths = useMemo(
+    () => Array.from(new Set(vitrines.map((v) => v.cover).filter(Boolean) as string[])),
+    [vitrines],
+  );
+  const [thumbUrlMap, setThumbUrlMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const missing = coverPaths.filter((p) => !thumbUrlMap[p]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const urls = await getPhotoThumbUrls(missing, 240);
+      if (cancelled) return;
+      setThumbUrlMap((prev) => {
+        const next = { ...prev };
+        missing.forEach((p, i) => {
+          if (urls[i]) next[p] = urls[i];
+        });
+        return next;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [coverPaths, thumbUrlMap]);
+
   return (
     <div className="space-y-6">
       <div className="border-b border-border/60 pb-4">
@@ -77,6 +103,7 @@ function VitrinenPage() {
               >
                 <PhotoThumb
                   path={v.cover ?? undefined}
+                  url={v.cover ? thumbUrlMap[v.cover] ?? null : null}
                   className="size-20 shrink-0"
                   trim
                 />
