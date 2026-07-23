@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -10,6 +10,7 @@ import {
   formatCollectionNumber,
   CATEGORY_LABEL_PLURAL,
 } from "@/lib/minerals";
+import { getPhotoThumbUrls } from "@/lib/photos";
 
 export const Route = createFileRoute("/vitrinen/$name")({
   head: ({ params }) => ({
@@ -55,6 +56,34 @@ function VitrineDetail() {
     return c;
   }, [entries]);
 
+  const thumbPaths = useMemo(
+    () =>
+      Array.from(
+        new Set(entries.map((m) => m.photo_paths?.[0]).filter(Boolean) as string[]),
+      ),
+    [entries],
+  );
+  const [thumbUrlMap, setThumbUrlMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const missing = thumbPaths.filter((p) => !thumbUrlMap[p]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const urls = await getPhotoThumbUrls(missing, 320);
+      if (cancelled) return;
+      setThumbUrlMap((prev) => {
+        const next = { ...prev };
+        missing.forEach((p, i) => {
+          if (urls[i]) next[p] = urls[i];
+        });
+        return next;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [thumbPaths, thumbUrlMap]);
+
   return (
     <div className="space-y-6">
       <Link
@@ -95,6 +124,7 @@ function VitrineDetail() {
               >
                 <PhotoThumb
                   path={m.photo_paths?.[0]}
+                  url={m.photo_paths?.[0] ? thumbUrlMap[m.photo_paths[0]] ?? null : null}
                   className="aspect-square w-full"
                   trim
                 />
