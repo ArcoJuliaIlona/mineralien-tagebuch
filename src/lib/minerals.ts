@@ -24,7 +24,9 @@ export function formatCollectionNumber(
   n: number | null | undefined,
   category: Category,
 ): string {
-  return `${n ?? 0}${CATEGORY_SUFFIX[category]}`;
+  const num = n ?? 0;
+  const padded = String(num).padStart(3, "0");
+  return `${padded} ${CATEGORY_SUFFIX[category]}`;
 }
 
 export function formatDisplayNumber(

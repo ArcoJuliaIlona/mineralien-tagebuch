@@ -673,9 +673,9 @@ function ListPage({
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate font-serif text-xl tracking-tight">
-                      <span className="mr-2 font-mono text-xs uppercase tracking-wider text-primary/80">
-                        #{formatCollectionNumber(m.collection_number, m.category)}
+                    <p className="truncate font-serif text-xl italic tracking-tight">
+                      <span className="smallcaps mr-2 text-[11px] text-primary/80">
+                        Nr. {formatCollectionNumber(m.collection_number, m.category)}
                       </span>
                       {m.mineral_name}
                     </p>
