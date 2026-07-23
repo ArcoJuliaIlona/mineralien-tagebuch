@@ -23,11 +23,13 @@ export type Database = {
           chemical_formula: string | null
           collection_name: string | null
           collection_number: number
+          color: string | null
           companion_formula: string | null
           companion_hardness: string | null
           companion_minerals: string | null
           country: string | null
           created_at: string
+          crystal_system: string | null
           custom_number: string | null
           description: string | null
           era: string | null
@@ -36,6 +38,7 @@ export type Database = {
           latitude: number | null
           location: string | null
           longitude: number | null
+          luster: string | null
           mineral_name: string
           notable: string | null
           origin: string | null
@@ -46,6 +49,8 @@ export type Database = {
           storage_cabinet: string | null
           storage_floor: string | null
           storage_shelf: string | null
+          streak: string | null
+          strunz_class: string | null
           updated_at: string
           user_id: string
           uv_photos: string[]
@@ -61,11 +66,13 @@ export type Database = {
           chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
+          color?: string | null
           companion_formula?: string | null
           companion_hardness?: string | null
           companion_minerals?: string | null
           country?: string | null
           created_at?: string
+          crystal_system?: string | null
           custom_number?: string | null
           description?: string | null
           era?: string | null
@@ -74,6 +81,7 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          luster?: string | null
           mineral_name: string
           notable?: string | null
           origin?: string | null
@@ -84,6 +92,8 @@ export type Database = {
           storage_cabinet?: string | null
           storage_floor?: string | null
           storage_shelf?: string | null
+          streak?: string | null
+          strunz_class?: string | null
           updated_at?: string
           user_id: string
           uv_photos?: string[]
@@ -99,11 +109,13 @@ export type Database = {
           chemical_formula?: string | null
           collection_name?: string | null
           collection_number?: number
+          color?: string | null
           companion_formula?: string | null
           companion_hardness?: string | null
           companion_minerals?: string | null
           country?: string | null
           created_at?: string
+          crystal_system?: string | null
           custom_number?: string | null
           description?: string | null
           era?: string | null
@@ -112,6 +124,7 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
+          luster?: string | null
           mineral_name?: string
           notable?: string | null
           origin?: string | null
@@ -122,6 +135,8 @@ export type Database = {
           storage_cabinet?: string | null
           storage_floor?: string | null
           storage_shelf?: string | null
+          streak?: string | null
+          strunz_class?: string | null
           updated_at?: string
           user_id?: string
           uv_photos?: string[]
