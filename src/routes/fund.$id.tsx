@@ -610,6 +610,11 @@ function DetailPage() {
                   acquisition_type: m.acquisition_type ?? null,
                   acquisition_price: m.acquisition_price ?? null,
                   description: m.description ?? null,
+                  crystal_system: m.crystal_system ?? null,
+                  strunz_class: m.strunz_class ?? null,
+                  color: m.color ?? null,
+                  streak: m.streak ?? null,
+                  luster: m.luster ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });
