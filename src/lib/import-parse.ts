@@ -31,6 +31,11 @@ const FIELDS = [
   "acquisition_type",
   "acquisition_price",
   "description",
+  "crystal_system",
+  "strunz_class",
+  "color",
+  "streak",
+  "luster",
 ] as const;
 
 type Field = (typeof FIELDS)[number];
@@ -65,6 +70,11 @@ add("acquired_at", ["erwerbsdatum", "kaufdatum", "datum", "acquired", "acquired 
 add("acquisition_type", ["erwerbsart", "erwerb", "acquisition", "acquisition type"]);
 add("acquisition_price", ["erwerbspreis", "kaufpreis", "acquisition price"]);
 add("description", ["beschreibung", "description", "kuratorentext", "text"]);
+add("crystal_system", ["kristallsystem", "crystal system", "kristallklasse"]);
+add("strunz_class", ["strunz", "strunz klasse", "strunz class", "systematik"]);
+add("color", ["farbe", "color", "colour"]);
+add("streak", ["strich", "strichfarbe", "streak"]);
+add("luster", ["glanz", "luster", "lustre"]);
 
 function normalizeHeader(s: string): string {
   return s
@@ -141,6 +151,11 @@ function rowsToImport(rows: Record<string, unknown>[]): ImportRow[] {
       acquisition_type: str(mapped.acquisition_type),
       acquisition_price: parseValue(mapped.acquisition_price),
       description: str(mapped.description),
+      crystal_system: str(mapped.crystal_system),
+      strunz_class: str(mapped.strunz_class),
+      color: str(mapped.color),
+      streak: str(mapped.streak),
+      luster: str(mapped.luster),
     };
     return row;
   });

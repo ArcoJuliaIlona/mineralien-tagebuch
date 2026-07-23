@@ -387,6 +387,18 @@ function DetailPage() {
             <DataRow label="Härte (Mohs)" value={m.hardness} />
           </div>
         )}
+        {m.category === "mineral" &&
+          (m.crystal_system || m.strunz_class || m.color || m.streak || m.luster) && (
+            <div className="space-y-2">
+              <dt className="smallcaps text-[13px] text-primary">Systematik</dt>
+              <hr className="gold-rule w-16" aria-hidden />
+              <DataRow label="Kristallsystem" value={m.crystal_system} />
+              <DataRow label="Strunz-Klasse" value={m.strunz_class} />
+              <DataRow label="Farbe" value={m.color} />
+              <DataRow label="Strich" value={m.streak} />
+              <DataRow label="Glanz" value={m.luster} />
+            </div>
+          )}
         {m.category === "rock" && <DataRow label="Ursprung" value={m.origin} />}
 
         <div className="space-y-2">
@@ -610,6 +622,11 @@ function DetailPage() {
                   acquisition_type: m.acquisition_type ?? null,
                   acquisition_price: m.acquisition_price ?? null,
                   description: m.description ?? null,
+                  crystal_system: m.crystal_system ?? null,
+                  strunz_class: m.strunz_class ?? null,
+                  color: m.color ?? null,
+                  streak: m.streak ?? null,
+                  luster: m.luster ?? null,
                 });
                 qc.invalidateQueries({ queryKey: ["minerals", m.id] });
                 qc.invalidateQueries({ queryKey: ["minerals"] });

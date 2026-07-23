@@ -271,6 +271,11 @@ export async function exportAllPdf(
 
     const rows: Array<[string, string | null]> = [
       ["Begleitmineralien", m.companion_minerals],
+      ["Kristallsystem", m.category === "mineral" ? m.crystal_system : null],
+      ["Strunz-Klasse", m.category === "mineral" ? m.strunz_class : null],
+      ["Farbe", m.category === "mineral" ? m.color : null],
+      ["Strich", m.category === "mineral" ? m.streak : null],
+      ["Glanz", m.category === "mineral" ? m.luster : null],
       ["Fundort", m.location],
       ["Sammlung", m.collection_name],
       ["UV", m.uv_photos && m.uv_photos.length > 0 ? "aktiv" : null],

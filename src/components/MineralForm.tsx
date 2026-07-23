@@ -76,6 +76,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     initial?.acquisition_price != null ? String(initial.acquisition_price) : "",
   );
   const [description, setDescription] = useState<string>(initial?.description ?? "");
+  const [crystalSystem, setCrystalSystem] = useState<string>(initial?.crystal_system ?? "");
+  const [strunzClass, setStrunzClass] = useState<string>(initial?.strunz_class ?? "");
+  const [color, setColor] = useState<string>(initial?.color ?? "");
+  const [streak, setStreak] = useState<string>(initial?.streak ?? "");
+  const [luster, setLuster] = useState<string>(initial?.luster ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -538,6 +543,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
                   return isFinite(n) && n >= 0 ? n : null;
                 })(),
           description: description.trim() || null,
+          crystal_system: category === "mineral" ? (crystalSystem.trim() || null) : null,
+          strunz_class: category === "mineral" ? (strunzClass.trim() || null) : null,
+          color: category === "mineral" ? (color.trim() || null) : null,
+          streak: category === "mineral" ? (streak.trim() || null) : null,
+          luster: category === "mineral" ? (luster.trim() || null) : null,
         },
         [...removed, ...removedUv],
       );
@@ -696,6 +706,70 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           className="h-12 text-base"
         />
       </Field>
+      )}
+      {category === "mineral" && (
+        <div className="space-y-3 rounded-lg border bg-card px-3 py-3">
+          <Label className="text-base font-medium">Systematik</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Kristallsystem">
+              <Select value={crystalSystem || "none"} onValueChange={(v) => setCrystalSystem(v === "none" ? "" : v)}>
+                <SelectTrigger className="h-12 text-base"><SelectValue placeholder="Wählen" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  <SelectItem value="Kubisch">Kubisch</SelectItem>
+                  <SelectItem value="Tetragonal">Tetragonal</SelectItem>
+                  <SelectItem value="Hexagonal">Hexagonal</SelectItem>
+                  <SelectItem value="Trigonal">Trigonal</SelectItem>
+                  <SelectItem value="Orthorhombisch">Orthorhombisch</SelectItem>
+                  <SelectItem value="Monoklin">Monoklin</SelectItem>
+                  <SelectItem value="Triklin">Triklin</SelectItem>
+                  <SelectItem value="Amorph">Amorph</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Strunz-Klasse">
+              <Input
+                value={strunzClass}
+                onChange={(e) => setStrunzClass(e.target.value)}
+                placeholder="z. B. 4.DA.05"
+                className="h-12 text-base"
+              />
+            </Field>
+          </div>
+          <Field label="Farbe">
+            <Input
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              placeholder="z. B. farblos, rauchbraun"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Strich">
+            <Input
+              value={streak}
+              onChange={(e) => setStreak(e.target.value)}
+              placeholder="z. B. weiß"
+              className="h-12 text-base"
+            />
+          </Field>
+          <Field label="Glanz">
+            <Select value={luster || "none"} onValueChange={(v) => setLuster(v === "none" ? "" : v)}>
+              <SelectTrigger className="h-12 text-base"><SelectValue placeholder="Wählen" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">—</SelectItem>
+                <SelectItem value="Glasglanz">Glasglanz</SelectItem>
+                <SelectItem value="Diamantglanz">Diamantglanz</SelectItem>
+                <SelectItem value="Metallglanz">Metallglanz</SelectItem>
+                <SelectItem value="Perlmuttglanz">Perlmuttglanz</SelectItem>
+                <SelectItem value="Seidenglanz">Seidenglanz</SelectItem>
+                <SelectItem value="Fettglanz">Fettglanz</SelectItem>
+                <SelectItem value="Wachsglanz">Wachsglanz</SelectItem>
+                <SelectItem value="Harzglanz">Harzglanz</SelectItem>
+                <SelectItem value="Matt">Matt</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
       )}
       <Field label="Land">
         <Input

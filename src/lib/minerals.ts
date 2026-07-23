@@ -76,6 +76,11 @@ export type Mineral = {
   acquisition_type: string | null;
   acquisition_price: number | null;
   description: string | null;
+  crystal_system: string | null;
+  strunz_class: string | null;
+  color: string | null;
+  streak: string | null;
+  luster: string | null;
 };
 
 export async function listMinerals(): Promise<Mineral[]> {
@@ -129,6 +134,11 @@ export type MineralInput = {
   acquisition_type: string | null;
   acquisition_price: number | null;
   description: string | null;
+  crystal_system: string | null;
+  strunz_class: string | null;
+  color: string | null;
+  streak: string | null;
+  luster: string | null;
 };
 
 export async function createMineral(userId: string, input: MineralInput) {
