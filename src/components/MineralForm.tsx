@@ -12,6 +12,7 @@ import {
 import { fetchChemicalFormula } from "@/lib/chemical-formula.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { fetchHardness } from "@/lib/hardness.functions";
+import { fetchSystematics } from "@/lib/systematics.functions";
 import { FormulaText } from "@/lib/format-formula";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,8 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
+  const fetchSystematicsFn = useServerFn(fetchSystematics);
+  const [fetchingSystematics, setFetchingSystematics] = useState(false);
   const [companionFormula, setCompanionFormula] = useState<string>(initial?.companion_formula ?? "");
   const [fetchingCompanionFormula, setFetchingCompanionFormula] = useState(false);
   const [companionHardness, setCompanionHardness] = useState<string>(initial?.companion_hardness ?? "");
@@ -239,6 +242,34 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
           .finally(() => setFetchingHardness(false));
       }
     }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, category]);
+
+  // Auto-fetch Systematik (Kristallsystem, Strunz, Strich, Glanz) – ohne Farbe.
+  useEffect(() => {
+    const n = name.trim();
+    if (!n || category !== "mineral") return;
+    if (n.length < 3) return;
+    const needs =
+      !crystalSystem.trim() ||
+      !strunzClass.trim() ||
+      !streak.trim() ||
+      !luster.trim();
+    if (!needs) return;
+    const t = setTimeout(() => {
+      if (fetchingSystematics) return;
+      setFetchingSystematics(true);
+      fetchSystematicsFn({ data: { name: n } })
+        .then((res) => {
+          if (res.crystal_system) setCrystalSystem((cur) => (cur.trim() ? cur : res.crystal_system!));
+          if (res.strunz_class) setStrunzClass((cur) => (cur.trim() ? cur : res.strunz_class!));
+          if (res.streak) setStreak((cur) => (cur.trim() ? cur : res.streak!));
+          if (res.luster) setLuster((cur) => (cur.trim() ? cur : res.luster!));
+        })
+        .catch(() => {})
+        .finally(() => setFetchingSystematics(false));
+    }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, category]);
@@ -769,6 +800,38 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
               </SelectContent>
             </Select>
           </Field>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={async () => {
+              const n = name.trim();
+              if (!n) {
+                toast.error("Bitte zuerst einen Namen eingeben.");
+                return;
+              }
+              setFetchingSystematics(true);
+              try {
+                const res = await fetchSystematicsFn({ data: { name: n } });
+                let added = 0;
+                if (res.crystal_system) { setCrystalSystem(res.crystal_system); added++; }
+                if (res.strunz_class) { setStrunzClass(res.strunz_class); added++; }
+                if (res.streak) { setStreak(res.streak); added++; }
+                if (res.luster) { setLuster(res.luster); added++; }
+                if (added > 0) toast.success("Systematik ergänzt");
+                else toast.info("Keine Systematik gefunden.");
+              } catch (e: unknown) {
+                toast.error("Systematik konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+              } finally {
+                setFetchingSystematics(false);
+              }
+            }}
+            disabled={fetchingSystematics || !name.trim()}
+          >
+            {fetchingSystematics ? <Loader2 className="size-5 animate-spin" /> : <Sparkles className="size-5" />}
+            Systematik automatisch ermitteln
+          </Button>
         </div>
       )}
       <Field label="Land">
