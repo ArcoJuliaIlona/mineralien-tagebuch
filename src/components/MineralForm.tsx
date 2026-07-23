@@ -770,6 +770,38 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
               </SelectContent>
             </Select>
           </Field>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="h-12 w-full gap-2 text-base"
+            onClick={async () => {
+              const n = name.trim();
+              if (!n) {
+                toast.error("Bitte zuerst einen Namen eingeben.");
+                return;
+              }
+              setFetchingSystematics(true);
+              try {
+                const res = await fetchSystematicsFn({ data: { name: n } });
+                let added = 0;
+                if (res.crystal_system) { setCrystalSystem(res.crystal_system); added++; }
+                if (res.strunz_class) { setStrunzClass(res.strunz_class); added++; }
+                if (res.streak) { setStreak(res.streak); added++; }
+                if (res.luster) { setLuster(res.luster); added++; }
+                if (added > 0) toast.success("Systematik ergänzt");
+                else toast.info("Keine Systematik gefunden.");
+              } catch (e: unknown) {
+                toast.error("Systematik konnte nicht ermittelt werden: " + (e instanceof Error ? e.message : ""));
+              } finally {
+                setFetchingSystematics(false);
+              }
+            }}
+            disabled={fetchingSystematics || !name.trim()}
+          >
+            {fetchingSystematics ? <Loader2 className="size-5 animate-spin" /> : <Sparkles className="size-5" />}
+            Systematik automatisch ermitteln
+          </Button>
         </div>
       )}
       <Field label="Land">
