@@ -264,14 +264,14 @@ function DetailPage() {
           )}
 
           <div className="flex flex-col justify-center gap-4 bg-black px-6 py-8 text-neutral-100 md:px-8 md:py-10">
-            <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-primary">
+            <p className="smallcaps text-[13px] text-primary">
               {CATEGORY_LABEL[m.category]} · Nr. {formatCollectionNumber(m.collection_number, m.category)}
               {m.custom_number ? ` · ${m.custom_number}` : ""}
             </p>
             <h1 className="font-serif text-4xl italic leading-[1.05] tracking-tight text-neutral-50 md:text-5xl">
               {m.mineral_name}
             </h1>
-            <div className="h-px w-16 bg-primary/70" aria-hidden />
+            <hr className="gold-rule w-24" aria-hidden />
             <dl className="font-serif text-[15px] leading-relaxed text-neutral-200">
               {m.category === "mineral" && m.chemical_formula && (
                 <CatalogRow label="Formel">
