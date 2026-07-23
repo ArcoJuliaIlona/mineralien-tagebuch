@@ -15,6 +15,7 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as AnmeldenRouteImport } from './routes/anmelden'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VitrinenIndexRouteImport } from './routes/vitrinen.index'
 import { Route as VitrinenNameRouteImport } from './routes/vitrinen.$name'
 import { Route as FundIdRouteImport } from './routes/fund.$id'
 import { Route as FundIdBearbeitenRouteImport } from './routes/fund.$id.bearbeiten'
@@ -49,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VitrinenIndexRoute = VitrinenIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VitrinenRoute,
+} as any)
 const VitrinenNameRoute = VitrinenNameRouteImport.update({
   id: '/$name',
   path: '/$name',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
   '/vitrinen/$name': typeof VitrinenNameRoute
+  '/vitrinen/': typeof VitrinenIndexRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesByTo {
@@ -82,9 +89,9 @@ export interface FileRoutesByTo {
   '/export': typeof ExportRoute
   '/import': typeof ImportRoute
   '/neu': typeof NeuRoute
-  '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
   '/vitrinen/$name': typeof VitrinenNameRoute
+  '/vitrinen': typeof VitrinenIndexRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRoutesById {
@@ -97,6 +104,7 @@ export interface FileRoutesById {
   '/vitrinen': typeof VitrinenRouteWithChildren
   '/fund/$id': typeof FundIdRouteWithChildren
   '/vitrinen/$name': typeof VitrinenNameRoute
+  '/vitrinen/': typeof VitrinenIndexRoute
   '/fund/$id/bearbeiten': typeof FundIdBearbeitenRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +118,7 @@ export interface FileRouteTypes {
     | '/vitrinen'
     | '/fund/$id'
     | '/vitrinen/$name'
+    | '/vitrinen/'
     | '/fund/$id/bearbeiten'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -118,9 +127,9 @@ export interface FileRouteTypes {
     | '/export'
     | '/import'
     | '/neu'
-    | '/vitrinen'
     | '/fund/$id'
     | '/vitrinen/$name'
+    | '/vitrinen'
     | '/fund/$id/bearbeiten'
   id:
     | '__root__'
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/vitrinen'
     | '/fund/$id'
     | '/vitrinen/$name'
+    | '/vitrinen/'
     | '/fund/$id/bearbeiten'
   fileRoutesById: FileRoutesById
 }
@@ -189,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vitrinen/': {
+      id: '/vitrinen/'
+      path: '/'
+      fullPath: '/vitrinen/'
+      preLoaderRoute: typeof VitrinenIndexRouteImport
+      parentRoute: typeof VitrinenRoute
+    }
     '/vitrinen/$name': {
       id: '/vitrinen/$name'
       path: '/$name'
@@ -215,10 +232,12 @@ declare module '@tanstack/react-router' {
 
 interface VitrinenRouteChildren {
   VitrinenNameRoute: typeof VitrinenNameRoute
+  VitrinenIndexRoute: typeof VitrinenIndexRoute
 }
 
 const VitrinenRouteChildren: VitrinenRouteChildren = {
   VitrinenNameRoute: VitrinenNameRoute,
+  VitrinenIndexRoute: VitrinenIndexRoute,
 }
 
 const VitrinenRouteWithChildren = VitrinenRoute._addFileChildren(
