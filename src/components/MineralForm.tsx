@@ -76,6 +76,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
     initial?.acquisition_price != null ? String(initial.acquisition_price) : "",
   );
   const [description, setDescription] = useState<string>(initial?.description ?? "");
+  const [crystalSystem, setCrystalSystem] = useState<string>(initial?.crystal_system ?? "");
+  const [strunzClass, setStrunzClass] = useState<string>(initial?.strunz_class ?? "");
+  const [color, setColor] = useState<string>(initial?.color ?? "");
+  const [streak, setStreak] = useState<string>(initial?.streak ?? "");
+  const [luster, setLuster] = useState<string>(initial?.luster ?? "");
   const [photos, setPhotos] = useState<string[]>(initial?.photo_paths ?? []);
   const [removed, setRemoved] = useState<string[]>([]);
   const [uvPhotos, setUvPhotos] = useState<string[]>(initial?.uv_photos ?? []);
@@ -538,6 +543,11 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
                   return isFinite(n) && n >= 0 ? n : null;
                 })(),
           description: description.trim() || null,
+          crystal_system: category === "mineral" ? (crystalSystem.trim() || null) : null,
+          strunz_class: category === "mineral" ? (strunzClass.trim() || null) : null,
+          color: category === "mineral" ? (color.trim() || null) : null,
+          streak: category === "mineral" ? (streak.trim() || null) : null,
+          luster: category === "mineral" ? (luster.trim() || null) : null,
         },
         [...removed, ...removedUv],
       );
