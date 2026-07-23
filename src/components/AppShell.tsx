@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Download, Gem, LogOut, Plus } from "lucide-react";
+import { Download, Gem, Library, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,11 @@ export function AppShell({ children, newLabel = "Neu", newSearch }: { children: 
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link to="/vitrinen" aria-label="Vitrinen">
+              <Button size="icon" variant="ghost" className="h-12 w-12">
+                <Library className="size-5" />
+              </Button>
+            </Link>
             <Link to="/export" aria-label="Daten-Export">
               <Button size="icon" variant="ghost" className="h-12 w-12">
                 <Download className="size-5" />
