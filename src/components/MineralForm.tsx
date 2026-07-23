@@ -57,6 +57,8 @@ export function MineralForm({ userId, initial, submitLabel, onSubmit, onCategory
   const [hardness, setHardness] = useState<string>(initial?.hardness ?? "");
   const [fetchingHardness, setFetchingHardness] = useState(false);
   const fetchHardnessFn = useServerFn(fetchHardness);
+  const fetchSystematicsFn = useServerFn(fetchSystematics);
+  const [fetchingSystematics, setFetchingSystematics] = useState(false);
   const [companionFormula, setCompanionFormula] = useState<string>(initial?.companion_formula ?? "");
   const [fetchingCompanionFormula, setFetchingCompanionFormula] = useState(false);
   const [companionHardness, setCompanionHardness] = useState<string>(initial?.companion_hardness ?? "");
