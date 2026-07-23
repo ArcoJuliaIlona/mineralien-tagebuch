@@ -29,6 +29,14 @@ export function formatCollectionNumber(
   return `${padded} ${CATEGORY_SUFFIX[category]}`;
 }
 
+export function splitCollectionNames(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[.,]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 export function formatDisplayNumber(
   n: number | null | undefined,
   category: Category,
