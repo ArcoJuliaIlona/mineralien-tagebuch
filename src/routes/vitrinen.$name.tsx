@@ -120,6 +120,14 @@ function VitrineDetail() {
               <Link
                 to="/fund/$id"
                 params={{ id: m.id }}
+                onClick={() => {
+                  try {
+                    sessionStorage.setItem(
+                      "fund:backTo",
+                      JSON.stringify({ kind: "vitrine", name }),
+                    );
+                  } catch {}
+                }}
                 className="group block overflow-hidden rounded-lg border border-border/60 bg-card transition hover:border-primary/60"
               >
                 <PhotoThumb
